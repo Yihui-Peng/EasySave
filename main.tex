@@ -1,0 +1,118 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{geometry} % For adjusting page layout
+\usepackage{booktabs} % For clean table formatting
+\usepackage{url}
+
+\title{Software Development Report}
+\author{Group 6}
+\date{September 2024}
+
+\begin{document}
+
+\maketitle
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{ccc} 
+    \toprule
+    \textbf{First Name} & \textbf{Last Name} & \textbf{Student Number} \\ 
+    \midrule
+    Adrien & Im       & 3984389 \\ 
+    Hao    & Chen     & 3990788 \\ 
+    Zhemin & Xie      & 3808440 \\ 
+    Tony   & Tian     & 3795888 \\ 
+    Jiajia & Xu       & 3845567 \\ 
+    Yihui  & Peng     & 3985571 \\ 
+    \bottomrule
+    \end{tabular}
+    \caption{Group 6 Members}
+    \label{tab:group6_members}
+\end{table}
+
+\section{Introduction}
+\subsection{Purpose}
+The purpose of this document is to outline the software requirements for the \textbf{Student Financial Planner: Personalized Savings and Spending Insights}. This project aims to educate and assist students in creating personalized savings plans by analyzing their past spending behavior and providing actionable insights. The software will give personalized recommendations on saving, compare users' spending to peers or national averages, and offer probabilities on reaching their savings goals.
+
+\subsection{Scope}
+The system will focus on assisting students in financial planning by providing personalized advice on budgeting and saving based on their income and spending habits. It will compare individual data against aggregate datasets to offer insight and help users adjust their spending to meet specific savings goals. The software will:
+\begin{itemize}
+    \item Provide personalized savings plans based on user input.
+    \item Compare the user's spending patterns against a dataset for benchmarking.
+    \item Display progress toward savings goals with visual feedback.
+    \item Calculate the probability of reaching financial goals.
+\end{itemize}
+
+\subsection{System Overview}
+The \textbf{Student Financial Planner} will serve as an educational tool, helping students enhance their financial literacy and gain better control of their personal finances. The system will allow users to input their income, spending habits, and desired savings goals, and in turn, it will provide tailored suggestions. It will benchmark users' spending patterns against publicly available consumer spending data and provide progress tracking with dynamic probability calculations. 
+
+
+\section{Overall Description}
+\subsection{Product Perspective}
+The \textbf{Student Financial Planner} is a standalone software solution that promotes financial literacy for students. By analyzing and visualizing the user's financial data, the system generates personalized savings plans. This product helps users understand their financial habits, offering insights on how they compare to broader trends and helping them make adjustments to achieve financial goals.
+
+\subsection{Product Features}
+\begin{itemize}
+    \item \textbf{User Input}: Allows students to input their monthly income, spending categories (e.g., rent, food, entertainment), and savings goals.
+    \item \textbf{Spending Analysis}: Compares user spending to datasets and provides insights into potential savings opportunities.
+    \item \textbf{Savings Plan Generation}: Offers personalized savings plans and suggests areas to cut spending to meet goals.
+    \item \textbf{Progress Tracking and Visualization}: Displays savings progress and success probabilities in a visually engaging manner.
+    \item \textbf{Scenario Simulations}: Allows users to simulate changes in income or spending to see how they affect progress toward savings goals.
+\end{itemize}
+
+\subsection{User Classes and Characteristics}
+\begin{itemize}
+    \item \textbf{Students}: The primary user group includes students aged 18-25 who are interested in learning to manage their personal finances. They may have limited knowledge of budgeting or savings strategies.
+\end{itemize}
+
+\subsection{Operating Environment}
+The system will be implemented as a desktop or web application using Python, and will be compatible with Windows, macOS, and Linux environments. A Python environment with Pandas and Matplotlib will be required.
+
+\subsection{Assumptions and Dependencies}
+\begin{itemize}
+    \item The user will input their financial data manually, as the software will not link to external financial services.
+    \item Access to public datasets (e.g., from Kaggle or government sources) will be assumed.
+\end{itemize}
+
+\section{Specific Requirements}
+\subsection{Functional Requirements}
+\begin{itemize}
+    \item \textbf{User Input}: The system shall allow users to input monthly income, spending habits, and desired savings goals. Users should be able to edit or update these details at any time.
+    \item \textbf{Spending Analysis}: The system shall analyze the input spending data and compare it to a dataset (e.g., consumer spending averages) to offer insights into potential overspending or underspending.
+    \item \textbf{Savings Plan Generation}: Based on user input, the system shall generate personalized savings plans with actionable recommendations.
+    \item \textbf{Probability Calculation}: The system shall calculate and display the probability of reaching a savings goal based on current spending trends.
+    \item \textbf{Visualization}: The system shall provide visual feedback on spending patterns and progress toward savings goals, using charts like bar graphs and pie charts.
+\end{itemize}
+
+\subsection{Non-Functional Requirements}
+\begin{itemize}
+    \item \textbf{Usability}: The user interface shall be intuitive, ensuring ease of use for users with minimal technical knowledge.
+    \item \textbf{Performance}: The system shall process user inputs and generate results within 2 seconds to ensure responsiveness.
+    \item \textbf{Security}: User data shall be securely stored locally to prevent unauthorized access. No sensitive financial information will be stored online.
+\end{itemize}
+
+\section{User Interface}
+The user interface will provide an intuitive experience designed for students:
+\begin{itemize}
+    \item A simple form for inputting financial data (monthly income, spending, savings goals).
+    \item A dashboard that visualizes progress with pie charts and bar graphs.
+    \item Interactive elements like sliders to adjust spending categories and see immediate feedback on the impact of changes.
+\end{itemize}
+
+\section{Appendices}
+\subsection{Datasets}
+\begin{itemize}
+    \item \textbf{Consumer Expenditure Survey (BLS)}: Provides aggregate consumer spending data useful for comparison.
+    \item \textbf{Eurostudent Survey}: Contains data on student financial situations across Europe.
+    \item \textbf{Synthetic Data}: Generated based on assumptions about student spending habits in categories such as rent, food, and entertainment.
+\end{itemize}
+
+\subsection{References}
+\begin{itemize}
+    \item Kaggle Datasets: \url{https://www.kaggle.com}
+    \item Pandas Library: \url{https://pandas.pydata.org/}
+    \item Matplotlib Library: \url{https://matplotlib.org/}
+\end{itemize}
+
+
+\end{document}
