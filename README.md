@@ -1,4 +1,4 @@
-# My awesome project
+# Student Financial Planner
 
 
 
