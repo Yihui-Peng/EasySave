@@ -1,10 +1,19 @@
 # Student Financial Planner
 
 
+## Description
+
+The purpose of this document is to outline the software requirements for the \textbf{Student Financial Planner: Personalized Savings and Spending Insights}. This project aims to educate and assist students in creating personalized savings plans by analyzing their past spending behavior and providing actionable insights. The software will give personalized recommendations on saving, compare users' spending to peers or national averages, and offer probabilities on reaching their savings goals.
+
+## Table of Contents
+
+## Installation
+
+## Usage 
+
+## License 
 
 ## Getting started
-I am not Hao.
-I am Hao.
 
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.
 
