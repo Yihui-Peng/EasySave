@@ -42,3 +42,72 @@ def main_menu():
 
 if __name__ == "__main__":
     main_menu()
+
+
+
+
+import tkinter as tk
+from tkinter import messagebox
+
+# A dictionary to store user credentials (for now)
+users = {}
+
+
+# Function to handle account creation
+def create_account():
+    username = entry_username.get()
+    password = entry_password.get()
+
+    if username in users:
+        messagebox.showerror("Error", "Username already exists. Please choose another.")
+    elif not username or not password:
+        messagebox.showerror("Error", "Please enter both a username and a password.")
+    else:
+        users[username] = password
+        messagebox.showinfo("Success", f"Account created successfully for {username}!")
+        entry_username.delete(0, tk.END)
+        entry_password.delete(0, tk.END)
+
+
+# Function to handle login
+def login():
+    username = entry_username.get()
+    password = entry_password.get()
+
+    if username not in users:
+        messagebox.showerror("Error", "No account found. Please create an account.")
+    elif users[username] != password:
+        messagebox.showerror("Error", "Incorrect password. Please try again.")
+    else:
+        messagebox.showinfo("Welcome", f"Welcome back, {username}!")
+        entry_username.delete(0, tk.END)
+        entry_password.delete(0, tk.END)
+
+
+# Main application window
+root = tk.Tk()
+root.title("Login System")
+
+# Username and Password Labels and Entry fields
+label_username = tk.Label(root, text="Username:")
+label_username.grid(row=0, column=0, padx=10, pady=10)
+
+entry_username = tk.Entry(root)
+entry_username.grid(row=0, column=1, padx=10, pady=10)
+
+label_password = tk.Label(root, text="Password:")
+label_password.grid(row=1, column=0, padx=10, pady=10)
+
+entry_password = tk.Entry(root, show="*")
+entry_password.grid(row=1, column=1, padx=10, pady=10)
+
+# Buttons for Login and Account Creation
+button_login = tk.Button(root, text="Log In", command=login)
+button_login.grid(row=2, column=0, padx=10, pady=10)
+
+button_create = tk.Button(root, text="Create Account", command=create_account)
+button_create.grid(row=2, column=1, padx=10, pady=10)
+
+# Start the Tkinter event loop
+root.mainloop()
+
