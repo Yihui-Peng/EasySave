@@ -1,0 +1,44 @@
+users = {}
+
+def create_account():
+    print("\n--- Create a New Account ---")
+    username = input("Enter a username: ")
+    if username in users:
+        print("Username already exists. Please choose a different one.")
+        return
+    password = input("Enter a password: ")
+    users[username] = password
+    print(f"Account created successfully for {username}!\n")
+
+def login():
+    print("\n--- Log In ---")
+    username = input("Enter your username: ")
+    if username not in users:
+        print("No account found with this username. Please create an account.")
+        return
+    password = input("Enter your password: ")
+    if users[username] == password:
+        print(f"Welcome back, {username}!")
+    else:
+        print("Incorrect password. Please try again.")
+
+def main_menu():
+    while True:
+        print("\n--- Main Menu ---")
+        print("1. Log In")
+        print("2. Create a New Account")
+        print("3. Exit")
+        choice = input("Choose an option (1, 2, or 3): ")
+
+        if choice == '1':
+            login()
+        elif choice == '2':
+            create_account()
+        elif choice == '3':
+            print("Exiting the application. Goodbye!")
+            break
+        else:
+            print("Invalid option. Please try again.")
+
+if __name__ == "__main__":
+    main_menu()
