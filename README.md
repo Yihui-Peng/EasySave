@@ -15,19 +15,23 @@ The purpose of this document is to outline the software requirements for the \te
 
 ## Usage 
 
+(Insert here)
+
 ## License 
+This project is part of a university assignment and is not licensed for public use or distribution.
 
 ## Authors and acknowledgment
 Hao Chen - 3990788
+
 Adrien Im - 3984389
+
 Yihui Peng - 3985571
+
 Tony Tian - 3795888
+
 Zhemin Xie - 3808440
+
 Jiajia Xu - 3845567
-
-
-
-
 
 ## Getting started
 
