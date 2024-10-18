@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}My Website{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>MY-AWESOME-PROJECT</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/newSpending">NEW Spending</a></li>
+                <li><a href="/savingGoal">Saving Goal</a></li>
+                <li><a href="/setting">Setting</a></li>
+                <li><a href="/userProfile">User Profile</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p> &copy; 2024</p>
+    </footer>
+</body>
+</html>
