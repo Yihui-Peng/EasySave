@@ -1,8 +1,39 @@
 {% extends "base.html" %}
 
 {% block title %}Home{% endblock %}
-
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}"> {% endblock %}
 {% block content %}
     <h2>Welkom</h2>
     <p>This is home page.</p>
+    
+    <div class="spending-summary">
+        <div class="previous-spending">
+            <h2>Previous Spending</h2>
+            <p id="prevSpending">666</p>
+        </div>
+        <div class="saving-goal">
+            <h2>Saving Goal</h2>
+            <p id="saveGoal">666</p>
+        </div>
+        <div class="remaining-today">
+            <h2>Today's Remaining</h2>
+            <p id="todayRemaining">666</p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="advice-section">
+            <h2>Advices</h2>
+            <ul>
+                <li>Advice 1</li>
+                <li>Advice 2</li>
+                <li>Advice 3</li>
+            </ul>
+        </div>
+        <div class="new-spending">
+            <h2>New Spending</h2>
+            <form action="" method="post">
+                <!-- Form inputs for adding new spending -->
+            </form>
+        </div>
+    </div>
 {% endblock %}

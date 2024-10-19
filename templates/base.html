@@ -2,17 +2,19 @@
 <html>
 <head>
     <title>{% block title %}My Website{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    {% block styles %} {% endblock %}
 </head>
 <body>
     <header>
         <h1>MY-AWESOME-PROJECT</h1>
         <nav>
             <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/newSpending">NEW Spending</a></li>
-                <li><a href="/savingGoal">Saving Goal</a></li>
-                <li><a href="/setting">Setting</a></li>
-                <li><a href="/userProfile">User Profile</a></li>
+                <li><a href="/" class="{{ 'active' if active_page == 'home' else '' }}">Home</a></li>
+                <li><a href="/newSpending" class="{{ 'active' if active_page == 'newSpending' else '' }}">NEW Spending</a></li>
+                <li><a href="/savingGoal" class="{{ 'active' if active_page == 'savingGoal' else '' }}">Saving Goal</a></li>
+                <li><a href="/setting" class="{{ 'active' if active_page == 'setting' else '' }}">Setting</a></li>
+                <li><a href="/userProfile" class="{{ 'active' if active_page == 'userProfile' else '' }}">User Profile</a></li>
             </ul>
         </nav>
     </header>
