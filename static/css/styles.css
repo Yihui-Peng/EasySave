@@ -1,0 +1,70 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f4f4f4;
+    margin: 0; /* Remove default margin */
+}
+
+header {
+    background-color: #555; /* Lighter grey for the header */
+    color: white;
+    padding: 10px 20px; /* Padding around the header content */
+    display: flex; /* Use flexbox for layout */
+    justify-content: space-between; /* Space between elements */
+    align-items: center; /* Align items vertically */
+}
+
+h1 {
+    color: white; /* Light color for the title in the header */
+    margin: 0; /* Remove margin to ensure alignment */
+}
+
+nav ul {
+    list-style-type: none; /* Remove bullet points */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margin */
+    display: flex; /* Flexbox layout for horizontal alignment */
+    background-color: #555; /* Same as header background */
+}
+
+nav li {
+    display: block; /* Better control for link styling */
+}
+
+nav li a {
+    display: block; /* Make the links fill their container */
+    color: white; /* White text color */
+    text-align: center; /* Center the text inside links */
+    padding: 10px 15px; /* Adjust padding for spacing around the text */
+    text-decoration: none; /* Remove underline from links */
+    transition: background-color 0.3s; /* Smooth transition for background color */
+    border-radius: 5px; /* Optional: rounded corners */
+}
+
+/* Hover Effect */
+nav li a:hover {
+    background-color: #ddd; /* Light background on hover */
+    color: #555; /* Dark text color on hover */
+}
+
+nav li a.active {
+    background-color: #ddd; /* Light background for the active item */
+    color: #333; /* Dark text color for the active item */
+    border: none;
+}
+
+/* Optional: Responsive Navigation */
+@media (max-width: 600px) {
+    header {
+        flex-direction: column; /* Stack header content vertically on small screens */
+    }
+
+    nav ul {
+        width: 100%; /* Full-width navigation */
+        justify-content: center; /* Center navigation items */
+    }
+
+    nav li {
+        width: 100%; /* Full-width links */
+    }
+}

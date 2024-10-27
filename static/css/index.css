@@ -1,0 +1,71 @@
+
+.spending-summary {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px; /* Adds space between the rows */
+}
+
+.spending-summary > div {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+    flex: 1;
+}
+
+.saving-goal p {
+    display: inline-block;
+    background-color: #fff;
+    border-radius: 50%;
+    padding: 20px;
+    width: 100px;
+    height: 100px;
+    line-height: 60px; /* Adjust this to center the text vertically */
+    border: 2px solid black; /* Optional: adds border to the circle */
+}
+
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px; /* Add some space between the rows */
+}
+
+.advice-section, .new-spending {
+    flex: 40%;
+    background-color: white;
+    padding: 20px;
+    margin: 5px; /* Slight margin between the two sections */
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Make sure margins and paddings are consistent and do not overflow */
+.advice-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0; /* Remove default margin */
+}
+
+.advice-section li {
+    padding: 10px 0; /* Add padding for spacing */
+    border-bottom: 1px solid #ccc;
+}
+
+.advice-section li:last-child {
+    border-bottom: none; /* No border at the bottom of the last item */
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+
+input, button {
+    padding: 10px;
+    margin-top: 5px; /* Spacing between form items */
+    width: 100%; /* Full width of the form */
+    box-sizing: border-box; /* Include padding and border in the width */
+}
