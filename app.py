@@ -1,5 +1,6 @@
-from flask import Flask, render_template
-from user_profile import get_user, update_email, update_nickname, update_profile_picture
+from flask import Flask, render_template, request, redirect, url_for, flash
+import os
+from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = "static/profile_pictures"
@@ -26,6 +27,33 @@ def setting():
 
 @app.route('/userProfile', methods = ['GET', 'POST'])
 def userProfile():
+    if request.method == 'POST':
+        #Upload profile picture
+        if 'profile_picture' in request.files:
+            file = request.files['profile_picture']
+            if file and allowed_file(file.filename):
+                success, filename = update_profile_picture(file)
+                if success:
+                    flash('Upload success!','success')
+                else:
+                    flash('Upload failed!','danger')
+            else:
+                flash('Upload a valid file!','warning')
+
+        name = request.form.get('name')
+        email = request.form.get('email')
+        nickname = request.form.get('nickname')
+
+        # Update user data
+        if name:
+            get_user()['name'] = name
+        if email:
+            update_email(email)
+        if nickname:
+            update_nickname(nickname)
+
+        flash('Profile information updated successfully!', 'success')
+
     user = get_user()
     return render_template('userProfile.html', active_page='userProfile', user=user)
 
