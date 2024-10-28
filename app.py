@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import os
-from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file
+from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 app.config['UPLOAD_FOLDER'] = "static/profile_pictures"
 
 @app.route('/')
@@ -39,6 +40,11 @@ def userProfile():
                     flash('Upload failed!','danger')
             else:
                 flash('Upload a valid file!','warning')
+
+        # Revert to Default Picture
+        elif 'revert_picture' in request.form:
+            get_user()['profile_picture'] = default_picture_filename
+            flash('Profile picture has been reverted to the default.', 'info')
 
         name = request.form.get('name')
         email = request.form.get('email')
