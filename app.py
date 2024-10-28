@@ -1,6 +1,8 @@
 from flask import Flask, render_template
+from UserProfile import get_user, update_email, update_nickname, update_profile_picture
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = "static/profile_pictures"
 
 @app.route('/')
 def home():
@@ -22,9 +24,9 @@ def savingGoal():
 def setting():
     return render_template('settings.html', active_page='setting')
 
-@app.route('/userProfile')
+@app.route('/userProfile', methods = ['GET', 'POST'])
 def userProfile():
-    user = {"name": "Joon-Ha", "email": "jh@example.com"}
+    user = get_user()
     return render_template('userProfile.html', active_page='userProfile', user=user)
 
 
