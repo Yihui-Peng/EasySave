@@ -3,6 +3,8 @@
 {% block title %}User profile{% endblock %}
 
 {% block content %}
-    <h2>Welkom</h2>
-    <p>This is user profile page.</p>
+    <h2>Hello, {{ user.name }}</h2>
+    <p>This is your profile page.</p>
+    <p>Email: {{ user.email }}</p>
+
 {% endblock %}

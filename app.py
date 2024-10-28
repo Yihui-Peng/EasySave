@@ -24,7 +24,9 @@ def setting():
 
 @app.route('/userProfile')
 def userProfile():
-    return render_template('userProfile.html', active_page='userProfile')
+    user = {"name": "Joon-Ha", "email": "jh@example.com"}
+    return render_template('userProfile.html', active_page='userProfile', user=user)
+
 
 @app.errorhandler(404)
 def page_not_found(e):
