@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from UserProfile import get_user, update_email, update_nickname, update_profile_picture
+from user_profile import get_user, update_email, update_nickname, update_profile_picture
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = "static/profile_pictures"
