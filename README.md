@@ -33,17 +33,20 @@ cd my-awesome-project
 This project is part of a university assignment and is not licensed for public use or distribution.
 
 ## Authors and Acknowledgment
-Hao Chen - 3990788
+This project was developed by: 
 
-Adrien Im - 3984389
+- Hao Chen - 3990788
 
-Yihui Peng - 3985571
+- Adrien Im - 3984389
 
-Tony Tian - 3795888
+- Yihui Peng - 3985571
 
-Zhemin Xie - 3808440
+- Tony Tian - 3795888
 
-Jiajia Xu - 3845567
+- Zhemin Xie - 3808440
+
+- Jiajia Xu - 3845567
+
 
 ## Roadmap
 
