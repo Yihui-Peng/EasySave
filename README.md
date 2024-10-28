@@ -49,6 +49,9 @@ This project was developed by:
 
 
 ## Roadmap
+Future improvements to this project could include:
+- Greater compatibility across different devices
+- etc.
 
 ## Support
-
+For help, you can reach us by email.
