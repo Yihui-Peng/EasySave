@@ -8,7 +8,9 @@ app.config['UPLOAD_FOLDER'] = "static/profile_pictures"
 
 @app.route('/')
 def home():
-    return render_template('index.html', active_page='home')
+    user = get_user()
+    user_name = user.get('name','Guest')
+    return render_template('index.html', active_page='home', user_name=user_name)
 
 @app.route('/login')
 def login():
