@@ -11,14 +11,24 @@ The Student Financial Planner is a web-based app that aims to educate and assist
 1. Installation
 2. Usage
 3. License
-4. Authors and 
+4. Authors and Acknowledgment
+5. 
 
 ## Installation
 To run this app locally:
 1. Clone the repository:
 
+```
 git clone https://git.liacs.nl/group_6_sd/my-awesome-project.git
 cd my-awesome-project
+```
+
+```
+cd existing_repo
+git remote add origin https://git.liacs.nl/group_6_sd/my-awesome-project.git
+git branch -M main
+git push -uf origin main
+```
 
 ## Usage 
 
