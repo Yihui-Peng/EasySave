@@ -3,15 +3,22 @@
 
 ## Description
 
-The purpose of this document is to outline the software requirements for the \textbf{Student Financial Planner: Personalized Savings and Spending Insights}. This project aims to educate and assist students in creating personalized savings plans by analyzing their past spending behavior and providing actionable insights. The software will give personalized recommendations on saving, compare users' spending to peers or national averages, and offer probabilities on reaching their savings goals.
+The Student Financial Planner is a web-based app that aims to educate and assist students in creating personalized savings plans by analyzing their past spending behavior and providing actionable insights. The software will give personalized recommendations on saving, compare users' spending to peers or national averages, and offer probabilities on reaching their savings goals.
+
 
 ## Table of Contents
 
-(Insert Table of Contents)
+1. Installation
+2. Usage
+3. License
+4. Authors and 
 
 ## Installation
+To run this app locally:
+1. Clone the repository:
 
-(Insert instructions on how to install and run the program)
+git clone https://git.liacs.nl/group_6_sd/my-awesome-project.git
+cd my-awesome-project
 
 ## Usage 
 
@@ -20,7 +27,7 @@ The purpose of this document is to outline the software requirements for the \te
 ## License 
 This project is part of a university assignment and is not licensed for public use or distribution.
 
-## Authors and acknowledgment
+## Authors and Acknowledgment
 Hao Chen - 3990788
 
 Adrien Im - 3984389
