@@ -10,32 +10,34 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 def import_csv_to_db(csv_file):
-    # 使用 pandas 读取 CSV 文件
-    df = pd.read_csv(csv_file)
+    df = pd.read_csv(csv_file, header=0)
 
     with app.app_context():
         for index, row in df.iterrows():
-            new_data = StudentSpending(
-                user_id=None,
-                age=row['age'],
-                gender=row['gender'],
-                year_in_school=row['year_in_school'],
-                major=row['major'],
-                monthly_income=row['monthly_income'],
-                financial_aid=row['financial_aid'],
-                tuition=row['tuition'],
-                housing=row['housing'],
-                food=row['food'],
-                transportation=row['transportation'],
-                books_supplies=row['books_supplies'],
-                entertainment=row['entertainment'],
-                personal_care=row['personal_care'],
-                technology=row['technology'],
-                health_wellness=row['health_wellness'],
-                miscellaneous=row['miscellaneous'],
-                preferred_payment_method=row['preferred_payment_method']
-            )
-            db.session.add(new_data)
+            try:
+                new_data = StudentSpending(
+                    user_id=None if pd.isnull(row.get('user_id')) else row.get('user_id'),
+                    age=row.get('age', None),
+                    gender=row.get('gender', 'Unknown'),
+                    year_in_school=row.get('year_in_school', 'Unknown'),
+                    major=row.get('major', 'Unknown'),
+                    monthly_income=row.get('monthly_income', 0.0),
+                    financial_aid=row.get('financial_aid', 0.0),
+                    tuition=row.get('tuition', 0.0),
+                    housing=row.get('housing', 0.0),
+                    food=row.get('food', 0.0),
+                    transportation=row.get('transportation', 0.0),
+                    books_supplies=row.get('books_supplies', 0.0),
+                    entertainment=row.get('entertainment', 0.0),
+                    personal_care=row.get('personal_care', 0.0),
+                    technology=row.get('technology', 0.0),
+                    health_wellness=row.get('health_wellness', 0.0),
+                    miscellaneous=row.get('miscellaneous', 0.0),
+                    preferred_payment_method=row.get('preferred_payment_method', 'Unknown')
+                )
+                db.session.add(new_data)
+            except Exception as e:
+                print(f"Error occurred while adding row {index}: {e}")
 
         db.session.commit()
         print("Data has been successfully imported.")

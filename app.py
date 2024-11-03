@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 import os
+from import_database import import_csv_to_db
 from database import db, StudentSpending
 import pandas as pd
 from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename
@@ -15,10 +16,19 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///D:/git/repository/my-awesome-
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-with app.app_context():
-    db.create_all()  # 创建所有表
+if not os.path.exists("D:/git/repository/my-awesome-project/instance/data.db"):
+    with app.app_context():
+        db.create_all()  # 创建表
+        import_csv_to_db('student_spending.csv')  
+        print("Database and data initialized.")
 
-
+@app.route('/data')
+def get_data():
+    with app.app_context():
+        data = StudentSpending.query.all()
+    if not data:
+        return "No data found in the database."
+    return '<br>'.join([f"Age: {d.age}, Gender: {d.gender}, Year: {d.year_in_school}, Major: {d.major}, Monthly Income: {d.monthly_income}" for d in data])
 
 @app.route('/')
 def home():
@@ -59,13 +69,7 @@ def userProfile():
 def page_not_found(e):
     return render_template('404.html'), 404
 
-@app.route('/data')
-def get_data():
-    with app.app_context():
-        data = StudentSpending.query.all()
-    if not data:
-        return "No data found in the database."
-    return '<br>'.join([f"Age: {d.age}, Gender: {d.gender}, Year: {d.year_in_school}, Major: {d.major}, Monthly Income: {d.monthly_income}" for d in data])
+
 
 if __name__ == "__main__":
     app.run(debug=True)    

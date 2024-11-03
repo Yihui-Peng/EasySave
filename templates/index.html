@@ -1,13 +1,8 @@
 {% extends "base.html" %}
 
 {% block title %}Home{% endblock %}
-<<<<<<< HEAD
-{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-{% endblock %}
-=======
 {% block styles %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}"> {% endblock %}
->>>>>>> 82097b13c2b2037d01c7dbde3169a2c254328771
 {% block content %}
     <h2>Welcome, {{ user_name }}</h2>
     <p>This is the home page.</p>

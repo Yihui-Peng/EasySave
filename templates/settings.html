@@ -1,8 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Settings System</title>
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         .section { margin: 20px 0; }
@@ -10,9 +10,8 @@
         .hidden { display: none; }
         .back { cursor: pointer; color: blue; text-decoration: underline; }
     </style>
-</head>
-<body>
-
+ {% endblock %}
+{% block content %}
     <h1>Settings Menu</h1>
     <div id="menu" class="section">
         <div class="option" onclick="selectLanguage()">1: Select Language</div>
@@ -143,5 +142,4 @@
             goBack();
         }
     </script>
-</body>
-</html>
+{% endblock %}

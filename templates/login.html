@@ -2,24 +2,60 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 <body>
-    <div class="login-container">
-        <form action="/login" method="post" class="login-form">
-            <h1 style="color: black;">Login</h1>
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <button type="submit">Sign in</button>
-            <p class="forgot-password"><a href="#">Forgot password?</a></p>
-        </form>
+    <div class="form-container">
+        <div id="login-form" class="form active">
+            <form action="/login" method="post" class="login-form">
+                <h1>Login</h1>
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn">Sign in</button>
+                <p class="forgot-password"><a href="#">Forgot password?</a></p>
+                <p class="switch-form">Don't have an account? <a href="#" onclick="showRegister()">Register here</a></p>
+            </form>
+        </div>
+
+        <div id="register-form" class="form">
+            <form action="/register" method="post" class="register-form">
+                <h1>Register</h1>
+                <div class="form-group">
+                    <label for="new-username">Username:</label>
+                    <input type="text" id="new-username" name="username" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-password">Password:</label>
+                    <input type="password" id="new-password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn">Register</button>
+                <p class="switch-form">Already have an account? <a href="#" onclick="showLogin()">Login here</a></p>
+            </form>
+        </div>
     </div>
+
+    <script>
+        function showRegister() {
+            document.getElementById('login-form').classList.remove('active');
+            document.getElementById('register-form').classList.add('active');
+        }
+
+        function showLogin() {
+            document.getElementById('register-form').classList.remove('active');
+            document.getElementById('login-form').classList.add('active');
+        }
+    </script>
 </body>
 </html>
