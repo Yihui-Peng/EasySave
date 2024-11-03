@@ -9,7 +9,7 @@ class User(db.Model):
     username = db.Column(db.String(100), nullable=False, unique=True)
     emailadress = db.Column(db.String(150), nullable=False)
     password = db.Column(db.String(200), nullable=False)
-    create_at = db.Colum(db.DateTime, default=db.func.current_timestamp())
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
     spendings = db.relationship('StudentSpending', backref='user', lazy=True)
