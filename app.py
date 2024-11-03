@@ -1,10 +1,22 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import os
+from database import db, StudentSpending
+import pandas as pd
 from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 app.config['UPLOAD_FOLDER'] = "static/profile_pictures"
+
+#database connection
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///D:/git/repository/my-awesome-project/instance/data.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()  # 创建所有表
+
+
 
 @app.route('/')
 def home():
@@ -70,6 +82,13 @@ def userProfile():
 def page_not_found(e):
     return render_template('404.html'), 404
 
+@app.route('/data')
+def get_data():
+    with app.app_context():
+        data = StudentSpending.query.all()
+    if not data:
+        return "No data found in the database."
+    return '<br>'.join([f"Age: {d.age}, Gender: {d.gender}, Year: {d.year_in_school}, Major: {d.major}, Monthly Income: {d.monthly_income}" for d in data])
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True)    
