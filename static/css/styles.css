@@ -90,6 +90,6 @@ button:hover {
 }
 
 button:active {
-    background-color: #004080; 
+    background-color: #004080;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) inset;
 }

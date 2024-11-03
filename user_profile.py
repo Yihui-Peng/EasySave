@@ -1,5 +1,7 @@
 import os
 from werkzeug.utils import secure_filename
+from flask import current_app
+import time  # Import time for unique filenames
 
 # Store only the filename
 default_picture_filename = "default_picture.png"
@@ -12,7 +14,6 @@ user_data = {
 }
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-UPLOAD_FOLDER = 'static/profile_pictures'
 
 def allowed_file(filename):
     """Check if a file has an allowed extension."""
@@ -32,12 +33,14 @@ def update_profile_picture(file):
     """Save a new profile picture and update the user's profile picture data."""
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        unique_filename = f"{int(time.time())}_{filename}"  # Append timestamp to filename
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        filepath = os.path.join(upload_folder, unique_filename)
 
         # Save the file
         file.save(filepath)
-        user_data['profile_picture'] = filename  # Store only the filename
-        return True, filename
+        user_data['profile_picture'] = unique_filename  # Store the unique filename
+        return True, unique_filename
     return False, None
 
 def get_user():
