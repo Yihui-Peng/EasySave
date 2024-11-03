@@ -1,13 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request
 import os
 import time  # Import the time module
 from user_profile import (
-    get_user,
-    update_email,
-    update_nickname,
-    update_profile_picture,
-    allowed_file,
-    default_picture_filename
+    get_user, handle_user_profile_update
 )
 
 app = Flask(__name__)
@@ -45,44 +40,8 @@ def setting():
 @app.route('/userProfile', methods=['GET', 'POST'])
 def userProfile():
     if request.method == 'POST':
-        form_type = request.form.get('form_type')
-
-        if form_type == 'upload_picture':
-            # Upload profile picture
-            file = request.files.get('profile_picture')
-            if file and allowed_file(file.filename):
-                success, filename = update_profile_picture(file)
-                if success:
-                    flash('Upload success!', 'success')
-                else:
-                    flash('Upload failed!', 'danger')
-            else:
-                flash('Upload a valid file!', 'warning')
-
-        elif form_type == 'revert_picture':
-            # Revert to Default Picture
-            user = get_user()
-            user['profile_picture'] = default_picture_filename
-            flash('Profile picture has been reverted to the default.', 'info')
-
-        elif form_type == 'update_profile':
-            # Update user data
-            name = request.form.get('name')
-            email = request.form.get('email')
-            nickname = request.form.get('nickname')
-
-            user = get_user()
-            if name:
-                user['name'] = name
-            if email:
-                update_email(email)
-            if nickname:
-                update_nickname(nickname)
-
-            flash('Profile information updated successfully!', 'success')
-
-        # After handling POST, redirect to the same route to perform a GET request
-        return redirect(url_for('userProfile'))
+        # Delegate form processing to user_profile.py
+        return handle_user_profile_update(request)
 
     # For GET requests, render the template and pass the time module
     user = get_user()
