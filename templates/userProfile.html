@@ -4,8 +4,8 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4 text-center">User Profile</h2>
-    <p class="text-center">View and update your profile information below.</p>
+    <h2 class="mb-3 text-center">User Profile</h2>
+    <p class="text-center text-muted mb-5">View and update your profile information below.</p>
 
     <!-- Feedback Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -21,87 +21,106 @@
       {% endif %}
     {% endwith %}
 
-    <div class="row row-cols-1 row-cols-md-2 g-4 mt-4">
-    <!-- Profile Info -->
-    <div class="col d-flex">
-        <div class="card shadow-sm h-100 w-100">
-            <div class="card-body text-center">
-                <h5 class="card-title mb-3">Profile Picture</h5>
-
-                <!-- Profile Picture -->
-                <img src="{{ url_for('static', filename='profile_pictures/' + user.profile_picture) }}?t={{ time.time() }}"
-                     alt="Profile Picture" class="rounded-circle mb-4 object-fit-cover" style="width: 150px; height: 150px;">
-
-                <!-- Form to Upload New Profile Picture -->
-                <form action="{{ url_for('userProfile') }}" method="post" enctype="multipart/form-data" class="mb-3">
-                    <input type="hidden" name="form_type" value="upload_picture">  <!-- Hidden field to identify form -->
-                    <div class="mb-3">
-                        <label for="profile_picture" class="form-label fw-bold">Change Profile Picture:</label>
-                        <input type="file" name="profile_picture" id="profile_picture" accept="image/*"
-                               class="form-control form-control-lg mt-2">
-                    </div>
-                    <button type="submit" class="btn btn-success btn-lg w-100">
-                        <i class="bi bi-upload me-2"></i> Upload Picture
-                    </button>
-                </form>
-
-                <!-- Revert Button -->
-                <form action="{{ url_for('userProfile') }}" method="post">
-                    <input type="hidden" name="form_type" value="revert_picture">  <!-- Hidden field to identify form -->
-                    <button type="submit" class="btn btn-warning btn-lg w-100">
-                        <i class="bi bi-arrow-counterclockwise me-2"></i> Revert to Default Picture
-                    </button>
-                </form>
+    <!-- Recap Section -->
+    <div class="card mb-5 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title fw-bold mb-4 text-center">Profile Summary</h5>
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <img src="{{ url_for('static', filename='profile_pictures/' + user.profile_picture) }}?t={{ time.time() }}"
+                         alt="Profile Picture" class="rounded-circle mb-3" style="width: 120px; height: 120px;">
+                </div>
+                <div class="col-md-8">
+                    <p><strong>Name:</strong> {{ user.name }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Nickname:</strong> {{ user.nickname }}</p>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#editSections" aria-expanded="false" aria-controls="editSections">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- User Details -->
-    <div class="col d-flex">
-        <div class="card shadow-sm h-100 w-100">
-            <div class="card-body">
-                <h5 class="card-title mb-4">User Information</h5>
-                <form action="{{ url_for('userProfile') }}" method="post">
-                    <input type="hidden" name="form_type" value="update_profile">  <!-- Hidden field to identify form -->
-                    <!-- Name -->
-                    <div class="form-group mb-4">
-                        <label for="name" class="form-label fw-bold">Name:</label>
-                        <input type="text" name="name" id="name" value="{{ user.name }}"
-                               required class="form-control form-control-lg">
-                    </div>
+    <!-- Editable Sections -->
+    <div class="collapse" id="editSections">
+        <div class="row g-5">
+            <!-- Profile Picture Card -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold mb-4">Profile Picture</h5>
+                        <!-- Current Profile Picture -->
+                        <img src="{{ url_for('static', filename='profile_pictures/' + user.profile_picture) }}?t={{ time.time() }}"
+                             alt="Profile Picture" class="rounded-circle mb-4" style="width: 150px; height: 150px;">
+                        <!-- Form to Upload New Profile Picture -->
+                        <form action="{{ url_for('userProfile') }}" method="post" enctype="multipart/form-data" class="mb-3">
+                            <input type="hidden" name="form_type" value="upload_picture">
+                            <div class="mb-3">
+                                <label for="profile_picture" class="form-label fw-bold">Change Profile Picture:</label>
+                                <input type="file" name="profile_picture" id="profile_picture" accept="image/*"
+                                       class="form-control">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="bi bi-upload me-2"></i> Upload Picture
+                            </button>
+                        </form>
 
-                    <!-- Email -->
-                    <div class="form-group mb-4">
-                        <label for="email" class="form-label fw-bold">Email:</label>
-                        <input type="email" name="email" id="email" value="{{ user.email }}"
-                               required class="form-control form-control-lg">
+                        <!-- Revert to Default Picture Button -->
+                        <form action="{{ url_for('userProfile') }}" method="post">
+                            <input type="hidden" name="form_type" value="revert_picture">
+                            <button type="submit" class="btn btn-warning w-100">
+                                <i class="bi bi-arrow-counterclockwise me-2"></i> Revert to Default Picture
+                            </button>
+                        </form>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Nickname -->
-                    <div class="form-group mb-4">
-                        <label for="nickname" class="form-label fw-bold">Nickname:</label>
-                        <input type="text" name="nickname" id="nickname" value="{{ user.nickname }}"
-                               required class="form-control form-control-lg">
+            <!-- User Information Card -->
+            <div class="col-md-6 col-lg-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold mb-4 text-center">User Information</h5>
+                        <form action="{{ url_for('userProfile') }}" method="post">
+                            <input type="hidden" name="form_type" value="update_profile">
+                            <!-- Name -->
+                            <div class="mb-4">
+                                <label for="name" class="form-label fw-bold">Name:</label>
+                                <input type="text" name="name" id="name" value="{{ user.name }}"
+                                       class="form-control" required>
+                            </div>
+                            <!-- Email -->
+                            <div class="mb-4">
+                                <label for="email" class="form-label fw-bold">Email:</label>
+                                <input type="email" name="email" id="email" value="{{ user.email }}"
+                                       class="form-control" required>
+                            </div>
+                            <!-- Nickname -->
+                            <div class="mb-4">
+                                <label for="nickname" class="form-label fw-bold">Nickname:</label>
+                                <input type="text" name="nickname" id="nickname" value="{{ user.nickname }}"
+                                       class="form-control" required>
+                            </div>
+                            <!-- Update Button -->
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-pencil-square me-2"></i> Update Profile
+                            </button>
+                        </form>
                     </div>
-
-                    <!-- Update Button -->
-                    <button type="submit" class="btn btn-primary btn-lg w-100">
-                        <i class="bi bi-pencil-square me-2"></i> Update Profile
-                    </button>
-                </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Bootstrap Icons -->
+<!-- Bootstrap CSS and Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-<!-- Initialize Bootstrap Tooltips -->
-<script>
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
-</script>
+<!-- Bootstrap JS Bundle (includes Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 {% endblock %}

@@ -3,7 +3,6 @@ from werkzeug.utils import secure_filename
 from flask import current_app, flash, redirect, url_for
 import time  # Import time for unique filenames
 
-# Store only the filename
 default_picture_filename = "default_picture.png"
 
 user_data = {
