@@ -6,9 +6,9 @@ import time  # Import time for unique filenames
 default_picture_filename = "default_picture.png"
 
 user_data = {
-    "name": "John Doe",
-    "email": "jh@example.com",
-    "nickname": "JH",
+    "name": "John Example",
+    "email": "je@example.com",
+    "nickname": "JE",
     "profile_picture": default_picture_filename
 }
 
