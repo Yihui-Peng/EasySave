@@ -68,3 +68,28 @@ nav li a.active {
         width: 100%; /* Full-width links */
     }
 }
+
+button {
+    padding: 10px;
+    margin-top: 5px;
+    width: auto;
+    min-width: 150px;
+    max-width: 300px;
+    box-sizing: border-box;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    background-color: var(--accent-color);
+    color: black;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+button:hover {
+    background-color: #4da8ff;
+    transform: translateY(-2px);
+     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+button:active {
+    background-color: #004080; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) inset;
+}
