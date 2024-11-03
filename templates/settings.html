@@ -1,8 +1,147 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Settings System</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; }
+        .option { cursor: pointer; margin: 5px 0; }
+        .hidden { display: none; }
+        .back { cursor: pointer; color: blue; text-decoration: underline; }
+    </style>
+</head>
+<body>
 
-{% block title %}Setting{% endblock %}
+    <h1>Settings Menu</h1>
+    <div id="menu" class="section">
+        <div class="option" onclick="selectLanguage()">1: Select Language</div>
+        <div class="option" onclick="accountSecurity()">2: Account Security</div>
+        <div class="option" onclick="colorSetting()">3: Color Setting</div>
+        <div class="option" onclick="signOut()">4: Sign Out</div>
+        <div class="option" onclick="switchAccount()">5: Switch Account</div>
+        <div class="option" onclick="companyInfo()">6: Company Info</div>
+        <div class="option" onclick="exitSystem()">0: Exit</div>
+    </div>
 
-{% block content %}
-    <h2>Welkom</h2>
-    <p>This is setting page.</p>
-{% endblock %}
+    <div id="language-section" class="section hidden">
+        <h2>Select Language</h2>
+        <div class="option" onclick="displayMessage('Language selected: English')">1: English</div>
+        <div class="option" onclick="displayMessage('Language selected: Dutch')">2: Dutch</div>
+        <div class="option" onclick="displayMessage('Language selected: Chinese')">3: Chinese</div>
+        <div class="back" onclick="goBack()">Back to Menu</div>
+    </div>
+
+    <div id="account-section" class="section hidden">
+        <h2>Account Security</h2>
+        <div class="option" onclick="displayMessage('Selected: Username')">1: Username</div>
+        <div class="option" onclick="displayMessage('Selected: ID')">2: ID</div>
+        <div class="option" onclick="displayMessage('Selected: Phone Number')">3: Phone Number</div>
+        <div class="option" onclick="changePassword()">4: Password</div>
+        <div class="option" onclick="displayMessage('Selected: More Settings')">5: More Settings</div>
+        <div class="back" onclick="goBack()">Back to Menu</div>
+    </div>
+
+    <div id="color-section" class="section hidden">
+        <h2>Color Setting</h2>
+        <div class="option" onclick="displayMessage('Background set to Black')">1: Black</div>
+        <div class="option" onclick="displayMessage('Background set to White')">2: White</div>
+        <div class="back" onclick="goBack()">Back to Menu</div>
+    </div>
+
+    <div id="signout-section" class="section hidden">
+        <h2>Sign Out</h2>
+        <div class="option" onclick="displayMessage('Signed out successfully')">1: Yes</div>
+        <div class="option" onclick="displayMessage('Sign out canceled')">2: No</div>
+        <div class="back" onclick="goBack()">Back to Menu</div>
+    </div>
+
+    <div id="switch-account-section" class="section hidden">
+        <h2>Switch Account</h2>
+        <label>Username: <input type="text" id="new-username"></label><br>
+        <label>Password: <input type="password" id="new-password"></label><br>
+        <button onclick="switchAccountConfirm()">Switch Account</button>
+        <div class="back" onclick="goBack()">Back to Menu</div>
+    </div>
+
+    <div id="company-section" class="section hidden">
+        <h2>Company Info</h2>
+        <p>Company: Example Corp</p>
+        <p>Address: 1234 Innovation Drive</p>
+        <p>Email: contact@example.com</p>
+        <div class="back" onclick="goBack()">Back to Menu</div>
+    </div>
+
+    <script>
+        function hideAllSections() {
+            document.getElementById("menu").classList.add("hidden");
+            document.getElementById("language-section").classList.add("hidden");
+            document.getElementById("account-section").classList.add("hidden");
+            document.getElementById("color-section").classList.add("hidden");
+            document.getElementById("signout-section").classList.add("hidden");
+            document.getElementById("switch-account-section").classList.add("hidden");
+            document.getElementById("company-section").classList.add("hidden");
+        }
+
+        function goBack() {
+            hideAllSections();
+            document.getElementById("menu").classList.remove("hidden");
+        }
+
+        function selectLanguage() {
+            hideAllSections();
+            document.getElementById("language-section").classList.remove("hidden");
+        }
+
+        function accountSecurity() {
+            hideAllSections();
+            document.getElementById("account-section").classList.remove("hidden");
+        }
+
+        function colorSetting() {
+            hideAllSections();
+            document.getElementById("color-section").classList.remove("hidden");
+        }
+
+        function signOut() {
+            hideAllSections();
+            document.getElementById("signout-section").classList.remove("hidden");
+        }
+
+        function switchAccount() {
+            hideAllSections();
+            document.getElementById("switch-account-section").classList.remove("hidden");
+        }
+
+        function companyInfo() {
+            hideAllSections();
+            document.getElementById("company-section").classList.remove("hidden");
+        }
+
+        function exitSystem() {
+            alert("Exiting settings system.");
+            window.close(); // Note: Only works in certain browsers
+        }
+
+        function changePassword() {
+            let currentPassword = prompt("Please enter your current password:");
+            if (currentPassword === "password123") {
+                let newPassword = prompt("Enter your new password:");
+                displayMessage("Password changed successfully!");
+            } else {
+                displayMessage("Incorrect password. Try again.");
+            }
+        }
+
+        function switchAccountConfirm() {
+            const username = document.getElementById("new-username").value;
+            displayMessage(`Switched to account ${username}.`);
+        }
+
+        function displayMessage(message) {
+            alert(message);
+            goBack();
+        }
+    </script>
+</body>
+</html>

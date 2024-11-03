@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Survey</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+</head>
+<body>
+    <button id="openSurvey">Financial Survey</button>
+
+    <div id="surveyDialog" title="Financial Survey" style="display: none;">
+        <form id="financialSurveyForm">
+            <!-- Question 1 -->
+            <p>1. Do you have any regular income? (maybe part-time job)</p>
+            <label><input type="radio" name="regularIncome" value="yes" required> Yes</label>
+            <label><input type="radio" name="regularIncome" value="no" required> No</label>
+            <div id="incomeAmount" style="display: none;">
+                <label>Enter the amount of regular income: <input type="number" name="incomeAmount"></label>
+            </div>
+
+            <!-- Question 2 -->
+            <p>2. What about your source of living expenses? (Enter amount and interval)</p>
+            <label>Amount: <input type="number" name="livingExpensesAmount" required></label>
+            <label>Interval: 
+                <select name="livingExpensesInterval" required>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </label>
+
+            <!-- Question 3 -->
+            <p>3. Are you currently in the habit of saving?</p>
+            <select name="savingHabit" required>
+                <option value="No savings habit">No savings habit</option>
+                <option value="Save less than 100 per month">Save less than 100 per month</option>
+                <option value="Save 100-500 per month">Save 100-500 per month</option>
+                <option value="Save more than 500 per month">Save more than 500 per month</option>
+            </select>
+
+            <!-- Question 4 -->
+            <p>4. Do you want to set a generic savings goal? (per month)</p>
+            <label><input type="radio" name="savingsGoal" value="yes" required> Yes</label>
+            <label><input type="radio" name="savingsGoal" value="no" required> No</label>
+            <div id="savingsGoalAmount" style="display: none;">
+                <label>Enter your monthly savings goal: <input type="number" name="goalAmount"></label>
+            </div>
+
+            <!-- Question 5 -->
+            <p>5. In the last three months, what was your average monthly spending?</p>
+            <label>Amount: <input type="number" name="averageSpending" required></label>
+
+            <!-- Question 6 -->
+            <p>6. Please enter your financial records for the past month</p>
+            <label><input type="checkbox" id="skipFinancialRecords"> Skip</label>
+            <div id="financialRecords" style="display: none;">
+                <button type="button" id="addRecord">Add Record</button>
+                <div id="recordsContainer"></div>
+            </div>
+
+            <br><br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+    <script>
+        $(function () {
+            $("#openSurvey").click(function () {
+                $("#surveyDialog").dialog({
+                    width: 500,
+                    modal: true
+                });
+            });
+
+            $("input[name='regularIncome']").change(function () {
+                if ($(this).val() === "yes") {
+                    $("#incomeAmount").show();
+                } else {
+                    $("#incomeAmount").hide();
+                }
+            });
+
+            $("input[name='savingsGoal']").change(function () {
+                if ($(this).val() === "yes") {
+                    $("#savingsGoalAmount").show();
+                } else {
+                    $("#savingsGoalAmount").hide();
+                }
+            });
+
+            $("#skipFinancialRecords").change(function () {
+                if ($(this).is(":checked")) {
+                    $("#financialRecords").hide();
+                } else {
+                    $("#financialRecords").show();
+                }
+            });
+
+            $("#addRecord").click(function () {
+                const recordHtml = `
+                    <div class="record">
+                        <label>Type: 
+                            <select name="recordType">
+                                <option value="Income">Income</option>
+                                <option value="Expense">Expense</option>
+                            </select>
+                        </label>
+                        <label>Date: <input type="date" name="recordDate" required></label>
+                        <label>Category: 
+                            <select name="recordCategory">
+                                <option value="Education">Education</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Food">Food</option>
+                            </select>
+                        </label>
+                        <label>Amount: <input type="number" name="recordAmount" required></label>
+                        <button type="button" class="removeRecord">Remove</button>
+                        <br><br>
+                    </div>
+                `;
+                $("#recordsContainer").append(recordHtml);
+            });
+
+            $(document).on("click", ".removeRecord", function () {
+                $(this).closest(".record").remove();
+            });
+
+            $("#financialSurveyForm").submit(function (event) {
+                event.preventDefault();
+                alert("Thank you for completing the survey!");
+                console.log($(this).serializeArray());
+                $("#surveyDialog").dialog("close");
+            });
+        });
+    </script>
+</body>
+</html>
