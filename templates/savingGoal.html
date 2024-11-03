@@ -3,6 +3,56 @@
 {% block title %}Saving Goal{% endblock %}
 
 {% block content %}
-    <h2>Welkom</h2>
-    <p>This is saving goal page.</p>
+    <h2>Welcome</h2>
+    <p>This is the saving goal page.</p>
+
+    <form action="/add_goal" method="POST">
+        <label for="amount">Amount:</label>
+        <input type="text" id="amount" name="amount" required><br><br>
+
+        <label for="start-year">Start Year:</label>
+        <input type="text" id="start-year" name="start_year" size="5" required>
+        <label for="start-month">Month:</label>
+        <select id="start-month" name="start_month" required>
+            <option value="">Select</option>
+            {% for i in range(1, 13) %}
+                <option value="{{ i }}">{{ i }}</option>
+            {% endfor %}
+        </select>
+        <label for="start-day">Day:</label>
+        <input type="text" id="start-day" name="start_day" size="5" required><br><br>
+
+        <label for="end-year">End Year:</label>
+        <input type="text" id="end-year" name="end_year" size="5" required>
+        <label for="end-month">Month:</label>
+        <select id="end-month" name="end_month" required>
+            <option value="">Select</option>
+            {% for i in range(1, 13) %}
+                <option value="{{ i }}">{{ i }}</option>
+            {% endfor %}
+        </select>
+        <label for="end-day">Day:</label>
+        <input type="text" id="end-day" name="end_day" size="5" required><br><br>
+
+        <label for="progress">Progress:</label>
+        <select id="progress" name="progress" required>
+            <option value="">Select</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="finished">Finished</option>
+        </select><br><br>
+
+        <div id="progress-input">
+            <label for="progress-amount">Progress Amount:</label>
+            <input type="text" id="progress-amount" name="progress_amount" required><br><br>
+        </div>
+
+        <button type="submit">Add Goal</button>
+    </form>
+
+    <h3>Goals:</h3>
+    <ul>
+        {% for goal in goals %}
+            <li>Goal: ${{ goal.amount }} | Progress: {{ goal.progress }} | Progress Amount: {{ goal.progress_amount }}</li>
+        {% endfor %}
+    </ul>
 {% endblock %}
