@@ -16,6 +16,7 @@ def import_csv_to_db(csv_file):
     with app.app_context():
         for index, row in df.iterrows():
             new_data = StudentSpending(
+                user_id=None,
                 age=row['age'],
                 gender=row['gender'],
                 year_in_school=row['year_in_school'],
