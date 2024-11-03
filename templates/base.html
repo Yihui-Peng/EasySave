@@ -1,31 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{% block title %}My Website{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Financial Planner{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    {% block styles %} {% endblock %}
+
+    {% block styles %}{% endblock %}
 </head>
 <body>
+    <!-- Navbar -->
     <header>
-        <h1>Student Financial Planner</h1>
-        <nav>
-            <ul>
-                <li><a href="/" class="{{ 'active' if active_page == 'home' else '' }}">Home</a></li>
-                <li><a href="/newSpending" class="{{ 'active' if active_page == 'newSpending' else '' }}">Add new spending</a></li>
-                <li><a href="/savingGoal" class="{{ 'active' if active_page == 'savingGoal' else '' }}">Saving Goal</a></li>
-                <li><a href="/setting" class="{{ 'active' if active_page == 'setting' else '' }}">Setting</a></li>
-                <li><a href="/userProfile" class="{{ 'active' if active_page == 'userProfile' else '' }}">User Profile</a></li>
-            </ul>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">Student Financial Planner</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'newSpending' %}active{% endif %}" href="/newSpending">Add New Spending</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'savingGoal' %}active{% endif %}" href="/savingGoal">Saving Goal</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'setting' %}active{% endif %}" href="/setting">Settings</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'userProfile' %}active{% endif %}" href="/userProfile">User Profile</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </nav>
     </header>
 
-    <main>
+    <!-- Main Content -->
+    <main class="my-4">
         {% block content %}
         {% endblock %}
     </main>
 
+    <!-- Footer -->
     <footer>
-        <p> &copy; 2024</p>
+        <p>&copy; 2024 Student Financial Planner. All rights reserved.</p>
     </footer>
+
+    <!-- Bootstrap JS Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+
+    {% block scripts %}{% endblock %}
 </body>
 </html>

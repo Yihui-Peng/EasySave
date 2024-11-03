@@ -1,95 +1,140 @@
+/* Define CSS Variables for Colors and Fonts */
+:root {
+    --primary-color: #0d6efd; /* Bootstrap's primary blue */
+    --secondary-color: #6c757d; /* Bootstrap's secondary gray */
+    --accent-color: #198754; /* Bootstrap's success green */
+    --background-color: #f8f9fa; /* Light gray background */
+    --header-bg-color: #343a40; /* Darker header for contrast */
+    --header-text-color: #ffffff; /* White text in header */
+    --footer-bg-color: #343a40; /* Matching footer to header */
+    --footer-text-color: #ffffff; /* White text in footer */
+    --card-bg-color: #ffffff; /* White cards */
+    --card-border-color: #dee2e6; /* Light border for cards */
+    --button-hover-color: #0b5ed7; /* Darker blue on hover */
+    --button-active-color: #0a58ca; /* Even darker on active */
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern sans-serif font */
+}
+
+/* Apply Global Styles */
 body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    background-color: #f4f4f4;
+    font-family: var(--font-family);
+    background-color: var(--background-color);
     margin: 0; /* Remove default margin */
-}
-
-header {
-    background-color: #555; /* Lighter grey for the header */
-    color: white;
-    padding: 10px 20px; /* Padding around the header content */
-    display: flex; /* Use flexbox for layout */
-    justify-content: space-between; /* Space between elements */
-    align-items: center; /* Align items vertically */
-}
-
-h1 {
-    color: white; /* Light color for the title in the header */
-    margin: 0; /* Remove margin to ensure alignment */
-}
-
-nav ul {
-    list-style-type: none; /* Remove bullet points */
     padding: 0; /* Remove default padding */
-    margin: 0; /* Remove default margin */
-    display: flex; /* Flexbox layout for horizontal alignment */
-    background-color: #555; /* Same as header background */
 }
 
-nav li {
-    display: block; /* Better control for link styling */
+/* Header Styles */
+header {
+    background-color: var(--header-bg-color);
+    color: var(--header-text-color);
+    padding: 15px 30px;
 }
 
-nav li a {
-    display: block; /* Make the links fill their container */
-    color: white; /* White text color */
-    text-align: center; /* Center the text inside links */
-    padding: 10px 15px; /* Adjust padding for spacing around the text */
-    text-decoration: none; /* Remove underline from links */
-    transition: background-color 0.3s; /* Smooth transition for background color */
-    border-radius: 5px; /* Optional: rounded corners */
+/* Navbar Styles */
+.navbar {
+    background-color: var(--header-bg-color) !important; /* Ensure navbar matches header */
 }
 
-/* Hover Effect */
-nav li a:hover {
-    background-color: #ddd; /* Light background on hover */
-    color: #555; /* Dark text color on hover */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
 }
 
-nav li a.active {
-    background-color: #ddd; /* Light background for the active item */
-    color: #333; /* Dark text color for the active item */
-    border: none;
+.nav-link {
+    color: var(--header-text-color) !important;
+    transition: color 0.3s, background-color 0.3s;
 }
 
-/* Optional: Responsive Navigation */
-@media (max-width: 600px) {
-    header {
-        flex-direction: column; /* Stack header content vertically on small screens */
-    }
-
-    nav ul {
-        width: 100%; /* Full-width navigation */
-        justify-content: center; /* Center navigation items */
-    }
-
-    nav li {
-        width: 100%; /* Full-width links */
-    }
-}
-
-button {
-    padding: 10px;
-    margin-top: 5px;
-    width: auto;
-    min-width: 150px;
-    max-width: 300px;
-    box-sizing: border-box;
-    border: 1px solid #000000;
+.nav-link:hover,
+.nav-link:focus {
+    color: var(--primary-color) !important;
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 5px;
-    background-color: var(--accent-color);
-    color: black;
+}
+
+.nav-link.active {
+    color: var(--primary-color) !important;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+}
+
+/* Main Content Styles */
+main {
+    padding: 30px;
+}
+
+/* Footer Styles */
+footer {
+    background-color: var(--footer-bg-color);
+    color: var(--footer-text-color);
+    text-align: center;
+    padding: 15px 0;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+/* Card Styles */
+.card {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--card-border-color);
+    border-radius: 10px;
+}
+
+/* Button Styles */
+button.btn {
+    font-weight: bold;
+    border-radius: 5px;
     transition: background-color 0.3s, transform 0.2s;
 }
 
-button:hover {
-    background-color: #4da8ff;
-    transform: translateY(-2px);
-     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+button.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
-button:active {
-    background-color: #004080;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) inset;
+button.btn-primary:hover {
+    background-color: var(--button-hover-color);
+    border-color: var(--button-hover-color);
+}
+
+button.btn-primary:active {
+    background-color: var(--button-active-color);
+    border-color: var(--button-active-color);
+}
+
+button.btn-success {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+button.btn-success:hover {
+    background-color: #157347; /* Darker green on hover */
+    border-color: #146c43;
+}
+
+button.btn-warning {
+    background-color: #ffc107; /* Bootstrap's warning yellow */
+    border-color: #ffc107;
+}
+
+button.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+}
+
+/* Form Styles */
+form .form-label {
+    font-weight: bold;
+}
+
+.form-control {
+    border-radius: 5px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    header, footer {
+        text-align: center;
+    }
 }

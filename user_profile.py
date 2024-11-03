@@ -14,23 +14,28 @@ user_data = {
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
+
 def allowed_file(filename):
     """Check if a file has an allowed extension."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 def get_user():
     """Retrieve the user data."""
     return user_data
+
 
 def update_email(new_email):
     """Update the user's email."""
     user_data['email'] = new_email
     return True
 
+
 def update_nickname(new_nickname):
     """Update the user's nickname."""
     user_data['nickname'] = new_nickname
     return True
+
 
 def update_profile_picture(file):
     """Save a new profile picture and update the user's profile picture data."""
@@ -54,6 +59,7 @@ def update_profile_picture(file):
         user_data['profile_picture'] = unique_filename
         return True, unique_filename
     return False, None
+
 
 def handle_user_profile_update(request):
     """Handle the user profile update logic based on the form type."""
