@@ -3,6 +3,22 @@
 {% block title %}New Spending{% endblock %}
 
 {% block content %}
-    <h2>New Spending</h2>
-    <p>This is new spending page.</p>
+    <div class="new-spending">
+        <h2>Create New Spending</h2>
+        <form action="/submit-spending" method="post">
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="amount">Amount (€)</label>
+                <input type="number" id="amount" name="amount" class="form-control" placeholder="Enter the amount" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="category">Category</label>
+                <input type="text" id="category" name="category" class="form-control" placeholder="Enter the category" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="date">Spending Date</label>
+                <input type="date" id="date" name="date" class="form-control" lang="en" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
 {% endblock %}
