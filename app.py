@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 import os
+import time
 from import_database import import_csv_to_db
 from database import db, StudentSpending
 import pandas as pd
@@ -55,6 +56,9 @@ def savingGoal():
 def setting():
     return render_template('settings.html', active_page='setting')
 
+@app.route('/survey')
+def suvery():
+    return render_template('financial_survey_html_.html')
 
 @app.route('/userProfile', methods=['GET', 'POST'])
 def userProfile():
