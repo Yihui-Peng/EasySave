@@ -4,24 +4,23 @@ import time
 from import_database import import_csv_to_db
 from database import db, StudentSpending
 import pandas as pd
-from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename
-
+from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/profile_pictures')
 
 
-#database connection
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///D:/git/repository/my-awesome-project/instance/data.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db.init_app(app)
-
-if not os.path.exists("D:/git/repository/my-awesome-project/instance/data.db"):
-    with app.app_context():
-        db.create_all()  # 创建表
-        import_csv_to_db('student_spending.csv')  
-        print("Database and data initialized.")
+# #database connection
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/data.db'
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# db.init_app(app)
+#
+# if not os.path.exists("/instance/data.db"):
+#     with app.app_context():
+#         db.create_all()  # 创建表
+#         import_csv_to_db('student_spending.csv')
+#         print("Database and data initialized.")
 
 @app.route('/data')
 def get_data():
