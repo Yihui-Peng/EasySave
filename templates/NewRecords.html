@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}New Records{% endblock %}
+
+{% block content %}
+    <div class="new-records">
+        <h2>Create New Records</h2>
+        <form action="/submit-spending" method="post" onsubmit="return validateForm()">
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="amount">Amount (€)</label>
+                <input type="number" id="amount" name="amount" class="form-control" placeholder="Enter the amount" min="0" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="category-level-1">Category (Level 1)</label>
+                <select id="category-level-1" name="category-level-1" class="form-control" required onchange="updateSubcategories()">
+                    <option value="">Select a category</option>
+                    <option value="Necessities">Necessities</option>
+                    <option value="Flexible_spending">Flexible Spending</option>
+                    <option value="Others">Others</option>
+                    <option value="Disposable_income">Disposable Income</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="category-level-2">Category (Level 2)</label>
+                <select id="category-level-2" name="category-level-2" class="form-control" required disabled>
+                    <option value="">Select a subcategory</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="date">Spending Date</label>
+                <input type="date" id="date" name="date" class="form-control" lang="en" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+        </form>
+    </div>
+
+    <script>
+        function updateSubcategories() {
+            const level1 = document.getElementById("category-level-1").value;
+            const level2 = document.getElementById("category-level-2");
+            level2.innerHTML = "";
+            level2.disabled = false;
+
+            let options = [];
+            if (level1 === "Necessities") {
+                options = ["Tuition", "Housing", "Food", "Transportation"];
+            } else if (level1 === "Flexible_spending") {
+                options = ["Study_material", "Entertainment", "Technology", "Personal_care"];
+            } else if (level1 === "Others") {
+                options = ["Apparel", "travel", "others"];
+            } else if (level1 === "Disposable_income") {
+                options = ["living_expensees", "allowance", "income"];
+            } else {
+                level2.disabled = true;
+                return;
+            }
+
+            options.forEach(option => {
+                const opt = document.createElement("option");
+                opt.value = option;
+                opt.textContent = option;
+                level2.appendChild(opt);
+            });
+        }
+
+        function validateForm() {
+            const amount = document.getElementById("amount").value;
+            const level1 = document.getElementById("category-level-1").value;
+            const level2 = document.getElementById("category-level-2").value;
+            const date = document.getElementById("date").value;
+
+            if (amount === "" || level1 === "" || level2 === "" || date === "") {
+                alert("All fields must be filled out");
+                return false;
+            }
+
+            if (amount < 0) {
+                alert("Amount must be greater than or equal to 0");
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+{% endblock %}
