@@ -5,31 +5,40 @@
 {% block content %}
     <div class="new-records">
         <h2>Create New Records</h2>
-        <form action="/submit-spending" method="post" onsubmit="return validateForm()">
+
+        <!--  I'm not sure about the destination address for data submission, action="/submit-spending"   -->
+        <form action="/submit-spending" method="post" onsubmit="return validateForm()"> 
             <div class="form-group" style="margin-bottom: 20px;">
                 <label class="form-label" for="amount">Amount (€)</label>
                 <input type="number" id="amount" name="amount" class="form-control" placeholder="Enter the amount" min="0" required>
             </div>
+            
+            <!-- Dynamic changing, the change of the category will change the available choises of the subcategory -->
             <div class="form-group" style="margin-bottom: 20px;">
                 <label class="form-label" for="category-level-1">Category (Level 1)</label>
                 <select id="category-level-1" name="category-level-1" class="form-control" required onchange="updateSubcategories()">
                     <option value="">Select a category</option>
+                    <option value="Disposable_income">Disposable Income</option>
                     <option value="Necessities">Necessities</option>
                     <option value="Flexible_spending">Flexible Spending</option>
                     <option value="Others">Others</option>
-                    <option value="Disposable_income">Disposable Income</option>
                 </select>
             </div>
+
+            <!-- "disabled" ban the subcategory if users didn't choose the category-level-1 first -->
             <div class="form-group" style="margin-bottom: 20px;">
-                <label class="form-label" for="category-level-2">Category (Level 2)</label>
+                <label class="form-label" for="category-level-2">Subcategory (Level 2)</label>
                 <select id="category-level-2" name="category-level-2" class="form-control" required disabled>
                     <option value="">Select a subcategory</option>
                 </select>
             </div>
+
             <div class="form-group" style="margin-bottom: 20px;">
-                <label class="form-label" for="date">Spending Date</label>
+                <label class="form-label" for="date">Date</label>
                 <input type="date" id="date" name="date" class="form-control" lang="en" required>
             </div>
+
+            <!-- history.back() navigate users to the page they visited before, implement page return function -->
             <button type="submit" class="btn btn-primary">Submit</button>
             <button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
         </form>
@@ -48,9 +57,9 @@
             } else if (level1 === "Flexible_spending") {
                 options = ["Study_material", "Entertainment", "Technology", "Personal_care"];
             } else if (level1 === "Others") {
-                options = ["Apparel", "travel", "others"];
+                options = ["Apparel", "Travel", "Others"];
             } else if (level1 === "Disposable_income") {
-                options = ["living_expensees", "allowance", "income"];
+                options = ["living_expenses", "Allowance", "Income"];
             } else {
                 level2.disabled = true;
                 return;
