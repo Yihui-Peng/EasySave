@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox  # pop up the prompt box
 from tkcalendar import DateEntry  # date selection control
+from database import User, Spending
 
 # 创建窗口 Creating a window
 root = tk.Tk()
