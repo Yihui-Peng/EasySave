@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}New Records{% endblock %}
+
+{% block content %}
+    <div class="new-records">
+        <h2>Create New Records</h2>
+
+        <!--  I'm not sure about the destination address for data submission, action="/submit-spending"   -->
+        <form action="/submit-spending" method="post" onsubmit="return validateForm()"> 
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="amount">Amount (€)</label>
+                <input type="number" id="amount" name="amount" class="form-control" placeholder="Enter the amount" min="0" required>
+            </div>
+            
+            <!-- Dynamic changing, the change of the category will change the available choises of the subcategory -->
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="category-level-1">Category (Level 1)</label>
+                <select id="category-level-1" name="category-level-1" class="form-control" required onchange="updateSubcategories()">
+                    <option value="">Select a category</option>
+                    <option value="Disposable_income">Disposable Income</option>
+                    <option value="Necessities">Necessities</option>
+                    <option value="Flexible_spending">Flexible Spending</option>
+                    <option value="Others">Others</option>
+                </select>
+            </div>
+
+            <!-- "disabled" ban the subcategory if users didn't choose the category-level-1 first -->
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="category-level-2">Subcategory (Level 2)</label>
+                <select id="category-level-2" name="category-level-2" class="form-control" required disabled>
+                    <option value="">Select a subcategory</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="date">Date</label>
+                <input type="date" id="date" name="date" class="form-control" lang="en" required>
+            </div>
+
+            <!-- Note can be empty -->
+            <div class="form-group" style="margin-bottom:20px;">
+                <label class="form-label" for="note">Note</label>
+                <textarea id="note" name="note" class="form-control" placeholder="Enter your notes (optional)"></textarea>
+            </div>
+
+            <!-- history.back() navigate users to the page they visited before, implement page return function -->
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+        </form>
+    </div>
+
+    <script>
+        function updateSubcategories() {
+            /* To get the value of the option selected by the user in the level 1 category drop-down box */
+            /* To get the corresponding drop-down list of level 2 sub-categories */
+            const level1 = document.getElementById("category-level-1").value;
+            const level2 = document.getElementById("category-level-2");
+
+            /* Clear the previous option contents of the level 2 drop-down box */
+            level2.innerHTML = "";
+            /* level 2 drop-down box are disabled by default */ 
+            /* This code enables the level 2 drop-down box to enable users to select options */
+            level2.disabled = false;
+
+            /* Use options = [] to store level 2 options that are dynamically generated based on level 1 selection */
+            /* If users didn't choose meaningful options in level 1, the level 2 drop-down box will be banned */
+            let options = [];
+            if (level1 === "Necessities") {
+                options = ["Tuition", "Housing", "Food", "Transportation"];
+            } else if (level1 === "Flexible_spending") {
+                options = ["Study_material", "Entertainment", "Technology", "Personal_care"];
+            } else if (level1 === "Others") {
+                options = ["Apparel", "Travel", "Others"];
+            } else if (level1 === "Disposable_income") {
+                options = ["living_expenses", "Allowance", "Income"];
+            } else {
+                level2.disabled = true;
+                return;
+            }
+
+            /* iterate through the level 2 options array to generate the list of level 2 to drop-down box */
+            options.forEach(option => {
+                /* Dynamically generate the available options */
+                const opt = document.createElement("option");
+                /* this value will be submit to the database */
+                opt.value = option;
+                /* This used to display the text of the option on the box */
+                opt.textContent = option;
+                level2.appendChild(opt);
+            });
+        }
+
+        /* Check whether all the input of the form follow the rules */
+        function validateForm() {
+            const amount = document.getElementById("amount").value;
+            const level1 = document.getElementById("category-level-1").value;
+            const level2 = document.getElementById("category-level-2").value;
+            const date = document.getElementById("date").value;
+
+            if (amount === "" || level1 === "" || level2 === "" || date === "") {
+                alert("All fields must be filled out");
+                return false;
+            }
+
+            if (amount < 0) {
+                alert("Amount must be greater than or equal to 0");
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+{% endblock %}
