@@ -57,14 +57,15 @@ class Saving_Goal(db.Model):
     def __repr__(self):
         return f"Saving Goal: {self.saving_goal_id}"
     
-class Spending(db.Model):
-    __tablename__ = 'spending'
+class Records(db.Model):
+    __tablename__ = 'records'
 
-    spending = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
-    amount = db.Column(db.Float)
-    Datum = db.Column(db.DateTime)
-    Categorie = db.Column(db.String(200))
+    id = Column(Integer, primary_key=True)
+    amount = Column(Float, nullable=False)
+    category_level_1 = Column(String(50), nullable=False)
+    category_level_2 = Column(String(50), nullable=False)
+    date = Column(Date, nullable=False)
+    note = Column(String(255), nullable=True)
 
     def __repr__(self):
         return f"Saving Goal: {self.spending}"
