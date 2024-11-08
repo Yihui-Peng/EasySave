@@ -3,8 +3,7 @@ import os
 import time
 from sqlalchemy import inspect
 from import_database import initialize_database
-from database import db, StudentSpending, User, Saving_Goal, Spending
-import pandas as pd
+from database import db, Detail, User, Saving_Goal, Record
 from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
 
 app = Flask(__name__)
@@ -27,7 +26,7 @@ with app.app_context():
         print("Database and data initialized.")
     else:
         #Check the table exists or not 
-        if not StudentSpending.query.first():
+        if not Detail.query.first():
             initialize_database()
             print("Data imported into existing database.")
         else:
@@ -46,10 +45,10 @@ def get_data():
         user_info = f"Username: {user.username}, Email: {user.emailadress}, Gender: {user.gender}, Age: {user.age}, Year in School: {user.year_in_school}, Major: {user.major}"
         result.append(user_info)
 
-        spendings = StudentSpending.query.filter_by(user_id=user.user_id).all()
+        spendings = Detail.query.filter_by(user_id=user.user_id).all()
         if spendings:
             for spending in spendings:
-                spending_info = f" - Spending ID: {spending.spending_id}, Disposable Income: {spending.disposable_income}, Housing: {spending.housing}, Food: {spending.food}, Transportation: {spending.transportation}, Personal Care: {spending.personal_care}, Others: {spending.others}"
+                spending_info = f" - Spending ID: {spending.detail_id}, Disposable Income: {spending.disposable_income}, Housing: {spending.housing}, Food: {spending.food}, Transportation: {spending.transportation}, Personal Care: {spending.personal_care}, Others: {spending.others}"
                 result.append(spending_info)
         else:
             result.append(" - No spending records found.")
@@ -62,10 +61,10 @@ def get_data():
         else:
             result.append(" - No saving goals found.")
 
-        spending_records = Spending.query.filter_by(user_id=user.user_id).all()
+        spending_records = Record.query.filter_by(user_id=user.user_id).all()
         if spending_records:
             for record in spending_records:
-                record_info = f" - Spending Record ID: {record.spending}, Amount: {record.amount}, Date: {record.Datum}, Category: {record.Categorie}"
+                record_info = f" - Spending Record ID: {record.record_id}, Amount: {record.amount}, Date: {record.datum}, Category: {record.categorie}"
                 result.append(record_info)
         else:
             result.append(" - No spending records found.")
@@ -76,9 +75,10 @@ def get_data():
 
 @app.route('/')
 def home():
-    user = get_user()
-    user_name = user.get('name', 'Guest')
-    return render_template('index.html', active_page='home', user_name=user_name)
+    user = User.query.filter_by(user_id = 1001).first()
+    spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.datum.desc()).first()
+    savingGoal = Saving_Goal.query.filter_by(user_id = user.user_id).first()
+    return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal)
 
 @app.route('/login')
 def login():
@@ -87,7 +87,7 @@ def login():
 
 @app.route('/newSpending')
 def newSpending():
-    return render_template('newSpending.html', active_page='newSpending')
+    return render_template('newRecords.html', active_page='newSpending')
 
 
 @app.route('/savingGoal')

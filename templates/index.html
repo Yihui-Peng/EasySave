@@ -1,20 +1,22 @@
-{% extends "base.html" %}
+ {% extends "base.html" %}
 
 {% block title %}Home{% endblock %}
 {% block styles %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}"> {% endblock %}
 {% block content %}
-    <h2>Welcome, {{ user_name }}</h2>
+    <h2>Welcome, {{ user.username }}</h2>
     <p>This is the home page.</p>
 
     <div class="spending-summary">
         <div class="previous-spending">
             <h2>Previous Spending</h2>
-            <p id="prevSpending">666</p>
+            <p id="Spending_name">{{prev_spending.categorie + " " + prev_spending.datum.strftime('%Y-%m-%d')}}</p>
+            <p id="Spending_amount"> €{{prev_spending.amount}}</p>
+            <p id="Note">Note: {{prev_spending.note}}</p>
         </div>
         <div class="saving-goal">
             <h2>Saving Goal</h2>
-            <p id="saveGoal">666</p>
+            <canvas id="myPieChart" width="200" height="200"></canvas>
         </div>
         <div class="remaining-today">
             <h2>Today's Remaining</h2>
@@ -30,11 +32,60 @@
                 <li>Advice 3</li>
             </ul>
         </div>
-        <div class="new-spending">
+        <div class="new-records">
             <h2>New Spending</h2>
             <form action="" method="post">
                 <!-- Form inputs for adding new spending -->
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var ctx = document.getElementById('myPieChart').getContext('2d');
+            var used = parseFloat('{{ savingGoal.progress_amount | default(0) }}');
+            var total = parseFloat('{{ savingGoal.amount | default(1) }}');
+            var remaining = total - used;
+        
+            var myPieChart = new Chart(ctx, {
+                type: 'pie', // 图表类型
+                data: {
+                    labels: ['Used', 'Remaining'], // 数据标签
+                    datasets: [{
+                        data: [used, remaining], // 实际数据
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)', // 红色
+                            'rgba(54, 162, 235, 0.2)'  // 蓝色
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        datalabels: {  // 添加数据标签插件配置
+                            formatter: (value, context) => {
+                                let sum = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                let percentage = (value / sum * 100).toFixed(2) + "%"; // 计算百分比并格式化
+                                return percentage;
+                            },
+                            color: '#fff',
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
