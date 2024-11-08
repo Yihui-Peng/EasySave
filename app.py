@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, flash
 import os
 import time
 from sqlalchemy import inspect
@@ -32,6 +32,8 @@ with app.app_context():
         else:
             print("Database already initialized, no need to import CSV.")
 
+
+# 11111 question: we should make the formatbetween newRecords and get_data the same, and make sure user_id been used in the same way
 @app.route('/data')
 def get_data():
     with app.app_context():
@@ -85,9 +87,47 @@ def login():
     return render_template('login.html')
 
 
-@app.route('/newSpending')
-def newSpending():
-    return render_template('newRecords.html', active_page='newSpending')
+# newRecords part
+@app.route('/newRecords', methods=['GET', 'POST'])
+def newRecords():
+    if request.method == 'POST':
+        amount = request.form.get('amount')
+        category_level_1 = request.form.get('category-level-1')
+        category_level_2 = request.form.get('category-level-2')
+        date = request.form.get('date')
+        note = request.form.get('note')
+
+
+        # 11111 问题：将当前登录的用户的current_user_id使用为user_id，但前提是当前用户登录的current_user_id被正确储存，而且可以被这里调用。
+        # 11111 Problem: Use the current_user_id of the currently logged in user as user_id, but only if the current user logged in current_user_id is stored correctly and can be called here.
+        # if current_user.is_authenticated:
+        #     user_id = current_user.id
+        # else:
+        #     flash('You must be logged in to create a new record.', 'error')
+        #     return redirect(url_for('login'))
+
+
+
+        if not amount or not category_level_1 or not category_level_2 or not date:
+            flash('Please fill out all required fields', 'error')
+            return redirect(url_for('newRecords'))
+
+        new_record = Record(
+            amount=float(amount),
+            category_level_1=category_level_1,
+            category_level_2=category_level_2,
+            date=date,
+            note=note
+            user_id=user_id
+        )
+
+        db.session.add(new_record)
+        db.session.commit()
+
+        flash('New record added successfully', 'success')
+        return redirect(url_for('newRecords'))
+
+    return render_template('newRecords.html', active_page='newRecords')
 
 
 @app.route('/savingGoal')
@@ -114,9 +154,7 @@ def userProfile():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404
-
-
+    return render_template('404.html'), 404 
 
 if __name__ == "__main__":
     app.run(debug=True)    

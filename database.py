@@ -1,5 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 
+#  New adding, not sure if it is necessary
+from database import db
+from sqlalchemy import Column, Integer, Float, String, Date
+
+
 db = SQLAlchemy()
 
 class User(db.Model):
