@@ -4,6 +4,9 @@ import time
 from sqlalchemy import inspect
 from import_database import initialize_database
 from database import db, StudentSpending, User, Saving_Goal, Records
+
+# changed Spending to Records
+
 import pandas as pd
 from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
 
@@ -85,6 +88,7 @@ def login():
     return render_template('login.html')
 
 
+# Finished newRecords part
 @app.route('/newRecords', methods=['GET', 'POST'])
 def newSpending():
     if request.method == 'POST':
