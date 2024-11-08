@@ -1,7 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-
-#  New adding, not sure if it is necessary
-from database import db
 from sqlalchemy import Column, Integer, Float, String, Date
 
 
@@ -33,7 +30,9 @@ class Detail(db.Model):
 
     detail_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
-    disposable_income = db.Column(db.Float)
+    living_expense = db.Column(db.Float)
+    allowance = db.Column(db.Float)
+    income = db.Column(db.Float)
     tuition = db.Column(db.Float)
     housing = db.Column(db.Float)
     food = db.Column(db.Float)

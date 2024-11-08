@@ -34,7 +34,8 @@ def import_csv_to_db(csv_file):
 
                 studetnSpending_data = Detail(
                     user_id= user_data.user_id,
-                    disposable_income=row.get('monthly_income', 0.0) + row.get('financial_aid', 0.0),
+                    allowance = row.get('financial_aid', 0.0),
+                    income =row.get('monthly_income', 0.0),
                     tuition=row.get('tuition', 0.0),
                     housing=row.get('housing', 0.0),
                     food=row.get('food', 0.0),
@@ -61,8 +62,8 @@ def generate_test_data():
     db.session.commit()
 
     # Adding student spending data
-    spending1 = Detail(user_id=user1.user_id, disposable_income=500.0, tuition=2000.0, housing=800.0, food=300.0, transportation=100.0, books_supplies=150.0, entertainment=50.0, personal_care=30.0, technology=120.0, others=60.0, preferred_payment_method='Credit Card')
-    spending2 = Detail(user_id=user2.user_id, disposable_income=600.0, tuition=2500.0, housing=900.0, food=350.0, transportation=120.0, books_supplies=180.0, entertainment=70.0, personal_care=40.0, technology=150.0, others=80.0, preferred_payment_method='Debit Card')
+    spending1 = Detail(user_id=user1.user_id, living_expense = 800, allowance =70, income=500.0, tuition=2000.0, housing=800.0, food=300.0, transportation=100.0, books_supplies=150.0, entertainment=50.0, personal_care=30.0, technology=120.0, others=60.0, preferred_payment_method='Credit Card')
+    spending2 = Detail(user_id=user2.user_id, living_expense = 600, allowance =65, income=600.0, tuition=2500.0, housing=900.0, food=350.0, transportation=120.0, books_supplies=180.0, entertainment=70.0, personal_care=40.0, technology=150.0, others=80.0, preferred_payment_method='Debit Card')
     db.session.add_all([spending1, spending2])
     db.session.commit()
 

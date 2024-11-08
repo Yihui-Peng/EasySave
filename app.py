@@ -3,7 +3,7 @@ import os
 import time
 from sqlalchemy import inspect
 from import_database import initialize_database
-from database import db, Detail, User, Saving_Goal, Record
+from database import db, Detail, User, Saving_Goal, Record  
 from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
 
 app = Flask(__name__)
@@ -50,7 +50,11 @@ def get_data():
         spendings = Detail.query.filter_by(user_id=user.user_id).all()
         if spendings:
             for spending in spendings:
-                spending_info = f" - Spending ID: {spending.detail_id}, Disposable Income: {spending.disposable_income}, Housing: {spending.housing}, Food: {spending.food}, Transportation: {spending.transportation}, Personal Care: {spending.personal_care}, Others: {spending.others}"
+                income = spending.income if spending.income is not None else 0.0
+                living_expense = spending.living_expense if spending.living_expense is not None else 0.0
+                allowance = spending.allowance if spending.allowance is not None else 0.0
+                disposable_income = income + living_expense + allowance
+                spending_info = f" - Spending ID: {spending.detail_id}, Disposable Income: {disposable_income}, Housing: {spending.housing}, Food: {spending.food}, Transportation: {spending.transportation}, Personal Care: {spending.personal_care}, Others: {spending.others}"
                 result.append(spending_info)
         else:
             result.append(" - No spending records found.")
@@ -105,7 +109,7 @@ def newRecords():
         # else:
         #     flash('You must be logged in to create a new record.', 'error')
         #     return redirect(url_for('login'))
-
+        user_id = 1001
 
 
         if not amount or not category_level_1 or not category_level_2 or not date:
@@ -117,9 +121,9 @@ def newRecords():
             category_level_1=category_level_1,
             category_level_2=category_level_2,
             date=date,
-            note=note
+            note=note,
             user_id=user_id
-        )
+            )
 
         db.session.add(new_record)
         db.session.commit()
