@@ -1,5 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 
+#  New adding, not sure if it is necessary
+from database import db
+from sqlalchemy import Column, Integer, Float, String, Date
+
+
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -56,7 +61,9 @@ class Saving_Goal(db.Model):
 
     def __repr__(self):
         return f"Saving Goal: {self.saving_goal_id}"
-    
+
+   
+# Changed the spending to Records, finished the Records part
 class Records(db.Model):
     __tablename__ = 'records'
 
