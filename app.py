@@ -90,13 +90,24 @@ def login():
 
 # Finished newRecords part
 @app.route('/newRecords', methods=['GET', 'POST'])
-def newSpending():
+def newRecords():
     if request.method == 'POST':
         amount = request.form.get('amount')
         category_level_1 = request.form.get('category-level-1')
         category_level_2 = request.form.get('category-level-2')
         date = request.form.get('date')
         note = request.form.get('note')
+
+
+        # 11111 问题：将当前登录的用户的current_user_id使用为user_id，但前提是当前用户登录的current_user_id被正确储存，而且可以被这里调用。
+        # 11111 Problem: Use the current_user_id of the currently logged in user as user_id, but only if the current user logged in current_user_id is stored correctly and can be called here.
+        if current_user.is_authenticated:
+            user_id = current_user.id
+        else:
+            flash('You must be logged in to create a new record.', 'error')
+            return redirect(url_for('login'))
+
+
 
         if not amount or not category_level_1 or not category_level_2 or not date:
             flash('Please fill out all required fields', 'error')
@@ -108,6 +119,7 @@ def newSpending():
             category_level_2=category_level_2,
             date=date,
             note=note
+            user_id=user_id
         )
 
         db.session.add(new_record)
