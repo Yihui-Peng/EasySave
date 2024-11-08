@@ -63,7 +63,7 @@ class Saving_Goal(db.Model):
         return f"Saving Goal: {self.saving_goal_id}"
 
    
-# Changed the spending to Records, finished the Records part
+# Changed the spending to Records, the Records part is finished
 class Records(db.Model):
     __tablename__ = 'records'
 
