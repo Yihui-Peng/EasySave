@@ -1,9 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, flash
 import os
 import time
 from sqlalchemy import inspect
 from import_database import initialize_database
-from database import db, StudentSpending, User, Saving_Goal, Spending
+from database import db, StudentSpending, User, Saving_Goal, Records
 import pandas as pd
 from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
 
@@ -85,9 +85,34 @@ def login():
     return render_template('login.html')
 
 
-@app.route('/newSpending')
+@app.route('/newRecords', methods=['GET', 'POST'])
 def newSpending():
-    return render_template('newSpending.html', active_page='newSpending')
+    if request.method == 'POST':
+        amount = request.form.get('amount')
+        category_level_1 = request.form.get('category-level-1')
+        category_level_2 = request.form.get('category-level-2')
+        date = request.form.get('date')
+        note = request.form.get('note')
+
+        if not amount or not category_level_1 or not category_level_2 or not date:
+            flash('Please fill out all required fields', 'error')
+            return redirect(url_for('newRecords'))
+
+        new_record = Records(
+            amount=float(amount),
+            category_level_1=category_level_1,
+            category_level_2=category_level_2,
+            date=date,
+            note=note
+        )
+
+        db.session.add(new_record)
+        db.session.commit()
+
+        flash('New record added successfully', 'success')
+        return redirect(url_for('newRecords'))
+
+    return render_template('newRecords.html', active_page='newRecords')
 
 
 @app.route('/savingGoal')
