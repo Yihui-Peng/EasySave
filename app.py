@@ -36,6 +36,8 @@ with app.app_context():
         else:
             print("Database already initialized, no need to import CSV.")
 
+
+# 11111 question: we should make the formatbetween newRecords and get_data the same, and make sure user_id been used in the same way
 @app.route('/data')
 def get_data():
     with app.app_context():
