@@ -6,8 +6,7 @@
     <div class="new-records">
         <h2>Create New Records</h2>
 
-        <!--  I'm not sure about the destination address for data submission, action="/submit-spending"   -->
-        <form action="/submit-spending" method="post" onsubmit="return validateForm()"> 
+        <form action="/newRecords" method="post" onsubmit="return validateForm()"> 
             <div class="form-group" style="margin-bottom: 20px;">
                 <label class="form-label" for="amount">Amount (€)</label>
                 <input type="number" id="amount" name="amount" class="form-control" placeholder="Enter the amount" min="0" required>
