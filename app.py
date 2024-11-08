@@ -88,7 +88,7 @@ def login():
     return render_template('login.html')
 
 
-# Finished newRecords part
+# newRecords part
 @app.route('/newRecords', methods=['GET', 'POST'])
 def newRecords():
     if request.method == 'POST':
