@@ -10,6 +10,8 @@ class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
     nickname = db.Column(db.String(100),nullable=True)
+    averge_income = db.Column(db.Float)
+    averge_spending = db.Column(db.Float)
     emailadress = db.Column(db.String(150), nullable=True)
     password = db.Column(db.String(200), nullable=True)
     age = db.Column(db.Integer)
