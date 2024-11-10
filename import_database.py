@@ -40,7 +40,7 @@ def import_csv_to_db(csv_file):
                     housing=row.get('housing', 0.0),
                     food=row.get('food', 0.0),
                     transportation=row.get('transportation', 0.0),
-                    books_supplies=row.get('books_supplies', 0.0),
+                    study_materials=row.get('books_supplies', 0.0),
                     entertainment=row.get('entertainment', 0.0),
                     personal_care=row.get('personal_care', 0.0) + row.get('health_wellness', 0.0),
                     technology=row.get('technology', 0.0),

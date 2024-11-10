@@ -143,8 +143,84 @@ def savingGoal():
 def setting():
     return render_template('settings.html', active_page='setting')
 
-@app.route('/survey')
-def suvery():
+@app.route('/survey', methods=['GET', 'POST'])
+def survey():
+    if request.method == 'POST':
+        user_id = 777  # For testing, we use user_id 777
+
+        # Check if the skip checkbox is checked
+        skip = request.form.get('skipFinancialRecords', None)
+
+        if skip:
+            # Save the first and third question's answers to the User table
+            average_income = request.form.get('averageDisposableIncome', 0.0)
+            average_spending = request.form.get('averageSpending', 0.0)
+
+            user = User.query.filter_by(user_id=user_id).first()
+            if user:
+                user.average_income = average_income
+                user.average_spending = average_spending
+                db.session.commit()
+
+            return "Survey data (average income and average spending) has been saved successfully."
+        else:
+            # Save the second question's answer to the Saving_Goal table
+            saving_goal_amount = request.form.get('goalAmount', 0.0)
+            current_date = datetime.now()
+            start_datum = current_date
+            end_datum = current_date + timedelta(days=30)
+            saving_goal_id = f"{user_id}{current_date.strftime('%Y%m%d')}"
+
+            new_saving_goal = Saving_Goal(
+                saving_goal_id=saving_goal_id,
+                user_id=user_id,
+                amount=saving_goal_amount,
+                start_datum=start_datum,
+                end_datum=end_datum,
+                progress="In Progress",
+                progress_amount=0.0
+            )
+            db.session.add(new_saving_goal)
+
+            # Save the monthly financial records to the Detail table
+            current_month = datetime.now().month
+            current_year = datetime.now().year
+            months = []
+
+            for i in range(1, 4):
+                month = current_month - i
+                year = current_year
+                if month <= 0:
+                    month += 12
+                    year -= 1
+                months.append((month, year))
+
+            last_day_of_month = {
+                1: "01.31", 2: "02.28", 3: "03.31", 4: "04.30", 5: "05.31", 6: "06.30",
+                7: "07.31", 8: "08.31", 9: "09.30", 10: "10.31", 11: "11.30", 12: "12.31"
+            }
+
+            for month, year in months:
+                month_name = datetime(year, month, 1).strftime('%B')
+                detail_data = {
+                    'user_id': user_id,
+                    'datum': datetime.strptime(f"{year}-{month:02d}-{last_day_of_month[month].split('.')[1]}", "%Y-%m-%d")
+                }
+                for category in [
+                    "income", "allowance", "living_expense", "tuition", "housing", "food",
+                    "transportation", "study_materials", "entertainment", "personal_care",
+                    "technology", "apparel", "travel", "others"
+                ]:
+                    amount = request.form.get(f'{month_name}_{category.capitalize()}', 0.0)
+                    detail_data[category] = amount
+
+                new_detail = Detail(**detail_data)
+                db.session.add(new_detail)
+
+            db.session.commit()
+
+            return "Survey data (saving goal and spending details) have been saved successfully."
+
     return render_template('financial_survey_html_.html')
 
 @app.route('/userProfile', methods=['GET', 'POST'])
