@@ -193,7 +193,42 @@ def savingGoal():
 
 @app.route('/setting')
 def setting():
-    return render_template('settings.html', active_page='setting')
+    user_id = session.get('username')
+
+    if not user_id:
+        flash("You must be logged in to access settings.", "error")
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(user_id=user_id).first()
+
+    if request.method == 'POST':
+        data = request.get_json()
+        action = data.get('action')
+
+        if action == 'change_password':
+            current_password = data.get('current_password')
+            new_password = data.get('new_password')
+
+            if not user or not check_password_hash(user.password, current_password):
+                return jsonify(success=False, message="Incorrect current password."), 400
+
+            user.password = generate_password_hash(new_password)
+            db.session.commit()
+            return jsonify(success=True, message="Password updated successfully.")
+
+        else:
+            new_email = request.form.get('email')
+            new_nickname = request.form.get('nickname')
+
+            if user:
+                user.email = new_email
+                user.nickname = new_nickname
+                db.session.commit()
+                flash("Settings updated successfully.", "success")
+            else:
+                flash("User not found.", "error")
+
+    return render_template('settings.html', active_page='setting', user=user)
 
 @app.route('/survey', methods=['GET', 'POST'])
 def survey():

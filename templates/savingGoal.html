@@ -1,58 +1,269 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saving Goal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .goal-form input, .goal-form select, .goal-form button {
+            margin-bottom: 10px;
+            padding: 8px;
+        }
+        .goal-form label {
+            margin-right: 10px;
+        }
+        #goal-list {
+            margin-top: 20px;
+        }
+        #goal-details {
+            margin-top: 20px;
+        }
+        .selected {
+            background-color: #f0f0f0;
+        }
+        .goal-item {
+            display: flex;
+            align-items: center;
+            cursor: pointer; /* Indicate the item is clickable */
+        }
+        .goal-item input {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Saving Goal</h1>
 
-{% block title %}Saving Goal{% endblock %}
-
-{% block content %}
-    <h2>Saving Goal</h2>
-    <p>This is the saving goal page.</p>
-
-    <form action="/add_goal" method="POST">
+    <div class="goal-form">
+        <!-- Goal Amount -->
         <label for="amount">Amount:</label>
-        <input type="text" id="amount" name="amount" required><br><br>
+        <input type="number" id="amount" placeholder="Enter amount" required><br>
 
+        <!-- Start Date -->
         <label for="start-year">Start Year:</label>
-        <input type="text" id="start-year" name="start_year" size="5" required>
+        <input type="number" id="start-year" placeholder="YYYY" required>
         <label for="start-month">Month:</label>
-        <select id="start-month" name="start_month" required>
-            <option value="">Select</option>
-            {% for i in range(1, 13) %}
-                <option value="{{ i }}">{{ i }}</option>
-            {% endfor %}
+        <select id="start-month">
+            <option value="">Select Month</option>
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
         </select>
         <label for="start-day">Day:</label>
-        <input type="text" id="start-day" name="start_day" size="5" required><br><br>
+        <input type="number" id="start-day" placeholder="Day" required min="1"><br>
 
+        <!-- End Date -->
         <label for="end-year">End Year:</label>
-        <input type="text" id="end-year" name="end_year" size="5" required>
+        <input type="number" id="end-year" placeholder="YYYY" required>
         <label for="end-month">Month:</label>
-        <select id="end-month" name="end_month" required>
-            <option value="">Select</option>
-            {% for i in range(1, 13) %}
-                <option value="{{ i }}">{{ i }}</option>
-            {% endfor %}
+        <select id="end-month">
+            <option value="">Select Month</option>
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
         </select>
         <label for="end-day">Day:</label>
-        <input type="text" id="end-day" name="end_day" size="5" required><br><br>
+        <input type="number" id="end-day" placeholder="Day" required min="1"><br>
 
+        <!-- Progress -->
         <label for="progress">Progress:</label>
-        <select id="progress" name="progress" required>
-            <option value="">Select</option>
+        <select id="progress">
+            <option value="">Select Progress</option>
             <option value="ongoing">Ongoing</option>
             <option value="finished">Finished</option>
-        </select><br><br>
+        </select><br>
 
-        <div id="progress-input">
-            <label for="progress-amount">Progress Amount:</label>
-            <input type="text" id="progress-amount" name="progress_amount" required><br><br>
-        </div>
+        <!-- Progress Amount (Visible only when "Ongoing") -->
+        <label for="progress-amount" id="progress-amount-label" style="display:none;">Progress Amount:</label>
+        <input type="number" id="progress-amount" style="display:none;" placeholder="Progress amount"><br>
 
-        <button type="submit">Add Goal</button>
-    </form>
+        <button onclick="addGoal()">Add Goal</button>
+    </div>
 
-    <h3>Goals:</h3>
-    <ul>
-        {% for goal in goals %}
-            <li>Goal: ${{ goal.amount }} | Progress: {{ goal.progress }} | Progress Amount: {{ goal.progress_amount }}</li>
-        {% endfor %}
-    </ul>
-{% endblock %}
+    <div id="goal-list">
+        <h2>Goals</h2>
+        <ul id="goal-list-items"></ul>
+        <button onclick="deleteSelectedGoals()">Delete Selected Goals</button>
+        <button onclick="showGoalDetails()">Show Detailed Information</button>
+    </div>
+
+    <div id="goal-details" style="display:none;">
+        <h3>Goal Details</h3>
+        <p id="goal-detail-info"></p>
+    </div>
+
+    <script>
+        const goals = [];
+        let selectedGoalIndex = -1;
+
+        // Toggle progress amount visibility based on progress selection
+        document.getElementById('progress').addEventListener('change', function() {
+            const progress = this.value;
+            const progressAmountLabel = document.getElementById('progress-amount-label');
+            const progressAmount = document.getElementById('progress-amount');
+            if (progress === "ongoing") {
+                progressAmountLabel.style.display = "inline";
+                progressAmount.style.display = "inline";
+            } else {
+                progressAmountLabel.style.display = "none";
+                progressAmount.style.display = "none";
+            }
+        });
+
+        // Function to validate if the day is correct for the selected month and year
+        function validateDay(month, day, year) {
+            const daysInMonth = {
+                1: 31, 2: (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 29 : 28, // February leap year check
+                3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31
+            };
+            return day >= 1 && day <= daysInMonth[month];
+        }
+
+        // Add a new goal to the list
+        function addGoal() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const startYear = parseInt(document.getElementById('start-year').value);
+            const startMonth = parseInt(document.getElementById('start-month').value);
+            const startDay = parseInt(document.getElementById('start-day').value);
+            const endYear = parseInt(document.getElementById('end-year').value);
+            const endMonth = parseInt(document.getElementById('end-month').value);
+            const endDay = parseInt(document.getElementById('end-day').value);
+            const progress = document.getElementById('progress').value;
+            const progressAmount = parseFloat(document.getElementById('progress-amount').value);
+
+            // Validate input values
+            if (!amount || !startYear || !startMonth || !startDay || !endYear || !endMonth || !endDay) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            if (!validateDay(startMonth, startDay, startYear)) {
+                alert("Invalid start date. Please check the day for the selected month.");
+                return;
+            }
+
+            if (!validateDay(endMonth, endDay, endYear)) {
+                alert("Invalid end date. Please check the day for the selected month.");
+                return;
+            }
+
+            if (progress === "ongoing" && progressAmount >= amount) {
+                alert("Progress amount must be less than the goal amount.");
+                return;
+            }
+
+            const goal = {
+                amount,
+                start_date: `${startYear}-${String(startMonth).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`,
+                end_date: `${endYear}-${String(endMonth).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`,
+                progress,
+                progress_amount: progress === "ongoing" ? progressAmount : amount,
+            };
+
+            goals.push(goal);
+            updateGoalList();
+            clearFields();
+        }
+
+        // Update the goal list display
+        function updateGoalList() {
+            const list = document.getElementById('goal-list-items');
+            list.innerHTML = "";
+            goals.forEach((goal, index) => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('goal-item');
+
+                // Add a checkbox to each goal
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = 'goal-checkbox-' + index;
+                checkbox.onclick = function () { toggleGoalSelection(index, checkbox); };
+
+                // Display goal details in list item
+                const goalText = document.createElement('span');
+                goalText.textContent = `Goal: $${goal.amount} | Progress: ${goal.progress} | Progress Amount: ${goal.progress_amount}`;
+
+                listItem.appendChild(checkbox);
+                listItem.appendChild(goalText);
+                list.appendChild(listItem);
+            });
+        }
+
+        // Toggle selection of a goal
+        function toggleGoalSelection(index, checkbox) {
+            if (checkbox.checked) {
+                selectedGoalIndex = index;
+            } else {
+                selectedGoalIndex = -1;
+            }
+        }
+
+        // Show selected goal details
+        function showGoalDetails() {
+            if (selectedGoalIndex === -1) {
+                alert("Please select a goal first.");
+                return;
+            }
+
+            const goal = goals[selectedGoalIndex];
+            const goalDetails = document.getElementById('goal-detail-info');
+            goalDetails.innerHTML = `
+                <strong>Amount:</strong> $${goal.amount}<br>
+                <strong>Start Date:</strong> ${goal.start_date}<br>
+                <strong>End Date:</strong> ${goal.end_date}<br>
+                <strong>Progress:</strong> ${goal.progress}<br>
+                <strong>Progress Amount:</strong> ${goal.progress_amount}<br>
+            `;
+            document.getElementById('goal-details').style.display = 'block';
+        }
+
+        // Delete selected goal
+        function deleteSelectedGoals() {
+            if (selectedGoalIndex === -1) {
+                alert("Please select a goal to delete.");
+                return;
+            }
+
+            goals.splice(selectedGoalIndex, 1);
+            updateGoalList();
+            document.getElementById('goal-details').style.display = 'none';
+            selectedGoalIndex = -1;
+        }
+
+        // Clear the form fields
+        function clearFields() {
+            document.getElementById('amount').value = '';
+            document.getElementById('start-year').value = '';
+            document.getElementById('start-month').value = '';
+            document.getElementById('start-day').value = '';
+            document.getElementById('end-year').value = '';
+            document.getElementById('end-month').value = '';
+            document.getElementById('end-day').value = '';
+            document.getElementById('progress').value = '';
+            document.getElementById('progress-amount').value = '';
+        }
+    </script>
+</body>
+</html>
