@@ -1,7 +1,35 @@
-{% extends "base.html" %}
+{%extends "base.html" %}
 
 {% block title %}Home{% endblock %}
 {% block styles %}
+
+  <script>
+    function accountSecurity() {
+        hideAllSections();
+        document.getElementById("account-section").classList.remove("hidden");
+    }
+
+    function changePassword() {
+        const currentPassword = prompt("Enter your current password:");
+        const newPassword = prompt("Enter your new password:");
+
+        if (newPassword) {
+            fetch('/setting', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'change_password', current_password: currentPassword, new_password: newPassword })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => console.error('Error:', error));
+        } else {
+            alert("New password cannot be empty.");
+        }
+    }
+</script>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
