@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask, render_template, request, redirect, url_for, flash
 import os
 import time
@@ -134,9 +136,68 @@ def newRecords():
     return render_template('newRecords.html', active_page='newRecords')
 
 
-@app.route('/savingGoal')
-def savingGoal():
-    return render_template('savingGoal.html', active_page='savingGoal')
+#Adding saving goals
+@app.route('/saving_goal', methods=['GET', 'POST'])
+def show_saving_goal_page():
+    if request.method == 'POST':
+
+        amount = float(request.form.get('amount'))
+        start_year = int(request.form.get('start-year'))
+        start_month = int(request.form.get('start-month'))
+        start_day = int(request.form.get('start-day'))
+
+        end_year = int(request.form.get('end-year'))
+        end_month = int(request.form.get('end-month'))
+        end_day = int(request.form.get('end-day'))
+
+        progress = request.form.get('progress')
+
+        if progress == 'finished':
+            progress_amount = amount
+        else:
+            progress_amount = float(request.form.get('progress-amount'))
+
+
+        start_date = datetime(start_year, start_month, start_day)
+        end_date = datetime(end_year, end_month, end_day)
+
+        user_id = 1001
+
+
+        new_goal = Saving_Goal(
+            amount=amount,
+            start_datum=start_date,
+            end_datum=end_date,
+            progress=progress,
+            progress_amount= progress_amount,
+            user_id=user_id
+        )
+
+        db.session.add(new_goal)
+        db.session.commit()
+
+        flash('Saving Goal added successfully!', 'success')
+
+
+        return redirect(url_for('show_saving_goal_page'))
+
+
+    goals = Saving_Goal.query.all()
+    return render_template('savingGoal.html', active_page='savingGoal', goals=goals)
+
+
+@app.route('/delete_goal/<int:goal_id>', methods=['POST'])
+def delete_goal(goal_id):
+    goal = Saving_Goal.query.get(goal_id)
+    if goal:
+        db.session.delete(goal)
+        db.session.commit()
+        flash(f'Goal with ID {goal_id} has been deleted successfully!', 'success')
+    else:
+        flash('Goal not found!', 'danger')
+
+    return redirect(url_for('show_saving_goal_page'))
+
 
 
 @app.route('/setting')
@@ -177,6 +238,7 @@ def setting():
                 flash("User not found.", "error")
 
     return render_template('settings.html', active_page='setting', user=user)
+
 
 @app.route('/survey', methods=['GET', 'POST'])
 def survey():
