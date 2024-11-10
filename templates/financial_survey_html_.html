@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,52 +13,123 @@
     <button id="openSurvey">Financial Survey</button>
 
     <div id="surveyDialog" title="Financial Survey" style="display: none;">
-        <form id="financialSurveyForm">
-            <!-- Question 1 -->
-            <p>1. Do you have any regular income? (maybe part-time job)</p>
-            <label><input type="radio" name="regularIncome" value="yes" required> Yes</label>
-            <label><input type="radio" name="regularIncome" value="no" required> No</label>
-            <div id="incomeAmount" style="display: none;">
-                <label>Enter the amount of regular income: <input type="number" name="incomeAmount"></label>
-            </div>
+        <form id="financialSurveyForm" action="/survey" method="post">
+            <!-- Question 1 (Merged) -->
+            <p>1. What is your average monthly disposable income for the last three months (including living expenses, allowances, and income from part-time jobs and internships)?</p>
+            <label>Amount: <input type="number" name="averageDisposableIncome" min="0" required></label>
 
             <!-- Question 2 -->
-            <p>2. What about your source of living expenses? (Enter amount and interval)</p>
-            <label>Amount: <input type="number" name="livingExpensesAmount" required></label>
-            <label>Interval: 
-                <select name="livingExpensesInterval" required>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                </select>
-            </label>
-
-            <!-- Question 3 -->
-            <p>3. Are you currently in the habit of saving?</p>
-            <select name="savingHabit" required>
-                <option value="No savings habit">No savings habit</option>
-                <option value="Save less than 100 per month">Save less than 100 per month</option>
-                <option value="Save 100-500 per month">Save 100-500 per month</option>
-                <option value="Save more than 500 per month">Save more than 500 per month</option>
-            </select>
-
-            <!-- Question 4 -->
-            <p>4. Do you want to set a generic savings goal? (per month)</p>
+            <p>2. Do you want to set a savings goal for next month? </p>
             <label><input type="radio" name="savingsGoal" value="yes" required> Yes</label>
             <label><input type="radio" name="savingsGoal" value="no" required> No</label>
             <div id="savingsGoalAmount" style="display: none;">
-                <label>Enter your monthly savings goal: <input type="number" name="goalAmount"></label>
+                <label>Enter your monthly savings goal: <input type="number" name="goalAmount" required></label>
             </div>
 
-            <!-- Question 5 -->
-            <p>5. In the last three months, what was your average monthly spending?</p>
-            <label>Amount: <input type="number" name="averageSpending" required></label>
+            <!-- Question 3 -->
+            <p>3. In the last three months, what was your average monthly spending?</p>
+            <label>Amount: <input type="number" name="averageSpending" min="0" required></label>
 
-            <!-- Question 6 -->
-            <p>6. Please enter your financial records for the past month</p>
-            <label><input type="checkbox" id="skipFinancialRecords"> Skip</label>
-            <div id="financialRecords" style="display: none;">
-                <button type="button" id="addRecord">Add Record</button>
-                <div id="recordsContainer"></div>
+            <!-- Question 4 -->
+            <p>4. Please enter your financial records for the past three months (starting from the previous month)</p>
+            <div id="financialRecords">
+                <table id="monthlyRecordsTable">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>October</th>
+                            <th>September</th>
+                            <th>August</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Income</td>
+                            <td><input type="number" name="October_Income" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_Income" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_Income" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Allowance</td>
+                            <td><input type="number" name="October_Allowance" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_Allowance" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_Allowance" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Living Expense</td>
+                            <td><input type="number" name="October_LivingExpense" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_LivingExpense" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_LivingExpense" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Tuition</td>
+                            <td><input type="number" name="October_Tuition" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_Tuition" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_Tuition" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Housing</td>
+                            <td><input type="number" name="October_Housing" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_Housing" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_Housing" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Food</td>
+                            <td><input type="number" name="October_Food" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_Food" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_Food" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Transportation</td>
+                            <td><input type="number" name="October_Transportation" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_Transportation" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_Transportation" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Study Material</td>
+                            <td><input type="number" name="October_StudyMaterial" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_StudyMaterial" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_StudyMaterial" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Entertainment</td>
+                            <td><input type="number" name="October_Entertainment" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_Entertainment" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_Entertainment" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Personal Care</td>
+                            <td><input type="number" name="October_PersonalCare" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_PersonalCare" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_PersonalCare" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Technology</td>
+                            <td><input type="number" name="October_Technology" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_Technology" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_Technology" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Apparel</td>
+                            <td><input type="number" name="October_Apparel" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_Apparel" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_Apparel" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Travel</td>
+                            <td><input type="number" name="October_Travel" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_Travel" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_Travel" style="width: 60%;" min="0" required></td>
+                        </tr>
+                        <tr>
+                            <td>Others</td>
+                            <td><input type="number" name="October_Others" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="September_Others" style="width: 60%;" min="0" required></td>
+                            <td><input type="number" name="August_Others" style="width: 60%;" min="0" required></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <label><input type="checkbox" id="skipFinancialRecords"> Skip</label>
             </div>
 
             <br><br>
@@ -67,19 +139,22 @@
 
     <script>
         $(function () {
+            const currentMonth = new Date().getMonth() + 1;
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+            function getPreviousMonth(index) {
+                let monthIndex = currentMonth - index - 1;
+                if (monthIndex < 0) {
+                    monthIndex += 12;
+                }
+                return monthIndex;
+            }
+
             $("#openSurvey").click(function () {
                 $("#surveyDialog").dialog({
-                    width: 500,
+                    width: 600,
                     modal: true
                 });
-            });
-
-            $("input[name='regularIncome']").change(function () {
-                if ($(this).val() === "yes") {
-                    $("#incomeAmount").show();
-                } else {
-                    $("#incomeAmount").hide();
-                }
             });
 
             $("input[name='savingsGoal']").change(function () {
@@ -98,33 +173,8 @@
                 }
             });
 
-            $("#addRecord").click(function () {
-                const recordHtml = `
-                    <div class="record">
-                        <label>Type: 
-                            <select name="recordType">
-                                <option value="Income">Income</option>
-                                <option value="Expense">Expense</option>
-                            </select>
-                        </label>
-                        <label>Date: <input type="date" name="recordDate" required></label>
-                        <label>Category: 
-                            <select name="recordCategory">
-                                <option value="Education">Education</option>
-                                <option value="Shopping">Shopping</option>
-                                <option value="Food">Food</option>
-                            </select>
-                        </label>
-                        <label>Amount: <input type="number" name="recordAmount" required></label>
-                        <button type="button" class="removeRecord">Remove</button>
-                        <br><br>
-                    </div>
-                `;
-                $("#recordsContainer").append(recordHtml);
-            });
-
-            $(document).on("click", ".removeRecord", function () {
-                $(this).closest(".record").remove();
+            $("#fillMonthlyRecords").click(function () {
+                $("#financialRecords").show();
             });
 
             $("#financialSurveyForm").submit(function (event) {
