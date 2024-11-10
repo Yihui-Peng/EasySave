@@ -1,7 +1,7 @@
-from datetime import datetime
-
-from flask import Flask, render_template, request, redirect, url_for, flash
+import datetime
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 import os
+import re
 import time
 from sqlalchemy import inspect
 from import_database import initialize_database
@@ -9,7 +9,7 @@ from database import db, Detail, User, Saving_Goal, Record
 from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = 'your_secret_key_here'
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/profile_pictures')
 
 
@@ -82,20 +82,70 @@ def get_data():
     return '<br>'.join(result)
 
 @app.route('/')
+def loginPage():
+    return render_template('login.html')
+
+@app.route('/home')
 def home():
-    user = User.query.filter_by(user_id = 1001).first()
+    if 'user_id' not in session:
+        return render_template('login.html') 
+
+    user_id = session.get('user_id')
+    user = User.query.filter_by(user_id = user_id).first()
     spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.datum.desc()).first()
     savingGoal = Saving_Goal.query.filter_by(user_id = user.user_id).first()
     return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal)
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and user.password == password:
+            session['user_id'] = user.user_id
+            return redirect(url_for('home'))
+        else:
+            flash('username or password is incorrect ', 'error')
+            return redirect(url_for('login'))
     return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm-password']
+        if password != confirm_password:
+            flash('Passwords do not match.')
+            return redirect(url_for('register'))
+
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            flash('Invalid email address.')
+            return redirect(url_for('register'))
+        
+        existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+        if existing_user:
+            flash('Username or email already exists', 'error')
+            return redirect(url_for('register'))
+        
+        new_user = User(username=username, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        session['user_id'] = new_user.user_id
+
+        flash('Registration successful! Please complete this survey.')
+        return redirect(url_for('survey'))
+    return render_template('register.html')
 
 
 # newRecords part
 @app.route('/newRecords', methods=['GET', 'POST'])
 def newRecords():
+    if 'user_id' not in session:
+        return render_template('login.html')
     if request.method == 'POST':
         amount = request.form.get('amount')
         category_level_1 = request.form.get('category-level-1')
@@ -111,7 +161,7 @@ def newRecords():
         # else:
         #     flash('You must be logged in to create a new record.', 'error')
         #     return redirect(url_for('login'))
-        user_id = 1001
+        user_id = session.get('user_id')
 
 
         if not amount or not category_level_1 or not category_level_2 or not date:
@@ -136,73 +186,14 @@ def newRecords():
     return render_template('newRecords.html', active_page='newRecords')
 
 
-#Adding saving goals
-@app.route('/saving_goal', methods=['GET', 'POST'])
-def show_saving_goal_page():
-    if request.method == 'POST':
-
-        amount = float(request.form.get('amount'))
-        start_year = int(request.form.get('start-year'))
-        start_month = int(request.form.get('start-month'))
-        start_day = int(request.form.get('start-day'))
-
-        end_year = int(request.form.get('end-year'))
-        end_month = int(request.form.get('end-month'))
-        end_day = int(request.form.get('end-day'))
-
-        progress = request.form.get('progress')
-
-        if progress == 'finished':
-            progress_amount = amount
-        else:
-            progress_amount = float(request.form.get('progress-amount'))
-
-
-        start_date = datetime(start_year, start_month, start_day)
-        end_date = datetime(end_year, end_month, end_day)
-
-        user_id = 1001
-
-
-        new_goal = Saving_Goal(
-            amount=amount,
-            start_datum=start_date,
-            end_datum=end_date,
-            progress=progress,
-            progress_amount= progress_amount,
-            user_id=user_id
-        )
-
-        db.session.add(new_goal)
-        db.session.commit()
-
-        flash('Saving Goal added successfully!', 'success')
-
-
-        return redirect(url_for('show_saving_goal_page'))
-
-
-    goals = Saving_Goal.query.all()
-    return render_template('savingGoal.html', active_page='savingGoal', goals=goals)
-
-
-@app.route('/delete_goal/<int:goal_id>', methods=['POST'])
-def delete_goal(goal_id):
-    goal = Saving_Goal.query.get(goal_id)
-    if goal:
-        db.session.delete(goal)
-        db.session.commit()
-        flash(f'Goal with ID {goal_id} has been deleted successfully!', 'success')
-    else:
-        flash('Goal not found!', 'danger')
-
-    return redirect(url_for('show_saving_goal_page'))
-
+@app.route('/savingGoal')
+def savingGoal():
+    return render_template('savingGoal.html', active_page='savingGoal')
 
 
 @app.route('/setting')
 def setting():
-    user_id = session.get('username')
+    user_id = session.get('user_id')
 
     if not user_id:
         flash("You must be logged in to access settings.", "error")
@@ -239,11 +230,17 @@ def setting():
 
     return render_template('settings.html', active_page='setting', user=user)
 
-
 @app.route('/survey', methods=['GET', 'POST'])
 def survey():
+    if 'user_id' not in session:
+        return render_template('login.html')
     if request.method == 'POST':
-        user_id = 777  # For testing, we use user_id 777
+        user_id = session.get('user_id')
+        if not user_id:
+        # 如果没有找到 user_id，可能是直接访问该 URL，重定向到合适的页面
+            # flash('Please register first.')
+            user_id = 777  # For testing, we use user_id 777
+        
 
         # Check if the skip checkbox is checked
         skip = request.form.get('skipFinancialRecords', None)
@@ -322,9 +319,10 @@ def survey():
 
 @app.route('/userProfile', methods=['GET', 'POST'])
 def userProfile():
+    if 'user_id' not in session:
+        return render_template('login.html')
     if request.method == 'POST':
         return handle_user_profile_update(request)
-
     user = get_user()
     return render_template('userProfile.html', active_page='userProfile', user=user, time=time)
 
