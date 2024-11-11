@@ -1,9 +1,11 @@
 import datetime
-from flask import Flask, render_template, request, redirect, session, url_for, flash
+from datetime import timedelta
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
 import os
 import re
 import time
 from sqlalchemy import inspect
+from werkzeug.security import check_password_hash, generate_password_hash
 from import_database import initialize_database
 from database import db, Detail, User, Saving_Goal, Record  
 from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
@@ -144,6 +146,7 @@ def register():
 # newRecords part
 @app.route('/newRecords', methods=['GET', 'POST'])
 def newRecords():
+    # if user not login yet, we should get user back to the login page
     if 'user_id' not in session:
         return render_template('login.html')
     if request.method == 'POST':
@@ -152,15 +155,6 @@ def newRecords():
         category_level_2 = request.form.get('category-level-2')
         date = request.form.get('date')
         note = request.form.get('note')
-
-
-        # 11111 问题：将当前登录的用户的current_user_id使用为user_id，但前提是当前用户登录的current_user_id被正确储存，而且可以被这里调用。
-        # 11111 Problem: Use the current_user_id of the currently logged in user as user_id, but only if the current user logged in current_user_id is stored correctly and can be called here.
-        # if current_user.is_authenticated:
-        #     user_id = current_user.id
-        # else:
-        #     flash('You must be logged in to create a new record.', 'error')
-        #     return redirect(url_for('login'))
         user_id = session.get('user_id')
 
 
@@ -168,10 +162,12 @@ def newRecords():
             flash('Please fill out all required fields', 'error')
             return redirect(url_for('newRecords'))
 
+        # Make category level 1 and 2 to one categorie,  eg. Necessities: Housing
+        category=f"{category_level_1}:{category_level_2}"
+
         new_record = Record(
             amount=float(amount),
-            category_level_1=category_level_1,
-            category_level_2=category_level_2,
+            category=category,
             date=date,
             note=note,
             user_id=user_id
