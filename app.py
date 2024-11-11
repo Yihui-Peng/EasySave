@@ -1,9 +1,11 @@
 import datetime
-from flask import Flask, render_template, request, redirect, session, url_for, flash
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
 import os
 import re
 import time
 from sqlalchemy import inspect
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from import_database import initialize_database
 from database import db, Detail, User, Saving_Goal, Record  
 from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
@@ -187,66 +189,73 @@ def newRecords():
 
 
 #Adding saving goals
-@app.route('/saving_goal', methods=['GET', 'POST'])
+@app.route('/savingGoal', methods=['GET', 'POST'])
 def show_saving_goal_page():
     if 'user_id' not in session:
         return render_template('login.html')
+
     if request.method == 'POST':
-
+        # Handle form submission
         amount = float(request.form.get('amount'))
-        start_year = int(request.form.get('start-year'))
-        start_month = int(request.form.get('start-month'))
-        start_day = int(request.form.get('start-day'))
-
-        end_year = int(request.form.get('end-year'))
-        end_month = int(request.form.get('end-month'))
-        end_day = int(request.form.get('end-day'))
-
+        start_date_str = request.form.get('start-date')
+        end_date_str = request.form.get('end-date')
         progress = request.form.get('progress')
 
-        if progress == 'finished':
-            progress_amount = amount
+        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+        progress_amount_str = request.form.get('progress_amount')
+        if progress_amount_str:
+            progress_amount = float(progress_amount_str)
         else:
-            progress_amount = float(request.form.get('progress-amount'))
-
-
-        start_date = datetime(start_year, start_month, start_day)
-        end_date = datetime(end_year, end_month, end_day)
+            progress_amount = amount  # If progress is 'finished', set progress_amount to the total amount
 
         user_id = session.get('user_id')
 
-
+        # Save the new goal to the database
         new_goal = Saving_Goal(
+            user_id=user_id,
             amount=amount,
             start_datum=start_date,
             end_datum=end_date,
             progress=progress,
-            progress_amount= progress_amount,
-            user_id=user_id
+            progress_amount=progress_amount
         )
-
         db.session.add(new_goal)
         db.session.commit()
 
         flash('Saving Goal added successfully!', 'success')
 
-
+        # After saving, redirect to the same page to show updated goals list
         return redirect(url_for('show_saving_goal_page'))
 
+    # If it's a GET request, fetch all the goals for the logged-in user
+    user_id = session.get('user_id')
+    goals = Saving_Goal.query.filter_by(user_id=user_id).all()  # Only fetch goals for the logged-in user
 
-    goals = Saving_Goal.query.all()
     return render_template('savingGoal.html', active_page='savingGoal', goals=goals)
 
 
-@app.route('/delete_goal/<int:goal_id>', methods=['POST'])
-def delete_goal(goal_id):
-    goal = Saving_Goal.query.get(goal_id)
-    if goal:
-        db.session.delete(goal)
+@app.route('/delete_selected_goals', methods=['POST'])
+def delete_selected_goals():
+    if 'user_id' not in session:
+        return render_template('login.html')
+
+    goal_ids = request.form.getlist('goal_ids')
+
+    if not goal_ids:
+        flash("No goals selected for deletion.", "warning")
+        return redirect(url_for('show_saving_goal_page'))
+
+    # 将goal_ids转换为整数类型
+    goal_ids = [int(goal_id) for goal_id in goal_ids if goal_id]
+
+    if goal_ids:
+        Saving_Goal.query.filter(Saving_Goal.saving_goal_id.in_(goal_ids)).delete(synchronize_session=False)
         db.session.commit()
-        flash(f'Goal with ID {goal_id} has been deleted successfully!', 'success')
+        flash("Selected goals deleted successfully!", "success")
     else:
-        flash('Goal not found!', 'danger')
+        flash("No valid goals to delete.", "warning")
 
     return redirect(url_for('show_saving_goal_page'))
 
