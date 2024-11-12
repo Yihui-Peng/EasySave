@@ -1,9 +1,11 @@
 import datetime
-from flask import Flask, render_template, request, redirect, session, url_for, flash
+from datetime import timedelta
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
 import os
 import re
 import time
 from sqlalchemy import inspect
+from werkzeug.security import check_password_hash, generate_password_hash
 from import_database import initialize_database
 from database import db, Detail, User, Saving_Goal, Record  
 from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
@@ -168,10 +170,12 @@ def newRecords():
             flash('Please fill out all required fields', 'error')
             return redirect(url_for('newRecords'))
 
+        # Make category level 1 and 2 to one categorie,  eg. Necessities: Housing
+        category=f"{category_level_1}:{category_level_2}"
+
         new_record = Record(
             amount=float(amount),
-            category_level_1=category_level_1,
-            category_level_2=category_level_2,
+            category=category,
             date=date,
             note=note,
             user_id=user_id
@@ -186,9 +190,77 @@ def newRecords():
     return render_template('newRecords.html', active_page='newRecords')
 
 
-@app.route('/savingGoal')
-def savingGoal():
-    return render_template('savingGoal.html', active_page='savingGoal')
+#Adding saving goals
+@app.route('/savingGoal', methods=['GET', 'POST'])
+def show_saving_goal_page():
+    if 'user_id' not in session:
+        return render_template('login.html')
+
+    if request.method == 'POST':
+        # Handle form submission
+        amount = float(request.form.get('amount'))
+        start_date_str = request.form.get('start-date')
+        end_date_str = request.form.get('end-date')
+        progress = request.form.get('progress')
+
+        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+        progress_amount_str = request.form.get('progress_amount')
+        if progress_amount_str:
+            progress_amount = float(progress_amount_str)
+        else:
+            progress_amount = amount  # If progress is 'finished', set progress_amount to the total amount
+
+        user_id = session.get('user_id')
+
+        # Save the new goal to the database
+        new_goal = Saving_Goal(
+            user_id=user_id,
+            amount=amount,
+            start_datum=start_date,
+            end_datum=end_date,
+            progress=progress,
+            progress_amount=progress_amount
+        )
+        db.session.add(new_goal)
+        db.session.commit()
+
+        flash('Saving Goal added successfully!', 'success')
+
+        # After saving, redirect to the same page to show updated goals list
+        return redirect(url_for('show_saving_goal_page'))
+
+    # If it's a GET request, fetch all the goals for the logged-in user
+    user_id = session.get('user_id')
+    goals = Saving_Goal.query.filter_by(user_id=user_id).all()  # Only fetch goals for the logged-in user
+
+    return render_template('savingGoal.html', active_page='savingGoal', goals=goals)
+
+
+@app.route('/delete_selected_goals', methods=['POST'])
+def delete_selected_goals():
+    if 'user_id' not in session:
+        return render_template('login.html')
+
+    goal_ids = request.form.getlist('goal_ids')
+
+    if not goal_ids:
+        flash("No goals selected for deletion.", "warning")
+        return redirect(url_for('show_saving_goal_page'))
+
+    # 将goal_ids转换为整数类型
+    goal_ids = [int(goal_id) for goal_id in goal_ids if goal_id]
+
+    if goal_ids:
+        Saving_Goal.query.filter(Saving_Goal.saving_goal_id.in_(goal_ids)).delete(synchronize_session=False)
+        db.session.commit()
+        flash("Selected goals deleted successfully!", "success")
+    else:
+        flash("No valid goals to delete.", "warning")
+
+    return redirect(url_for('show_saving_goal_page'))
+
 
 
 @app.route('/setting')

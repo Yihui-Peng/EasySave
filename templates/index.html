@@ -9,8 +9,8 @@
 
     <div class="spending-summary">
         <div class="previous-spending">
-            <h2>Previous Spending</h2>
-            <p id="Spending_name">{{prev_spending.category + " " + prev_spending.date.strftime('%Y-%m-%d')}}</p>
+            <h2>Previous Records</h2>
+            <p id="Spending_name">{{prev_spending.categorie + " " + prev_spending.datum.strftime('%Y-%m-%d')}}</p>
             <p id="Spending_amount"> €{{prev_spending.amount}}</p>
             <p id="Note">Note: {{prev_spending.note}}</p>
         </div>
@@ -33,7 +33,7 @@
             </ul>
         </div>
         <div class="new-records">
-            <h2>New Spending</h2>
+            <h2>New Records</h2>
             <form action="" method="post">
                 <!-- Form inputs for adding new spending -->
             </form>
