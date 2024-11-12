@@ -68,15 +68,15 @@ def generate_test_data():
     db.session.commit()
 
     # Adding saving goals
-    saving_goal1 = Saving_Goal(user_id=user1.user_id, amount=1000.0, start_datum=datetime(2024, 1, 1), end_datum=datetime(2024, 12, 31), progress='In Progress', progress_amount=300.0)
-    saving_goal2 = Saving_Goal(user_id=user2.user_id, amount=2000.0, start_datum=datetime(2024, 2, 1), end_datum=datetime(2024, 10, 31), progress='In Progress', progress_amount=800.0)
+    saving_goal1 = Saving_Goal(user_id=user1.user_id, amount=1000.0, start_date=datetime(2024, 1, 1), end_date=datetime(2024, 12, 31), progress='In Progress', progress_amount=300.0)
+    saving_goal2 = Saving_Goal(user_id=user2.user_id, amount=2000.0, start_date=datetime(2024, 2, 1), end_date=datetime(2024, 10, 31), progress='In Progress', progress_amount=800.0)
     db.session.add_all([saving_goal1, saving_goal2])
     db.session.commit()
 
     # Adding spending records
-    spending_record1 = Record(user_id=user1.user_id, amount=45.0, datum=datetime(2024, 4, 5), categorie='Studie_matrial', note='fundation books')
-    spending_record2 = Record(user_id=user2.user_id, amount=60.0, datum=datetime(2024, 4, 7), categorie='Transport', note='charge-ov chipcard')
-    spending_record3 = Record(user_id=user1.user_id, amount=150.0, datum=datetime(2024, 4, 10), categorie='Entertainment', note='KTV')
+    spending_record1 = Record(user_id=user1.user_id, amount=45.0, date=datetime(2024, 4, 5), category='Studie_matrial', note='fundation books')
+    spending_record2 = Record(user_id=user2.user_id, amount=60.0, date=datetime(2024, 4, 7), category='Transport', note='charge-ov chipcard')
+    spending_record3 = Record(user_id=user1.user_id, amount=150.0, date=datetime(2024, 4, 10), category='Entertainment', note='KTV')
     db.session.add_all([spending_record1, spending_record2, spending_record3])
     db.session.commit() 
     

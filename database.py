@@ -46,7 +46,7 @@ class Detail(db.Model):
     travel = db.Column(db.Float)
     others = db.Column(db.Float)
     preferred_payment_method = db.Column(db.String(50))
-    datum = db.Column(db.DateTime)
+    date = db.Column(db.DateTime)
 
     def __repr__(self):
         return f"<StudentSpending spending_id={self.spending_id}, amount={self.monthly_income}>"
@@ -57,8 +57,8 @@ class Saving_Goal(db.Model):
     saving_goal_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
     amount = db.Column(db.Float)
-    start_datum = db.Column(db.DateTime)
-    end_datum = db.Column(db.DateTime)
+    start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
     progress = db.Column(db.String(100))
     progress_amount = db.Column(db.Float)
 
@@ -71,8 +71,8 @@ class  Record(db.Model):
     record_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
     amount = db.Column(db.Float)
-    datum = db.Column(db.DateTime)
-    categorie = db.Column(db.String(200))
+    date = db.Column(db.DateTime)
+    category = db.Column(db.String(200))
     note = db.Column(db.String(300))
 
     def __repr__(self):

@@ -64,7 +64,7 @@ def get_data():
         saving_goals = Saving_Goal.query.filter_by(user_id=user.user_id).all()
         if saving_goals:
             for goal in saving_goals:
-                goal_info = f" - Saving Goal ID: {goal.saving_goal_id}, Amount: {goal.amount}, Start Date: {goal.start_datum}, End Date: {goal.end_datum}, Progress: {goal.progress}, Progress Amount: {goal.progress_amount}"
+                goal_info = f" - Saving Goal ID: {goal.saving_goal_id}, Amount: {goal.amount}, Start Date: {goal.start_date}, End Date: {goal.end_date}, Progress: {goal.progress}, Progress Amount: {goal.progress_amount}"
                 result.append(goal_info)
         else:
             result.append(" - No saving goals found.")
@@ -72,7 +72,7 @@ def get_data():
         spending_records = Record.query.filter_by(user_id=user.user_id).all()
         if spending_records:
             for record in spending_records:
-                record_info = f" - Spending Record ID: {record.record_id}, Amount: {record.amount}, Date: {record.datum}, Category: {record.categorie}"
+                record_info = f" - Spending Record ID: {record.record_id}, Amount: {record.amount}, Date: {record.date}, Category: {record.category}"
                 result.append(record_info)
         else:
             result.append(" - No spending records found.")
@@ -92,7 +92,7 @@ def home():
 
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id = user_id).first()
-    spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.datum.desc()).first()
+    spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.date.desc()).first()
     savingGoal = Saving_Goal.query.filter_by(user_id = user.user_id).first()
     return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal)
 
@@ -261,16 +261,16 @@ def survey():
             # Save the second question's answer to the Saving_Goal table
             saving_goal_amount = request.form.get('goalAmount', 0.0)
             current_date = datetime.now()
-            start_datum = current_date
-            end_datum = current_date + timedelta(days=30)
+            start_date = current_date
+            end_date = current_date + timedelta(days=30)
             saving_goal_id = f"{user_id}{current_date.strftime('%Y%m%d')}"
 
             new_saving_goal = Saving_Goal(
                 saving_goal_id=saving_goal_id,
                 user_id=user_id,
                 amount=saving_goal_amount,
-                start_datum=start_datum,
-                end_datum=end_datum,
+                start_date= start_date,
+                end_date =end_date,
                 progress="In Progress",
                 progress_amount=0.0
             )
@@ -298,7 +298,7 @@ def survey():
                 month_name = datetime(year, month, 1).strftime('%B')
                 detail_data = {
                     'user_id': user_id,
-                    'datum': datetime.strptime(f"{year}-{month:02d}-{last_day_of_month[month].split('.')[1]}", "%Y-%m-%d")
+                    'date': datetime.strptime(f"{year}-{month:02d}-{last_day_of_month[month].split('.')[1]}", "%Y-%m-%d")
                 }
                 for category in [
                     "income", "allowance", "living_expense", "tuition", "housing", "food",
