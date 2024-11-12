@@ -1,0 +1,23 @@
+<title>Spending Overview</title>
+    <script>
+        function updateSubcategories() {
+            const level1 = document.getElementById("category-level-1").value;
+            const level2 = document.getElementById("category-level-2");
+            level2.innerHTML = "";
+            level2.disabled = false;
+
+            let options = [];
+            if (level1 === "All Spending") {
+                options = ["All"];
+            } else if (level1 === "Necessities") {
+                options = ["All", "Tuition", "Housing", "Food", "Transportation"];
+            } else if (level1 === "Flexible_spending") {
+                options = ["All", "Study_material", "Entertainment", "Technology", "Personal_care"];
+            } else if (level1 === "Others") {
+                options = ["All", "Apparel", "Travel", "Others"];
+            } else if (level1 === "Disposable_income") {
+                options = ["All", "living_expenses", "Allowance", "Income"];
+            } else {
+                level2.disabled = true;
+                return;
+            }
