@@ -19,10 +19,12 @@
     <div class="new-records">
         <h2>Create New Records</h2>
 
-        <form action="/newRecords" method="post" onsubmit="return validateForm()"> 
+        <form action="/newRecords" method="post" onsubmit="return validateForm()">
+
+            <!-- step="any" allows the user to enter integer or floating point numbers, we only keep the last two decimal places -->
             <div class="form-group" style="margin-bottom: 20px;">
                 <label class="form-label" for="amount">Amount (€)</label>
-                <input type="number" id="amount" name="amount" class="form-control" placeholder="Enter the amount" min="0" required>
+                <input type="number" id="amount" name="amount" class="form-control" placeholder="Enter the amount" step="any" required>
             </div>
             
             <!-- Dynamic changing, the change of the category will change the available choises of the subcategory -->
@@ -123,21 +125,12 @@
         }
 
 
-        document.addEventListener("DOMContentLoaded", function() {
-        if (window.location.pathname === '/newRecords') {
-            setTimeout(function() {
-                const flashMessage = document.getElementById("flash-message");
-                if (flashMessage) {
-                    flashMessage.style.display = 'none';
-                }
-            }, 3000); // Hide the message after 3 seconds
-        } else {
-            const flashMessage = document.getElementById("flash-message");
-            if (flashMessage) {
-                flashMessage.style.display = 'none';
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('added')) {
+                alert("New record added successfully");
             }
-        }
-    });
+        };
 
     
     </script>
