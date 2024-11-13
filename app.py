@@ -116,23 +116,23 @@ def login():
 def register():
     if request.method == 'POST':
         username = request.form['username']
-        email = request.form['email']
+        emailadress = request.form['email']
         password = request.form['password']
         confirm_password = request.form['confirm-password']
         if password != confirm_password:
             flash('Passwords do not match.')
             return redirect(url_for('register'))
 
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", emailadress):
             flash('Invalid email address.')
             return redirect(url_for('register'))
         
-        existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+        existing_user = User.query.filter((User.username == username) | (User.emailadress == emailadress)).first()
         if existing_user:
             flash('Username or email already exists', 'error')
             return redirect(url_for('register'))
         
-        new_user = User(username=username, email=email, password=password)
+        new_user = User(username=username, emailadress=emailadress, password=password)
         db.session.add(new_user)
         db.session.commit()
 
@@ -140,7 +140,7 @@ def register():
 
         flash('Registration successful! Please complete this survey.')
         return redirect(url_for('survey'))
-    return render_template('register.html')
+    return render_template('login.html')
 
 
 # newRecords part
