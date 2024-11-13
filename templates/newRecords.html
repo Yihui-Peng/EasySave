@@ -3,6 +3,19 @@
 {% block title %}New Records{% endblock %}
 
 {% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div id="flash-message" class="alert">
+            {% for category, message in messages %}
+                <div class="alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
     <div class="new-records">
         <h2>Create New Records</h2>
 
@@ -43,7 +56,6 @@
                 <textarea id="note" name="note" class="form-control" placeholder="Enter your notes (optional)"></textarea>
             </div>
 
-            <!-- history.back() navigate users to the page they visited before, implement page return function -->
             <button type="submit" class="btn btn-primary">Submit</button>
             <button type="button" class="btn btn-secondary" onclick="window.location.href='/home'">Back</button>
         </form>
@@ -109,5 +121,24 @@
 
             return true;
         }
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+        if (window.location.pathname === '/newRecords') {
+            setTimeout(function() {
+                const flashMessage = document.getElementById("flash-message");
+                if (flashMessage) {
+                    flashMessage.style.display = 'none';
+                }
+            }, 3000); // Hide the message after 3 seconds
+        } else {
+            const flashMessage = document.getElementById("flash-message");
+            if (flashMessage) {
+                flashMessage.style.display = 'none';
+            }
+        }
+    });
+
+    
     </script>
 {% endblock %}
