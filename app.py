@@ -1,5 +1,5 @@
 import datetime
-from datetime import timedelta
+from datetime import timedelta, datetime
 from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
 import os
 import re
@@ -154,15 +154,6 @@ def newRecords():
         category_level_2 = request.form.get('category-level-2')
         date = request.form.get('date')
         note = request.form.get('note')
-
-
-        # 11111 问题：将当前登录的用户的current_user_id使用为user_id，但前提是当前用户登录的current_user_id被正确储存，而且可以被这里调用。
-        # 11111 Problem: Use the current_user_id of the currently logged in user as user_id, but only if the current user logged in current_user_id is stored correctly and can be called here.
-        # if current_user.is_authenticated:
-        #     user_id = current_user.id
-        # else:
-        #     flash('You must be logged in to create a new record.', 'error')
-        #     return redirect(url_for('login'))
         user_id = session.get('user_id')
 
 
@@ -173,10 +164,16 @@ def newRecords():
         # Make category level 1 and 2 to one categorie,  eg. Necessities: Housing
         category=f"{category_level_1}:{category_level_2}"
 
+        try:
+            date_obj = datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            flash('Invalid date format', 'error')
+            return redirect(url_for('newRecords'))
+
         new_record = Record(
             amount=float(amount),
             category=category,
-            date=date,
+            date=date_obj,
             note=note,
             user_id=user_id
             )
