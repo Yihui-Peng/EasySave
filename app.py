@@ -171,7 +171,7 @@ def newRecords():
             return redirect(url_for('newRecords'))
 
         new_record = Record(
-            amount=float(amount),
+            amount=round(float(amount),2),
             category=category,
             date=date_obj,
             note=note,
@@ -181,8 +181,9 @@ def newRecords():
         db.session.add(new_record)
         db.session.commit()
 
-        flash('New record added successfully', 'success')
-        return redirect(url_for('newRecords'))
+        # flash('New record added successfully', 'success')
+        # return redirect(url_for('newRecords'))
+        return redirect(url_for('newRecords', added=True))
 
     return render_template('newRecords.html', active_page='newRecords')
 
