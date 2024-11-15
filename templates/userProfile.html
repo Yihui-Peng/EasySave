@@ -31,10 +31,10 @@
                          alt="Profile Picture" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
                 </div>
                 <div class="col-md-8">
-                    <p><strong>Name:</strong> {{ user.name }}</p>
-                    <p><strong>Email:</strong> {{ user.emailadress }}</p>
+                    <!-- Remove Name and Use Nickname Instead -->
                     <p><strong>Nickname:</strong> {{ user.nickname }}</p>
-                    <!-- Display New Fields -->
+                    <p><strong>Email:</strong> {{ user.emailadress }}</p>
+                    <!-- Display Other Fields -->
                     <p><strong>Average Income:</strong> {{ user.average_income }}</p>
                     <p><strong>Average Spending:</strong> {{ user.average_spending }}</p>
                     <p><strong>Age:</strong> {{ user.age }}</p>
@@ -60,9 +60,8 @@
                 <div class="card shadow-sm">
                     <div class="card-body text-center">
                         <h5 class="card-title fw-bold mb-4">Profile Picture</h5>
-                   <img src="{{ url_for('static', filename='profile_pictures/' ~ (user.profile_picture | default('default_picture.png'))) }}?t={{ time.time() }}"
-     alt="Profile Picture" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
-
+                        <img src="{{ url_for('static', filename='profile_pictures/' ~ (user.profile_picture | default('default_picture.png'))) }}?t={{ time.time() }}"
+                             alt="Profile Picture" class="rounded-circle mb-4" style="width: 150px; height: 150px; object-fit: cover;">
                         <!-- Form to Upload New Profile Picture -->
                         <form action="{{ url_for('userProfile') }}" method="post" enctype="multipart/form-data"
                               class="mb-3">
@@ -95,22 +94,16 @@
                         <h5 class="card-title fw-bold mb-4 text-center">User Information</h5>
                         <form action="{{ url_for('userProfile') }}" method="post">
                             <input type="hidden" name="form_type" value="update_profile">
-                            <!-- Name -->
+                            <!-- Nickname -->
                             <div class="mb-3">
-                                <label for="name" class="form-label fw-bold">Name:</label>
-                                <input type="text" name="name" id="name" value="{{ user.name }}"
+                                <label for="nickname" class="form-label fw-bold">Nickname:</label>
+                                <input type="text" name="nickname" id="nickname" value="{{ user.nickname }}"
                                        class="form-control" required>
                             </div>
                             <!-- Email -->
                             <div class="mb-3">
                                 <label for="email" class="form-label fw-bold">Email:</label>
                                 <input type="email" name="email" id="email" value="{{ user.emailadress }}"
-                                       class="form-control" required>
-                            </div>
-                            <!-- Nickname -->
-                            <div class="mb-3">
-                                <label for="nickname" class="form-label fw-bold">Nickname:</label>
-                                <input type="text" name="nickname" id="nickname" value="{{ user.nickname }}"
                                        class="form-control" required>
                             </div>
                             <!-- Average Income -->

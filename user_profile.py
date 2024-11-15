@@ -1,5 +1,3 @@
-# user_profile.py
-
 import os
 from werkzeug.utils import secure_filename
 from flask import current_app, flash, redirect, url_for
@@ -91,7 +89,8 @@ def handle_user_profile_update(request):
 
     elif form_type == 'update_profile':
         # Update user data
-        name = request.form.get('name')
+        # Removed 'name' handling
+        # name = request.form.get('name')  # Removed
         email = request.form.get('email')
         nickname = request.form.get('nickname')
         average_income = request.form.get('average_income')
@@ -101,8 +100,9 @@ def handle_user_profile_update(request):
         year_in_school = request.form.get('year_in_school')
         major = request.form.get('major')
 
-        if name:
-            user.name = name
+        # Removed name updates
+        # if name:
+        #     user.name = name  # Removed
         if email:
             update_email(user, email)
         if nickname:
