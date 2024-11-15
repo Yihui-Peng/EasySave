@@ -198,6 +198,7 @@ def newRecords():
     return render_template('newRecords.html', active_page='newRecords')
 
 
+
 # Import your models
 from database import User, Detail, Saving_Goal, Record
 
@@ -243,34 +244,42 @@ def generate_monthly_spending_chart(filtered_data):
     plt.close()  # Close the figure
 
 
+
 @app.route('/details_and_charts', methods=['GET', 'POST'])
 def details_and_charts():
-    # Get list of categories for the current user
-    categories_query = db.session.query(Record.category).filter_by(
-        user_id = session.get('user_id')
-    ).distinct().all()
-    categories = [c[0] for c in categories_query]
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session.get('user_id')
+
+    # 初始化选定的分类
+    selected_category_level_1 = 'All Spending'
+    selected_category_level_2 = 'All'
 
     if request.method == 'POST':
-        # Get the user's selected subcategory
-        selected_subcategory = request.form.get('category_level_2')
+        # 获取用户选择的一级和二级分类
+        selected_category_level_1 = request.form.get('category_level_1', 'All Spending')
+        selected_category_level_2 = request.form.get('category_level_2', 'All')
 
-        # Query the database for the current user's records
-        if selected_subcategory and selected_subcategory != 'All':
-            # Filter records based on category and user
-            filtered_records = Record.query.filter_by(
-                user_id = session.get('user_id'), 
-                category=selected_subcategory
-            ).all()
-        else:
-            # Get all records for the current user
-            filtered_records = Record.query.filter_by(user_id = session.get('user_id')).all()
+        # 构建查询条件
+        query = Record.query.filter_by(user_id=user_id)
+
+        if selected_category_level_1 != 'All Spending':
+            if selected_category_level_2 != 'All':
+                # 过滤指定的一级和二级分类
+                category_filter = f"{selected_category_level_1}:{selected_category_level_2}"
+                query = query.filter(Record.category == category_filter)
+            else:
+                # 仅过滤一级分类，使用like匹配
+                query = query.filter(Record.category.like(f"{selected_category_level_1}:%"))
+        # 如果选择了“All Spending”，则不进行额外的过滤
+
+        filtered_records = query.all()
     else:
-        # For GET requests, get all records for current user
-        filtered_records = Record.query.filter_by(user_id = session.get('user_id')).all()
-        selected_subcategory = 'All'  # Default selection
+        # 对于GET请求，获取当前用户的所有记录
+        filtered_records = Record.query.filter_by(user_id=user_id).all()
 
-    # Convert records to DataFrame
+    # 将记录转换为DataFrame
     data = []
     for record in filtered_records:
         data.append({
@@ -280,19 +289,19 @@ def details_and_charts():
         })
     filtered_data = pd.DataFrame(data)
 
-    # Generate charts if data is available
+    # 生成图表
     if not filtered_data.empty:
         generate_normal_distribution_chart(filtered_data)
         generate_monthly_spending_chart(filtered_data)
     else:
-        # Handle the case where there is no data
-        # You might want to display a message or a placeholder chart
+        # 如果没有数据，可选择显示提示或占位图表
         pass
 
     return render_template(
-        'details_and_charts.html', 
-        categories=categories, 
-        selected_category=selected_subcategory
+        'details_and_charts.html',
+        records=filtered_records,
+        selected_category_level_1=selected_category_level_1,
+        selected_category_level_2=selected_category_level_2
     )
 
 
