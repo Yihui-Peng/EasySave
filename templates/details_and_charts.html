@@ -1,23 +1,107 @@
-<!-- <title>Details and Charts</title>
+{% extends "base.html" %}
+
+{% block title %}Details and Charts{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Details and Charts</title>
+    <!-- Include your CSS files properly -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
     <script>
         function updateSubcategories() {
-            const level1 = document.getElementById("category-level-1").value;
-            const level2 = document.getElementById("category-level-2");
+            const level1 = document.getElementById("category_level_1").value;
+            const level2 = document.getElementById("category_level_2");
             level2.innerHTML = "";
             level2.disabled = false;
 
             let options = [];
             if (level1 === "All Spending") {
                 options = ["All"];
+            } else if (level1 === "Disposable_income") {
+                options = ["All", "living_expenses", "Allowance", "Income"];
             } else if (level1 === "Necessities") {
                 options = ["All", "Tuition", "Housing", "Food", "Transportation"];
             } else if (level1 === "Flexible_spending") {
                 options = ["All", "Study_material", "Entertainment", "Technology", "Personal_care"];
             } else if (level1 === "Others") {
                 options = ["All", "Apparel", "Travel", "Others"];
-            } else if (level1 === "Disposable_income") {
-                options = ["All", "living_expenses", "Allowance", "Income"];
             } else {
                 level2.disabled = true;
                 return;
-            } -->
+            }
+
+            options.forEach(option => {
+                const opt = document.createElement("option");
+                opt.value = option;
+                opt.textContent = option;
+                level2.appendChild(opt);
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Start of the form -->
+        <form method="POST">
+            
+            <div class="category-selection">
+                <label for="category_level_1">Category-Level-1:</label>
+                <select id="category_level_1" name="category_level_1" onchange="updateSubcategories()">
+                    <option value="All Spending" {% if selected_category_level_1 == 'All Spending' %}selected{% endif %}>All Spending</option>
+                    <option value="Necessities" {% if selected_category_level_1 == 'Necessities' %}selected{% endif %}>Necessities</option>
+                    <option value="Flexible_spending" {% if selected_category_level_1 == 'Flexible_spending' %}selected{% endif %}>Flexible Spending</option>
+                    <option value="Others" {% if selected_category_level_1 == 'Others' %}selected{% endif %}>Others</option>
+                    <option value="Disposable_income" {% if selected_category_level_1 == 'Disposable_income' %}selected{% endif %}>Disposable Income</option>
+                </select>
+
+                <label for="category_level_2">Subcategory-Level-2:</label>
+                <select id="category_level_2" name="category_level_2" disabled>
+                    <option value="All" selected>All</option>
+                </select>
+            </div>
+
+            <!-- Submit button for the form -->
+            <button type="submit">Filter</button>
+        </form>
+        <!-- End of the form -->
+
+        <div class="block block-1 spending-summary">
+            <h3>Spending Records</h3>
+            <div class="spending-records" id="spending-records" style="overflow-y: auto; max-height: 400px;">
+                {% if records %}
+                    {% for record in records %}
+                        <div class="record">
+                            <p>Amount: {{ record.amount }}, Category: {{ record.category }}, Date: {{ record.date }}</p>
+                            <button onclick="showNote('{{ record.note }}')" class="btn btn-secondary">Show Note</button>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No records to display.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="block block-2">
+            <h3>Spending Distribution Chart</h3>
+            <img src="{{ url_for('static', filename='spending_distribution.png') }}" alt="Spending Distribution">
+        </div>
+
+        <div class="block block-3">
+            <h3>Monthly Spending Chart</h3>
+            <img src="{{ url_for('static', filename='monthly_spending.png') }}" alt="Monthly Spending">
+        </div>
+
+        <script>
+            function showNote(note) {
+                alert(note);
+            }
+        </script>
+    </div>
+</body>
+</html>
+{% endblock %}
