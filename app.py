@@ -275,28 +275,54 @@ def setting():
         data = request.get_json()
         action = data.get('action')
 
+        # 修改密码
         if action == 'change_password':
             current_password = data.get('current_password')
             new_password = data.get('new_password')
 
-            if not user or not check_password_hash(user.password, current_password):
+            # 验证当前密码是否匹配（注意：需要移除 `check_password_hash`，直接比较明文密码）
+            if not user or user.password != current_password:
                 return jsonify(success=False, message="Incorrect current password."), 400
 
-            user.password = generate_password_hash(new_password)
+            # 存储明文新密码（不加密）
+            user.password = new_password
             db.session.commit()
             return jsonify(success=True, message="Password updated successfully.")
 
-        else:
-            new_email = request.form.get('email')
-            new_nickname = request.form.get('nickname')
+        # 修改用户名
+        elif action == 'change_username':
+            new_username = data.get('new_username')
+            if not new_username:
+                return jsonify(success=False, message="Username cannot be empty."), 400
 
-            if user:
-                user.email = new_email
-                user.nickname = new_nickname
-                db.session.commit()
-                flash("Settings updated successfully.", "success")
-            else:
-                flash("User not found.", "error")
+            # 检查用户名是否已存在
+            existing_user = User.query.filter_by(username=new_username).first()
+            if existing_user:
+                return jsonify(success=False, message="Username already taken."), 400
+
+            user.username = new_username
+            db.session.commit()
+            return jsonify(success=True, message="Username updated successfully.")
+
+        # 修改邮箱
+        elif action == 'change_email':
+            new_email = data.get('new_email')
+            if not new_email or not re.match(r"[^@]+@[^@]+\.[^@]+", new_email):
+                return jsonify(success=False, message="Invalid email address."), 400
+
+            user.emailadress = new_email  # 注意字段名是 `emailadress`
+            db.session.commit()
+            return jsonify(success=True, message="Email updated successfully.")
+
+        # 修改昵称
+        elif action == 'change_nickname':
+            new_nickname = data.get('new_nickname')
+            if not new_nickname:
+                return jsonify(success=False, message="Nickname cannot be empty."), 400
+
+            user.nickname = new_nickname
+            db.session.commit()
+            return jsonify(success=True, message="Nickname updated successfully.")
 
     return render_template('settings.html', active_page='setting', user=user)
 
