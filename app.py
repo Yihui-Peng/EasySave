@@ -1,14 +1,16 @@
+import os
+from werkzeug.utils import secure_filename
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
+from werkzeug.security import check_password_hash, generate_password_hash
+from database import db, Detail, User, Saving_Goal, Record
 import datetime
 from datetime import timedelta, datetime
-from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
-import os
 import re
 import time
 from sqlalchemy import inspect
-from werkzeug.security import check_password_hash, generate_password_hash
 from import_database import initialize_database
-from database import db, Detail, User, Saving_Goal, Record  
-from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
+from user_profile import get_user, handle_user_profile_update
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -20,6 +22,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
+migrate = Migrate(app, db)
 
 with app.app_context():
     # Check db file exists or not 
@@ -132,7 +135,7 @@ def register():
             flash('Username or email already exists', 'error')
             return redirect(url_for('register'))
         
-        new_user = User(username=username, emailadress=emailadress, password=password)
+        new_user = User(username=username, emailadress=emailadress, password=password,profile_picture = 'default_picture.png')
         db.session.add(new_user)
         db.session.commit()
 
@@ -419,7 +422,8 @@ def userProfile():
         return render_template('login.html')
     if request.method == 'POST':
         return handle_user_profile_update(request)
-    user = get_user()
+    user_id = session.get('user_id')
+    user = get_user(user_id)
     return render_template('userProfile.html', active_page='userProfile', user=user, time=time)
 
 
