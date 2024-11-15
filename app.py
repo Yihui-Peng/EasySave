@@ -1,6 +1,8 @@
 import os
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import CSRFProtect
 from werkzeug.security import check_password_hash, generate_password_hash
 from database import db, Detail, User, Saving_Goal, Record
 import datetime
@@ -9,8 +11,13 @@ import re
 import time
 from sqlalchemy import inspect
 from import_database import initialize_database
-from user_profile import get_user, handle_user_profile_update
+from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
 from flask_migrate import Migrate
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -189,6 +196,105 @@ def newRecords():
         return redirect(url_for('newRecords', added=True))
 
     return render_template('newRecords.html', active_page='newRecords')
+
+
+# Import your models
+from database import User, Detail, Saving_Goal, Record
+
+def generate_normal_distribution_chart(filtered_data):
+    # Extract the amount data
+    amounts = filtered_data['amount']
+
+    # Generate histogram and fit normal distribution curve
+    plt.figure(figsize=(10, 6))
+    count, bins, ignored = plt.hist(amounts, bins=15, density=True, alpha=0.6, color='b')
+
+    # Fit normal distribution curve
+    mean, std = np.mean(amounts), np.std(amounts)
+    plt.plot(
+        bins,
+        1 / (std * np.sqrt(2 * np.pi)) * np.exp(-((bins - mean) ** 2) / (2 * std ** 2)),
+        linewidth=2,
+        color='r'
+    )
+
+    plt.xlabel('Spending Amount')
+    plt.ylabel('Density')
+    plt.title('Spending Distribution')
+    plt.grid()
+    plt.savefig('static/spending_distribution.png')
+    plt.close()  # Close the figure
+
+def generate_monthly_spending_chart(filtered_data):
+    # Create a copy to avoid SettingWithCopyWarning
+    filtered_data = filtered_data.copy()
+    # Add a 'month' column
+    filtered_data['month'] = pd.to_datetime(filtered_data['date']).dt.month
+    monthly_data = filtered_data.groupby('month')['amount'].sum()
+
+    # Generate bar chart
+    plt.figure(figsize=(10, 6))
+    monthly_data.plot(kind='bar', color='skyblue')
+    plt.xlabel('Month')
+    plt.ylabel('Total Spending')
+    plt.title('Monthly Spending')
+    plt.grid(axis='y')
+    plt.savefig('static/monthly_spending.png')
+    plt.close()  # Close the figure
+
+
+@app.route('/details_and_charts', methods=['GET', 'POST'])
+def details_and_charts():
+    # Get list of categories for the current user
+    categories_query = db.session.query(Record.category).filter_by(
+        user_id = session.get('user_id')
+    ).distinct().all()
+    categories = [c[0] for c in categories_query]
+
+    if request.method == 'POST':
+        # Get the user's selected subcategory
+        selected_subcategory = request.form.get('category_level_2')
+
+        # Query the database for the current user's records
+        if selected_subcategory and selected_subcategory != 'All':
+            # Filter records based on category and user
+            filtered_records = Record.query.filter_by(
+                user_id = session.get('user_id'), 
+                category=selected_subcategory
+            ).all()
+        else:
+            # Get all records for the current user
+            filtered_records = Record.query.filter_by(user_id = session.get('user_id')).all()
+    else:
+        # For GET requests, get all records for current user
+        filtered_records = Record.query.filter_by(user_id = session.get('user_id')).all()
+        selected_subcategory = 'All'  # Default selection
+
+    # Convert records to DataFrame
+    data = []
+    for record in filtered_records:
+        data.append({
+            'amount': record.amount,
+            'date': record.date,
+            'category': record.category,
+        })
+    filtered_data = pd.DataFrame(data)
+
+    # Generate charts if data is available
+    if not filtered_data.empty:
+        generate_normal_distribution_chart(filtered_data)
+        generate_monthly_spending_chart(filtered_data)
+    else:
+        # Handle the case where there is no data
+        # You might want to display a message or a placeholder chart
+        pass
+
+    return render_template(
+        'details_and_charts.html', 
+        categories=categories, 
+        selected_category=selected_subcategory
+    )
+
 
 
 #Adding saving goals
