@@ -43,8 +43,8 @@ def update_profile_picture(user, file):
         file.save(filepath)
 
         # Get the old filename to delete
-        old_filename = user.profile_picture
-        if old_filename != default_picture_filename:
+        old_filename = user.profile_picture if user.profile_picture else default_picture_filename
+        if old_filename and old_filename != default_picture_filename:
             old_filepath = os.path.join(upload_folder, old_filename)
             if os.path.exists(old_filepath):
                 os.remove(old_filepath)
