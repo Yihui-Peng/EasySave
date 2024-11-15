@@ -18,7 +18,7 @@
             const level2 = document.getElementById("category_level_2");
             level2.innerHTML = "";
             level2.disabled = false;
-
+    
             let options = [];
             if (level1 === "All Spending") {
                 options = ["All"];
@@ -34,21 +34,29 @@
                 level2.disabled = true;
                 return;
             }
-
+    
             options.forEach(option => {
                 const opt = document.createElement("option");
                 opt.value = option;
                 opt.textContent = option;
+                // 保持二级分类的选择
+                if (option === "{{ selected_category_level_2 }}") {
+                    opt.selected = true;
+                }
                 level2.appendChild(opt);
             });
         }
+    
+        // 页面加载时调用函数以更新二级分类并设置选中项
+        window.onload = function() {
+            updateSubcategories();
+        };
     </script>
 </head>
 <body>
     <div class="container">
         <!-- Start of the form -->
         <form method="POST">
-            
             <div class="category-selection">
                 <label for="category_level_1">Category-Level-1:</label>
                 <select id="category_level_1" name="category_level_1" onchange="updateSubcategories()">
@@ -58,14 +66,14 @@
                     <option value="Others" {% if selected_category_level_1 == 'Others' %}selected{% endif %}>Others</option>
                     <option value="Disposable_income" {% if selected_category_level_1 == 'Disposable_income' %}selected{% endif %}>Disposable Income</option>
                 </select>
-
+        
                 <label for="category_level_2">Subcategory-Level-2:</label>
-                <select id="category_level_2" name="category_level_2" disabled>
-                    <option value="All" selected>All</option>
+                <select id="category_level_2" name="category_level_2">
+                    <!--  -->
                 </select>
             </div>
-
-            <!-- Submit button for the form -->
+        
+            <!--  -->
             <button type="submit">Filter</button>
         </form>
         <!-- End of the form -->
