@@ -2,32 +2,53 @@ import os
 from werkzeug.utils import secure_filename
 from flask import current_app, flash, redirect, url_for
 from database import db, User
-from werkzeug.security import generate_password_hash, check_password_hash
 import time  # Import time for unique filenames
 
 default_picture_filename = "default_picture.png"
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
+
 def allowed_file(filename):
     """Check if a file has an allowed extension."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 def get_user(user_id):
     """Retrieve the user from the database."""
     return User.query.filter_by(user_id=user_id).first()
 
+
 def update_email(user, new_email):
     """Update the user's email."""
-    user.emailadress = new_email
+    user.email_address = new_email
     db.session.commit()
     return True
+
 
 def update_nickname(user, new_nickname):
     """Update the user's nickname."""
     user.nickname = new_nickname
     db.session.commit()
     return True
+
+
+def update_username(user, new_username):
+    """Update the user's username after checking uniqueness."""
+    if new_username == user.username:
+        # No change needed
+        return True, "Username remains unchanged."
+
+    # Check if the new username already exists
+    existing_user = User.query.filter_by(username=new_username).first()
+    if existing_user:
+        return False, "Username already taken. Please choose a different one."
+
+    user.username = new_username
+    db.session.commit()
+    return True, "Username updated successfully."
+
+
 
 def update_profile_picture(user, file):
     """Save a new profile picture and update the user's profile picture data."""
@@ -52,6 +73,7 @@ def update_profile_picture(user, file):
         db.session.commit()
         return True, unique_filename
     return False, None
+
 
 def handle_user_profile_update(request):
     """Handle the user profile update logic based on the form type."""
@@ -89,10 +111,9 @@ def handle_user_profile_update(request):
 
     elif form_type == 'update_profile':
         # Update user data
-        # Removed 'name' handling
-        # name = request.form.get('name')  # Removed
-        email = request.form.get('email')
-        nickname = request.form.get('nickname')
+        username = request.form.get('username').strip()
+        email = request.form.get('email').strip()
+        nickname = request.form.get('nickname').strip()
         average_income = request.form.get('average_income')
         average_spending = request.form.get('average_spending')
         age = request.form.get('age')
@@ -100,32 +121,54 @@ def handle_user_profile_update(request):
         year_in_school = request.form.get('year_in_school')
         major = request.form.get('major')
 
-        # Removed name updates
-        # if name:
-        #     user.name = name  # Removed
+        # Update Username
+        if username:
+            success, message = update_username(user, username)
+            if not success:
+                flash(message, 'danger')
+                return redirect(url_for('userProfile'))
+            else:
+                flash(message, 'success')
+
+        # Update Email
         if email:
+            # Optional: Add email format validation here
             update_email(user, email)
+
+        # Update Nickname
         if nickname:
             update_nickname(user, nickname)
+
+        # Update Average Income
         if average_income:
             try:
                 user.average_income = float(average_income)
             except ValueError:
                 flash('Invalid input for average income.', 'warning')
+
+        # Update Average Spending
         if average_spending:
             try:
                 user.average_spending = float(average_spending)
             except ValueError:
                 flash('Invalid input for average spending.', 'warning')
+
+        # Update Age
         if age:
             try:
                 user.age = int(age)
             except ValueError:
                 flash('Invalid input for age.', 'warning')
+
+        # Update Gender
         if gender:
             user.gender = gender
+
+        # Update Year in School
         if year_in_school:
             user.year_in_school = year_in_school
+
+        # Update Major
         if major:
             user.major = major
 
