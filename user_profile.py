@@ -2,7 +2,7 @@ import os
 from werkzeug.utils import secure_filename
 from flask import current_app, flash, redirect, url_for
 from database import db, User
-import time  # Import time for unique filenames
+import time 
 
 default_picture_filename = "default_picture.png"
 

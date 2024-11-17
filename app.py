@@ -16,6 +16,7 @@ from flask_migrate import Migrate
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from budget_allocation_algorithm import fetch_combined_financial_data, allocate_budget, generate_insights
 
 
 
@@ -104,9 +105,33 @@ def home():
 
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id = user_id).first()
+
+    #Fetch the latest spending record
     spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.date.desc()).first()
+
+    #Fetch the latest saving goal
     savingGoal = Saving_Goal.query.filter_by(user_id = user.user_id).first()
-    return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal)
+
+    # Fetch combined financial data
+    category_averages = fetch_combined_financial_data(user_id, db.session)
+
+    # Get average disposable income and average spending
+    avg_disposable_income = user.average_income or 0.0
+    avg_spending = user.average_spending or 0.0
+
+    # Determine savings goal
+    if savingGoal:
+        savings_goal = savingGoal.amount
+    else:
+        savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
+
+    # Allocate budget
+    allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
+
+    #Generate insights
+    insights = generate_insights(allocations, category_averages)
+
+    return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal, allocations = allocations, insights = insights)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -544,7 +569,58 @@ def userProfile():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404 
+    return render_template('404.html'), 404
+
+@app.route('/budget', methods=['GET', 'POST'])
+def budget_allocation():
+    if 'user_id' not in session:
+        flash("Please log in to view your budget allocation.", "error")
+        return redirect(url_for('login'))
+
+    user_id = int(session.get('user_id'))
+
+    if request.method == 'POST':
+        try:
+            # Fetch combined financial data from the database
+            category_averages = fetch_combined_financial_data(user_id, db.session)
+
+            # Fetch user's average disposable income and average spending from the User table
+            user = User.query.filter_by(user_id=user_id).first()
+            if not user:
+                return jsonify({"error": "User not found."}), 404
+
+            avg_disposable_income = user.average_income or 0.0
+            avg_spending = user.average_spending or 0.0
+
+            # Fetch or set savings goal
+            saving_goal_record = Saving_Goal.query.filter_by(user_id=user_id).order_by(Saving_Goal.end_date.desc()).first()
+            if saving_goal_record:
+                savings_goal = saving_goal_record.amount
+            else:
+                savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
+
+            # Perform budget allocation
+            allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
+
+            # Generate insights
+            insights = generate_insights(allocations, category_averages)
+
+            # Prepare the response data
+            response_data = {
+                "Disposable Income": round(avg_disposable_income, 2),
+                "Savings Goal": round(allocations.get('Savings', 0.0), 2),
+                "Budget After Savings": round(avg_disposable_income - allocations.get('Savings', 0.0), 2),
+                "Allocations": {category: round(amount, 2) for category, amount in allocations.items()},
+                "Insights": insights
+            }
+
+            return jsonify(response_data)
+
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    # For GET request, render a simple form or page
+    return render_template('budget.html')
 
 if __name__ == "__main__":
     app.run(debug=True)    

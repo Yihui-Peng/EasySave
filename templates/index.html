@@ -26,11 +26,15 @@
     <div class="container">
         <div class="advice-section">
             <h2>Advices</h2>
-            <ul>
-                <li>Advice 1</li>
-                <li>Advice 2</li>
-                <li>Advice 3</li>
-            </ul>
+            {% if insights %}
+                <ul>
+                    {% for insight in insights %}
+                        <li>{{ insight }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No insights available at the moment.</p>
+            {% endif %}
         </div>
         <div class="new-records">
             <h2>New Records</h2>
