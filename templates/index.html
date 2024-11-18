@@ -1,28 +1,40 @@
- {% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Home{% endblock %}
 {% block styles %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}"> {% endblock %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
 {% block content %}
     <h2>Welcome, {{ user.username }}</h2>
     <p>This is the home page.</p>
 
     <div class="spending-summary">
+       
         <div class="previous-spending">
             <h2>Previous Records</h2>
-            <p id="Spending_name">{{prev_spending.category + " " + prev_spending.date.strftime('%Y-%m-%d')}}</p>
-            <p id="Spending_amount"> €{{prev_spending.amount}}</p>
-            <p id="Note">Note: {{prev_spending.note}}</p>
+            {% if prev_spending %}
+            <p id="Spending_name">{{ prev_spending.category + " " + prev_spending.date.strftime('%Y-%m-%d') }}</p>
+            <p id="Spending_amount"> €{{ prev_spending.amount }}</p>
+            <p id="Note">Note: {{ prev_spending.note }}</p>
+            {% endif %}
         </div>
+     
+
+       
         <div class="saving-goal">
             <h2>Saving Goal</h2>
+            {% if savingGoal %}
             <canvas id="myPieChart" width="200" height="200"></canvas>
+            {% endif %}
         </div>
+        
+        
         <div class="remaining-today">
             <h2>Today's Remaining</h2>
             <p id="todayRemaining">666</p>
         </div>
     </div>
+    
     <div class="container">
         <div class="advice-section">
             <h2>Advices</h2>
@@ -40,22 +52,23 @@
         </div>
     </div>
 
+    {% if savingGoal %}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var ctx = document.getElementById('myPieChart').getContext('2d');
             var used = parseFloat('{{ savingGoal.progress_amount | default(0) }}');
             var total = parseFloat('{{ savingGoal.amount | default(1) }}');
             var remaining = total - used;
-        
+
             var myPieChart = new Chart(ctx, {
-                type: 'pie', // 图表类型
+                type: 'pie',
                 data: {
-                    labels: ['Used', 'Remaining'], // 数据标签
+                    labels: ['Used', 'Remaining'],
                     datasets: [{
-                        data: [used, remaining], // 实际数据
+                        data: [used, remaining],
                         backgroundColor: [
-                            'rgba(255, 99, 132, 0.2)', // 红色
-                            'rgba(54, 162, 235, 0.2)'  // 蓝色
+                            'rgba(255, 99, 132, 0.2)', // Red
+                            'rgba(54, 162, 235, 0.2)'  // Blue
                         ],
                         borderColor: [
                             'rgba(255, 99, 132, 1)',
@@ -74,10 +87,10 @@
                             mode: 'index',
                             intersect: false
                         },
-                        datalabels: {  // 添加数据标签插件配置
+                        datalabels: {
                             formatter: (value, context) => {
                                 let sum = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                let percentage = (value / sum * 100).toFixed(2) + "%"; // 计算百分比并格式化
+                                let percentage = (value / sum * 100).toFixed(2) + "%";
                                 return percentage;
                             },
                             color: '#fff',
@@ -87,5 +100,7 @@
             });
         });
     </script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% endif %}
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}

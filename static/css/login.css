@@ -78,3 +78,13 @@ body {
 .switch-form a:hover {
     text-decoration: underline;
 }
+
+.flashes {
+    list-style: none;
+    padding: 0;
+}
+.flash {
+    color: red;
+    font-weight: bold;
+    margin: 10px 0;
+}

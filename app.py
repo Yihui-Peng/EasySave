@@ -121,16 +121,16 @@ def register():
         confirm_password = request.form['confirm-password']
         if password != confirm_password:
             flash('Passwords do not match.')
-            return redirect(url_for('register'))
+            return render_template('login.html', show_register=True)
 
         if not re.match(r"[^@]+@[^@]+\.[^@]+", emailadress):
             flash('Invalid email address.')
-            return redirect(url_for('register'))
+            return render_template('login.html', show_register=True)
         
         existing_user = User.query.filter((User.username == username) | (User.emailadress == emailadress)).first()
         if existing_user:
             flash('Username or email already exists', 'error')
-            return redirect(url_for('register'))
+            return render_template('login.html', show_register=True)
         
         new_user = User(username=username, emailadress=emailadress, password=password)
         db.session.add(new_user)
@@ -215,8 +215,8 @@ def show_saving_goal_page():
         new_goal = Saving_Goal(
             user_id=user_id,
             amount=amount,
-            start_datum=start_date,
-            end_datum=end_date,
+            start_date=start_date,
+            end_date=end_date,
             progress=progress,
             progress_amount=progress_amount
         )
@@ -313,6 +313,7 @@ def survey():
 
         # Check if the skip checkbox is checked
         skip = request.form.get('skipFinancialRecords', None)
+        print("skip: {skip}")
 
         if skip:
             # Save the first and third question's answers to the User table
@@ -325,7 +326,8 @@ def survey():
                 user.average_spending = average_spending
                 db.session.commit()
 
-            return "Survey data (average income and average spending) has been saved successfully."
+            print("Successfully saved data, redirecting to home...")  # Debugging output
+            return redirect(url_for('home'))
         else:
             # Save the second question's answer to the Saving_Goal table
             saving_goal_amount = request.form.get('goalAmount', 0.0)
@@ -382,7 +384,7 @@ def survey():
 
             db.session.commit()
 
-            return "Survey data (saving goal and spending details) have been saved successfully."
+            return redirect(url_for('home'))
 
     return render_template('financial_survey_html_.html')
 
