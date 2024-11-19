@@ -12,7 +12,7 @@ class User(db.Model):
     nickname = db.Column(db.String(100),nullable=True)
     average_income = db.Column(db.Float)
     average_spending = db.Column(db.Float)
-    emailadress = db.Column(db.String(150), nullable=True)
+    emailaddress = db.Column(db.String(150), nullable=True)
     password = db.Column(db.String(200), nullable=True)
     age = db.Column(db.Integer)
     gender = db.Column(db.String(10))
@@ -56,6 +56,7 @@ class Saving_Goal(db.Model):
 
     saving_goal_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
+    name = db.Column(db.String(200))
     amount = db.Column(db.Float)
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
