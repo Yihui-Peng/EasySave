@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container my-5">
-    <h2 class="mb-4 text-center">User Profile</h2>
+    <h2 class="mb-4 text-center">{{ user.nickname }}'s User Profile</h2>
     <p class="text-center text-muted mb-5">View and update your profile information below.</p>
 
     <!-- Feedback Messages -->
@@ -27,13 +27,22 @@
             <h5 class="card-title fw-bold mb-4 text-center">Profile Summary</h5>
             <div class="row align-items-center">
                 <div class="col-md-4 text-center mb-3 mb-md-0">
-                    <img src="{{ url_for('static', filename='profile_pictures/' + user.profile_picture) }}?t={{ time.time() }}"
+                    <img src="{{ url_for('static', filename='profile_pictures/' ~ (user.profile_picture | default('default_picture.png'))) }}?t={{ time.time() }}"
                          alt="Profile Picture" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
                 </div>
                 <div class="col-md-8">
-                    <p><strong>Name:</strong> {{ user.name }}</p>
-                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <!-- Display user_id and username as plain text -->
+                    <p><strong>User ID:</strong> {{ user.user_id }}</p>
+                    <p><strong>Username:</strong> {{ user.username }}</p>
                     <p><strong>Nickname:</strong> {{ user.nickname }}</p>
+                    <p><strong>Email:</strong> {{ user.emailaddress }}</p>
+                    <!-- Display Other Fields -->
+                    <p><strong>Average Income:</strong> {{ user.average_income }}</p>
+                    <p><strong>Average Spending:</strong> {{ user.average_spending }}</p>
+                    <p><strong>Age:</strong> {{ user.age }}</p>
+                    <p><strong>Gender:</strong> {{ user.gender }}</p>
+                    <p><strong>Year in School:</strong> {{ user.year_in_school }}</p>
+                    <p><strong>Major:</strong> {{ user.major }}</p>
                 </div>
             </div>
             <div class="text-center mt-4">
@@ -53,7 +62,7 @@
                 <div class="card shadow-sm">
                     <div class="card-body text-center">
                         <h5 class="card-title fw-bold mb-4">Profile Picture</h5>
-                        <img src="{{ url_for('static', filename='profile_pictures/' + user.profile_picture) }}?t={{ time.time() }}"
+                        <img src="{{ url_for('static', filename='profile_pictures/' ~ (user.profile_picture | default('default_picture.png'))) }}?t={{ time.time() }}"
                              alt="Profile Picture" class="rounded-circle mb-4" style="width: 150px; height: 150px; object-fit: cover;">
                         <!-- Form to Upload New Profile Picture -->
                         <form action="{{ url_for('userProfile') }}" method="post" enctype="multipart/form-data"
@@ -81,30 +90,81 @@
             </div>
 
             <!-- User Information Update Card -->
-            <div class="col-md-6 col-lg-6">
+            <div class="col-md-6 col-lg-8">
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h5 class="card-title fw-bold mb-4 text-center">User Information</h5>
                         <form action="{{ url_for('userProfile') }}" method="post">
+
                             <input type="hidden" name="form_type" value="update_profile">
-                            <!-- Name -->
-                            <div class="mb-4">
-                                <label for="name" class="form-label fw-bold">Name:</label>
-                                <input type="text" name="name" id="name" value="{{ user.name }}"
+
+                            <!-- Username -->
+                            <div class="mb-3">
+                                <label for="username" class="form-label fw-bold">Username:</label>
+                                <input type="text" name="username" id="username" value="{{ user.username }}"
                                        class="form-control" required>
                             </div>
-                            <!-- Email -->
-                            <div class="mb-4">
-                                <label for="email" class="form-label fw-bold">Email:</label>
-                                <input type="email" name="email" id="email" value="{{ user.email }}"
-                                       class="form-control" required>
-                            </div>
+
                             <!-- Nickname -->
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label for="nickname" class="form-label fw-bold">Nickname:</label>
                                 <input type="text" name="nickname" id="nickname" value="{{ user.nickname }}"
                                        class="form-control" required>
                             </div>
+
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label fw-bold">Email:</label>
+                                <input type="email" name="email" id="email" value="{{ user.emailaddress }}"
+                                       class="form-control" required>
+                            </div>
+
+                            <!-- Average Income -->
+                            <div class="mb-3">
+                                <label for="average_income" class="form-label fw-bold">Average Income:</label>
+                                <input type="number" step="0.01" name="average_income" id="average_income" value="{{ user.average_income }}"
+                                       class="form-control">
+                            </div>
+
+                            <!-- Average Spending -->
+                            <div class="mb-3">
+                                <label for="average_spending" class="form-label fw-bold">Average Spending:</label>
+                                <input type="number" step="0.01" name="average_spending" id="average_spending" value="{{ user.average_spending }}"
+                                       class="form-control">
+                            </div>
+
+                            <!-- Age -->
+                            <div class="mb-3">
+                                <label for="age" class="form-label fw-bold">Age:</label>
+                                <input type="number" name="age" id="age" value="{{ user.age }}"
+                                       class="form-control">
+                            </div>
+
+                            <!-- Gender -->
+                            <div class="mb-3">
+                                <label for="gender" class="form-label fw-bold">Gender:</label>
+                                <select name="gender" id="gender" class="form-control">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
+                                    <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female</option>
+                                    <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+
+                            <!-- Year in School -->
+                            <div class="mb-3">
+                                <label for="year_in_school" class="form-label fw-bold">Year in School:</label>
+                                <input type="text" name="year_in_school" id="year_in_school" value="{{ user.year_in_school }}"
+                                       class="form-control">
+                            </div>
+
+                            <!-- Major -->
+                            <div class="mb-3">
+                                <label for="major" class="form-label fw-bold">Major:</label>
+                                <input type="text" name="major" id="major" value="{{ user.major }}"
+                                       class="form-control">
+                            </div>
+
                             <!-- Update Button -->
                             <button type="submit" class="btn btn-success w-100">
                                 <i class="bi bi-pencil-square me-2"></i> Update Profile

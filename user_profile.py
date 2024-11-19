@@ -1,16 +1,10 @@
 import os
 from werkzeug.utils import secure_filename
 from flask import current_app, flash, redirect, url_for
-import time  # Import time for unique filenames
+from database import db, User
+import time 
 
 default_picture_filename = "default_picture.png"
-
-user_data = {
-    "name": "John Example",
-    "email": "je@example.com",
-    "nickname": "JE",
-    "profile_picture": default_picture_filename
-}
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -20,24 +14,43 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def get_user():
-    """Retrieve the user data."""
-    return user_data
+def get_user(user_id):
+    """Retrieve the user from the database."""
+    return User.query.filter_by(user_id=user_id).first()
 
 
-def update_email(new_email):
+def update_email(user, new_email):
     """Update the user's email."""
-    user_data['email'] = new_email
+    user.email_address = new_email
+    db.session.commit()
     return True
 
 
-def update_nickname(new_nickname):
+def update_nickname(user, new_nickname):
     """Update the user's nickname."""
-    user_data['nickname'] = new_nickname
+    user.nickname = new_nickname
+    db.session.commit()
     return True
 
 
-def update_profile_picture(file):
+def update_username(user, new_username):
+    """Update the user's username after checking uniqueness."""
+    if new_username == user.username:
+        # No change needed
+        return True, "Username remains unchanged."
+
+    # Check if the new username already exists
+    existing_user = User.query.filter_by(username=new_username).first()
+    if existing_user:
+        return False, "Username already taken. Please choose a different one."
+
+    user.username = new_username
+    db.session.commit()
+    return True, "Username updated successfully."
+
+
+
+def update_profile_picture(user, file):
     """Save a new profile picture and update the user's profile picture data."""
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
@@ -49,14 +62,15 @@ def update_profile_picture(file):
         file.save(filepath)
 
         # Get the old filename to delete
-        old_filename = user_data['profile_picture']
-        if old_filename != default_picture_filename:
+        old_filename = user.profile_picture if user.profile_picture else default_picture_filename
+        if old_filename and old_filename != default_picture_filename:
             old_filepath = os.path.join(upload_folder, old_filename)
             if os.path.exists(old_filepath):
                 os.remove(old_filepath)
 
         # Update to the new filename
-        user_data['profile_picture'] = unique_filename
+        user.profile_picture = unique_filename
+        db.session.commit()
         return True, unique_filename
     return False, None
 
@@ -65,38 +79,100 @@ def handle_user_profile_update(request):
     """Handle the user profile update logic based on the form type."""
     form_type = request.form.get('form_type')
 
+    # Access user_id from session
+    from flask import session
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("User not logged in.", "error")
+        return redirect(url_for('login'))
+
+    user = get_user(user_id)
+    if not user:
+        flash("User not found.", "error")
+        return redirect(url_for('login'))
+
     if form_type == 'upload_picture':
         # Upload profile picture
         file = request.files.get('profile_picture')
         if file and allowed_file(file.filename):
-            success, filename = update_profile_picture(file)
+            success, filename = update_profile_picture(user, file)
             if success:
-                flash('Upload success!', 'success')
+                flash('Profile picture updated successfully!', 'success')
             else:
-                flash('Upload failed!', 'danger')
+                flash('Failed to upload profile picture.', 'danger')
         else:
-            flash('Upload a valid file!', 'warning')
+            flash('Please upload a valid image file.', 'warning')
 
     elif form_type == 'revert_picture':
         # Revert to Default Picture
-        user = get_user()
-        user['profile_picture'] = default_picture_filename
+        user.profile_picture = default_picture_filename
+        db.session.commit()
         flash('Profile picture has been reverted to the default.', 'info')
 
     elif form_type == 'update_profile':
         # Update user data
-        name = request.form.get('name')
-        email = request.form.get('email')
-        nickname = request.form.get('nickname')
+        username = request.form.get('username').strip()
+        email = request.form.get('email').strip()
+        nickname = request.form.get('nickname').strip()
+        average_income = request.form.get('average_income')
+        average_spending = request.form.get('average_spending')
+        age = request.form.get('age')
+        gender = request.form.get('gender')
+        year_in_school = request.form.get('year_in_school')
+        major = request.form.get('major')
 
-        user = get_user()
-        if name:
-            user['name'] = name
+        # Update Username
+        if username:
+            success, message = update_username(user, username)
+            if not success:
+                flash(message, 'danger')
+                return redirect(url_for('userProfile'))
+            else:
+                flash(message, 'success')
+
+        # Update Email
         if email:
-            update_email(email)
-        if nickname:
-            update_nickname(nickname)
+            # Optional: Add email format validation here
+            update_email(user, email)
 
+        # Update Nickname
+        if nickname:
+            update_nickname(user, nickname)
+
+        # Update Average Income
+        if average_income:
+            try:
+                user.average_income = float(average_income)
+            except ValueError:
+                flash('Invalid input for average income.', 'warning')
+
+        # Update Average Spending
+        if average_spending:
+            try:
+                user.average_spending = float(average_spending)
+            except ValueError:
+                flash('Invalid input for average spending.', 'warning')
+
+        # Update Age
+        if age:
+            try:
+                user.age = int(age)
+            except ValueError:
+                flash('Invalid input for age.', 'warning')
+
+        # Update Gender
+        if gender:
+            user.gender = gender
+
+        # Update Year in School
+        if year_in_school:
+            user.year_in_school = year_in_school
+
+        # Update Major
+        if major:
+            user.major = major
+
+        db.session.commit()
         flash('Profile information updated successfully!', 'success')
 
     # After handling POST, redirect to the same route to perform a GET request

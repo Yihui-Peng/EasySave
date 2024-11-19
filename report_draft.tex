@@ -1,0 +1,250 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{geometry} % For adjusting page layout
+\usepackage{booktabs} % For clean table formatting
+\usepackage{url}
+\usepackage{longtable}
+
+\title{Software Development Report}
+\author{Group 6}
+\date{October 2024}
+\begin{document}
+
+\maketitle
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{ccc} 
+    \toprule
+    \textbf{First Name} & \textbf{Last Name} & \textbf{Student Number} \\ 
+    \midrule
+    Hao    & Chen     & 3990788 \\ 
+    Adrien & Im       & 3984389 \\
+    Yihui  & Peng     & 3985571 \\ 
+    Tony   & Tian     & 3795888 \\ 
+    Zhemin & Xie      & 3808440 \\ 
+    Jiajia & Xu       & 3845567 \\ 
+    \bottomrule
+    \end{tabular}
+    \caption{Group 6 Members}
+    \label{tab:group6_members}
+\end{table}
+
+\section{Introduction}
+\subsection{Purpose}
+The purpose of this document is to outline the software requirements for the \textbf{Student Financial Planner: Personalized Savings and Spending Insights}. This project aims to assist students in creating personalized savings plans by analyzing their past spending behavior and providing actionable insights. The software will give personalized recommendations on saving, compare users' spending to peers or national averages, and offer advice on reaching their savings goals.
+
+\subsection{Scope}
+The system will focus on assisting students in financial planning by providing personalized advice on budgeting and saving based on their income and spending habits. It will compare individual data against aggregate datasets to offer insight and help users adjust their spending to meet specific savings goals. The software will:
+\begin{itemize}
+    \item Provide personalized savings plans based on user input.
+    \item Compare the user's spending patterns against a dataset for benchmarking.
+    \item Display progress toward savings goals with visual feedback.
+\end{itemize}
+
+\subsection{System Overview}
+The \textbf{Student Financial Planner} will serve as an educational tool, helping students enhance their financial literacy and gain better control of their personal finances. The system will allow users to input their income, spending habits, and desired savings goals, and in turn, it will provide tailored suggestions. It will benchmark users' spending patterns against publicly available consumer spending data and provide advice on spending with dynamic saving calculations. 
+
+\subsection{Product Perspective}
+The \textbf{Student Financial Planner} is a standalone software solution that promotes financial literacy for students. By analyzing and visualizing the user's financial data, the system generates personalized savings plans. This product helps users understand their financial habits, offering insights on how they compare to broader trends and helping them make adjustments to achieve financial goals.
+
+\subsection{Product Features}
+\begin{itemize}
+    \item \textbf{Account Login/Sign-up}: Allows users to sign up or log in to an existing account. Records their saving plan and recent spending record if they fill in the form.
+    \item \textbf{Home Page}: Provide an overview of students' spending and savings progress.
+    \item \textbf{New Record Page}:  Allows students to input their spending categories (e.g., rent, food, entertainment) and amount, compares their spending and the spending of other students in general, and displays the difference in the form of charts and graphs.
+    \item \textbf{Savings Goal Page}: Users can add or delete saving goals on this page, giving a clear view of the progress of existing saving goals.
+    \item \textbf{Setting Menu}: Allow users to customize the interface appearance, and language, log out, or modify their profile, while also providing contact information for the website creators.
+    \item \textbf{User Profile}: Allows users to update the profile of their current account, including name, email, nickname, and profile picture.
+    \item \textbf{Spending Advice Generation}: Analyzes the user's historical preference for spending categories and amounts, and generates advice about saving for students based on it. 
+    
+\end{itemize}
+
+\subsection{User Classes and Characteristics}
+\begin{itemize}
+    \item \textbf{Students}: The primary user group includes students aged 18-25 who are interested in learning to manage their personal finances. They may have limited knowledge of budgeting or savings strategies.
+\end{itemize}
+
+\subsection{Operating Environment}
+\begin{itemize}
+    \item \textbf{Frontend:} HTML, CSS, and JavaScript for the user interface.  
+    \item \textbf{Backend:} Python with Flask framework for server-side processing and handling requests.  
+    \item \textbf{Database:} SQLite for data storage and management.  
+    \item \textbf{Development Environment:} Python 3.x, Flask, and relevant web technologies (HTML, CSS, JavaScript) for building the application.  
+\end{itemize}
+
+\subsection{Assumptions and Dependencies}
+\begin{itemize}
+    \item The user will input their financial data manually, as the software will not link to external financial services.
+    \item Access to public datasets (e.g., from Kaggle or government sources) will be assumed.
+\end{itemize}
+
+\section{Software Requirement Specification}
+This section details the system’s software requirements, focusing on the functionalities, user interface, and technical specifications. Based on requirements outlined in Lecture 1 slides and Ian Sommerville's Software Engineering textbook, the following features were prioritized: 
+\begin{itemize} 
+\item User input for monthly income, spending categories, and savings goals. 
+\item Analytical comparison of user spending with national and peer benchmarks. 
+\item Visual feedback on progress toward savings goals. 
+\item Calculation for how to reaching the set savings goals. 
+\end{itemize}
+
+\subsection{Objective}
+\subsubsection{Functional}
+\begin{itemize}
+    \item Account management: Users can create, update, or delete their accounts.
+    \item Spending record management: Users can easily record and check their recent spending.
+    \item Savings goal management: Users can set, track, and manage their savings goals.
+    \item Alerts and advices: Users receive notifications when they are close to reaching their savings goals or some spending advice is given.
+\end{itemize}
+\subsubsection{Non-functional}
+\begin{itemize}
+    \item \textbf{Performance}: The website must load transactions quickly and handle multiple simultaneous users.
+    \item \textbf{Scalability}: As the user base grows, the website should be able to handle an increasing number of users and larger amounts of transaction data.
+\end{itemize}
+\subsection{End results}
+\subsubsection{Functional}
+\begin{itemize}
+    \item Login and Registration Page.
+    \item User dashboards that display account balance, savings goals, and progress tracking.
+    \item User spending and saving goals recording pages.
+    \item User settings interface for users to make some basic adjustments to the app settings, as well as account management.
+    \item Goal achievement notification that notifies users when they meet their savings target.
+\end{itemize}
+\subsubsection{Non-functional}
+\begin{itemize}
+    \item The app maintains a high level of performance regardless of the number of active users.
+    \item The user experience is seamless and responsive, even when the app is under heavy load.
+\end{itemize}
+
+\subsection{Focus}
+\subsubsection{Functional}
+\begin{itemize}
+    \item Ease of use: Ensure that the process for setting up savings goals and transferring money is straightforward and intuitive for users.
+    \item Spending habit development: Help users develop good savings and money management concepts.
+\end{itemize}
+\subsubsection{Non-functional}
+\begin{itemize}
+    \item Usability: Ensuring the app is easy to navigate and user-friendly for people of varying technical skill levels.
+    \item Reliability: The app should be available with minimal downtime, ensuring users can manage their savings anytime.
+\end{itemize}
+
+\subsection{Documentation}
+\subsubsection{Functional}
+\begin{itemize}
+    \item Use case diagrams: For example, how users set a savings goal and deposit money.
+    \item User stories: "As a user, I want to view my savings goals so that I can track my progress."
+\end{itemize}
+\subsubsection{Non-functional}
+\begin{itemize}
+    \item Performance benchmarks: Response time for logging in or viewing savings goals should be less than 2 seconds (not sure about the time used to be benchmarks).
+    \item Security standards: Compliance with industry-standard encryption protocols (e.g., AES-256 for data).
+\end{itemize}
+
+\subsection{Requirement}
+\subsubsection{Functional}
+\begin{itemize}
+    \item If there are no savings goals set, then the app can be used as a bookkeeping program, but if it doesn’t provide enough historical spending history, then it's inaccurate for new users to assess their spending.
+\end{itemize}
+\subsubsection{Non-functional}
+\begin{itemize}
+    \item Fast loading times: While not mandatory, users expect the app to load quickly.
+    \item The accuracy of the financial assessment.
+\end{itemize}
+
+\subsection{Origin Type}
+\subsubsection{Functional}
+\begin{itemize}
+    \item User feedback: "I want an easy way to automate my savings deposits."
+    \item Product owner input: "The app must have a feature that allows users to receive alerts on their savings progress."
+\end{itemize}
+\subsubsection{Non-functional}
+\begin{itemize}
+    \item Security specialists might define encryption and authentication mechanisms.
+\end{itemize}
+
+\subsection{Testing}
+\subsubsection{Functional}
+\begin{itemize}
+    \item Unit testing: To verify the code behind individual features such as savings goal creation.
+    \item Integration testing: Ensuring that the savings system integrates with external banking systems or APIs.
+    \item User Acceptance Testing: To ensure users can perform tasks like setting savings goals and transferring funds without issues.
+\end{itemize}
+\subsubsection{Non-functional}
+\begin{itemize}
+    \item Performance testing: Testing how the app performs under a heavy load of users and transactions.
+    \item Usability testing: Evaluating the user experience by testing the interface with real users.
+    \item Security testing: Ensuring user data is protected against unauthorized access or breaches.
+\end{itemize}
+
+\subsection{Types}
+\subsubsection{Functional}
+\begin{itemize}
+    \item Authentication and Authorization: Users need to log in securely and reset passwords when necessary.
+    \item Savings and Goal Setting: Features that allow users to set, edit, and delete savings goals.
+    \item Business Rules: Includes things like defining the minimum savings balance, interest calculations, etc.
+\end{itemize}
+\subsubsection{Non-functional}
+\begin{itemize}
+    \item Usability: The app should be intuitive, with minimal training required.
+    \item Reliability: The system should work almost all the time, ensuring the app is almost always available for users.
+    \item Scalability: As more users sign up for the app, it should be able to handle increased traffic without slowdowns.
+    \item Security: User data, particularly financial information, must be encrypted and securely stored.
+\end{itemize}
+
+
+\section{Software Development Process}
+This project followed a Waterfall development approach, where each phase was completed sequentially before moving on to the next stage. The process was structured as follows:
+\begin{itemize}
+    \item \textbf{Phase 1}: Requirements analysis and gathering, including defining the objectives and key features of the project. At this stage, we identified the project's core theme and structure.
+    \item \textbf{Phase 2}: System design, where the software architecture, data flow, and user interface designs were established. The team developed initial design sketches for the primary user interface and conducted an exploration of the required data and system architecture.
+    \item \textbf{Phase 3}: Implementation, involving the actual development of the application, coding the features, and integrating the datasets. Tasks related to the implementation of various functionalities were assigned to different team members, with each member responsible for creating an individual page. Additionally, we integrated the database sourced from Kaggle with the user database we generated for testing purposes.
+    \item \textbf{Phase 4}: Integration and testing, where the software was thoroughly tested to ensure functionality and to fix any bugs identified.
+    \item \textbf{Phase 5}: Deployment, where the final version of the software was delivered and deployed for user use.
+    \item \textbf{Phase 6}: Maintenance, where feedback was collected, and any necessary updates or bug fixes were applied.
+\end{itemize}
+
+\section{Software Architecture}
+
+\subsection{Dataset}
+The project utilized datasets from Kaggle, which included anonymized student financial data. Preprocessing steps included cleaning missing values, normalizing income and expenditure data, and categorizing spending patterns into major groups like rent, food, and entertainment. 
+\par Meanwhile, a database with random user information such as username, password, spending records, etc. was generated and implemented to test the website's usability.
+
+\subsection{Methodology}
+The system is structured around Python's Pandas library for data analysis, with Matplotlib for visualizing trends and insights. Key functions include user input validation, data comparison, and probability calculation using historical data. As the application is implemented as a website, flask framework is used, serving as a backend framework that facilitates the interaction between the front-end and back-end of the system.
+
+\subsection{APIs used}
+The software was built using various Python libraries, including: 
+\begin{itemize} 
+    \item \textbf{PULP}: A Python linear programming API, mainly used for allocating the spending dynamically based on the user's saving goal.
+    \item \textbf{statsmodels}: A statistical modeling and econometrics API in Python, implementation of which aims at predicting the future spending of the users based on their historical spending preference.
+    \item \textbf{Matplotlib}: For data visualization.
+\end{itemize}
+
+
+\section{Software Testing}
+Testing was performed at various stages: \begin{itemize} \item Unit tests for each function (e.g., input validation, spending analysis). \item Integration tests to ensure smooth interaction between modules. \item User acceptance testing to validate usability and performance. \end{itemize}
+
+
+\section{Reflection and Work Distribution}
+Each team member contributed to different aspects of the project: \begin{itemize} \item \textbf{Adrien Im}: (Example)Dataset selection and analysis. \item \textbf{Hao Chen}: (Example)Backend logic and functionality development. \item \textbf{Zhemin Xie}: (Example)User interface development. \item \textbf{Tony Tian}: (Example)Testing and debugging. \item \textbf{Jiajia Xu}: (Example)Documentation and report compilation. \item \textbf{Yihui Peng}: (Example)Project management and coordination. \end{itemize}
+
+\section{Conclusion}
+
+
+\section{Appendices}
+\subsection{Datasets}
+\begin{itemize}
+    \item \textbf{Consumer Expenditure Survey (BLS)}: Provides aggregate consumer spending data useful for comparison.
+    \item \textbf{Eurostudent Survey}: Contains data on student financial situations across Europe.
+    \item \textbf{Synthetic Data}: Generated based on assumptions about student spending habits in categories such as rent, food, and entertainment.
+\end{itemize}
+
+\subsection{References}
+\begin{itemize}
+    \item Kaggle Datasets: \url{https://www.kaggle.com}
+    \item Pandas Library: \url{https://pandas.pydata.org/}
+    \item Matplotlib Library: \url{https://matplotlib.org/}
+\end{itemize}
+
+
+\end{document}

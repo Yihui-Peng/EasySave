@@ -18,6 +18,7 @@ class User(db.Model):
     gender = db.Column(db.String(10))
     year_in_school = db.Column(db.String(50))
     major = db.Column(db.String(100))
+    profile_picture = db.Column(db.String(200), nullable=False, default='default_picture.png')
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     spendings = db.relationship('Detail', backref='user', lazy=True)

@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 {% endblock %}
 {% block content %}
-    <h2>Welcome, {{ user.username }}</h2>
+    <h2>Welcome, {{ user.nickname }}</h2>
     <p>This is the home page.</p>
 
     <div class="spending-summary">
@@ -38,11 +38,15 @@
     <div class="container">
         <div class="advice-section">
             <h2>Advices</h2>
-            <ul>
-                <li>Advice 1</li>
-                <li>Advice 2</li>
-                <li>Advice 3</li>
-            </ul>
+            {% if insights %}
+                <ul>
+                    {% for insight in insights %}
+                        <li>{{ insight }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No insights available at the moment.</p>
+            {% endif %}
         </div>
         <div class="new-records">
             <h2>New Records</h2>

@@ -1,14 +1,24 @@
+import os
+from werkzeug.utils import secure_filename
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import CSRFProtect
+from werkzeug.security import check_password_hash, generate_password_hash
+from database import db, Detail, User, Saving_Goal, Record
 import datetime
 from datetime import timedelta, datetime
-from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
-import os
 import re
 import time
 from sqlalchemy import inspect
-from werkzeug.security import check_password_hash, generate_password_hash
 from import_database import initialize_database
-from database import db, Detail, User, Saving_Goal, Record  
 from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
+from flask_migrate import Migrate
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from budget_allocation_algorithm import fetch_combined_financial_data, allocate_budget, generate_insights
+
+
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -20,6 +30,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
+migrate = Migrate(app, db)
 
 with app.app_context():
     # Check db file exists or not 
@@ -48,7 +59,7 @@ def get_data():
 
     result = []
     for user in users:
-        user_info = f"Username: {user.username}, Email: {user.emailadress}, Gender: {user.gender}, Age: {user.age}, Year in School: {user.year_in_school}, Major: {user.major}"
+        user_info = f"Username: {user.username}, Email: {user.emailaddress}, Gender: {user.gender}, Age: {user.age}, Year in School: {user.year_in_school}, Major: {user.major}"
         result.append(user_info)
 
         spendings = Detail.query.filter_by(user_id=user.user_id).all()
@@ -94,9 +105,33 @@ def home():
 
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id = user_id).first()
+
+    #Fetch the latest spending record
     spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.date.desc()).first()
+
+    #Fetch the latest saving goal
     savingGoal = Saving_Goal.query.filter_by(user_id = user.user_id).first()
-    return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal)
+
+    # Fetch combined financial data
+    category_averages = fetch_combined_financial_data(user_id, db.session)
+
+    # Get average disposable income and average spending
+    avg_disposable_income = user.average_income or 0.0
+    avg_spending = user.average_spending or 0.0
+
+    # Determine savings goal
+    if savingGoal:
+        savings_goal = savingGoal.amount
+    else:
+        savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
+
+    # Allocate budget
+    allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
+
+    #Generate insights
+    insights = generate_insights(allocations, category_averages)
+
+    return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal, allocations = allocations, insights = insights)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -116,23 +151,23 @@ def login():
 def register():
     if request.method == 'POST':
         username = request.form['username']
-        emailadress = request.form['email']
+        emailaddress = request.form['email']
         password = request.form['password']
         confirm_password = request.form['confirm-password']
         if password != confirm_password:
             flash('Passwords do not match.')
             return render_template('login.html', show_register=True)
 
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", emailadress):
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", emailaddress):
             flash('Invalid email address.')
             return render_template('login.html', show_register=True)
         
-        existing_user = User.query.filter((User.username == username) | (User.emailadress == emailadress)).first()
+        existing_user = User.query.filter((User.username == username) | (User.emailaddress == emailaddress)).first()
         if existing_user:
             flash('Username or email already exists', 'error')
             return render_template('login.html', show_register=True)
         
-        new_user = User(username=username, emailadress=emailadress, password=password)
+        new_user = User(username=username, emailaddress=emailaddress, password=password, profile_picture = 'default_picture.png')
         db.session.add(new_user)
         db.session.commit()
 
@@ -141,6 +176,9 @@ def register():
         flash('Registration successful! Please complete this survey.')
         return redirect(url_for('survey'))
     return render_template('login.html')
+
+
+
 
 
 # newRecords part
@@ -171,7 +209,7 @@ def newRecords():
             return redirect(url_for('newRecords'))
 
         new_record = Record(
-            amount=float(amount),
+            amount=round(float(amount),2),
             category=category,
             date=date_obj,
             note=note,
@@ -181,10 +219,176 @@ def newRecords():
         db.session.add(new_record)
         db.session.commit()
 
-        flash('New record added successfully', 'success')
-        return redirect(url_for('newRecords'))
+        # flash('New record added successfully', 'success')
+        # return redirect(url_for('newRecords'))
+        return redirect(url_for('newRecords', added=True))
 
     return render_template('newRecords.html', active_page='newRecords')
+
+
+
+
+
+# Import your models
+from database import User, Detail, Saving_Goal, Record
+
+def generate_normal_distribution_chart(amounts):
+
+    amounts = np.array(amounts)
+
+    # 绘制直方图和正态分布曲线
+    plt.figure(figsize=(10, 6))
+    count, bins, ignored = plt.hist(amounts, bins=15, density=True, alpha=0.6, color='b')
+
+    # 计算正态分布曲线
+    mu, sigma = np.mean(amounts), np.std(amounts)
+    y = ((1 / (np.sqrt(2 * np.pi) * sigma)) *
+         np.exp(-0.5 * (1 / sigma * (bins - mu))**2))
+
+    plt.plot(bins, y, '--', color='r')
+    plt.xlabel('Spending Amount')
+    plt.ylabel('Density')
+    plt.title('Spending Distribution Across All Users')
+    plt.savefig('static/spending_distribution.png')
+    plt.close()
+
+
+
+def generate_monthly_spending_chart(records):
+    if not records:
+        # 如果记录列表为空，直接返回
+        return
+    
+    # 创建 DataFrame
+    data = []
+    for record in records:
+        data.append({
+            'amount': record.amount,
+            'date': record.date
+        })
+    df = pd.DataFrame(data)
+
+    if df.empty:
+        return
+
+    df['month'] = pd.to_datetime(df['date']).dt.month
+    monthly_data = df.groupby('month')['amount'].sum()
+
+    plt.figure(figsize=(10, 6))
+    monthly_data.plot(kind='bar', color='green')
+    plt.xlabel('Month')
+    plt.ylabel('Total Spending')
+    plt.title('Monthly Spending for Selected Category')
+    plt.savefig('static/monthly_spending.png')
+    plt.close()
+
+
+
+
+@app.route('/details_and_charts', methods=['GET', 'POST'])
+def details_and_charts():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session.get('user_id')
+
+    # 默认选择
+    selected_category_level_1 = 'All Spending'
+    selected_category_level_2 = 'All'
+
+    # 定义友好名称与字段名称的映射
+    category_mapping = {
+        'Disposable_income': {
+            'allowance': 'Allowance',
+            'income': 'Income',
+            'living_expense': 'Living Expense'
+        },
+        'Necessities': {
+            'tuition': 'Tuition',
+            'housing': 'Housing',
+            'food': 'Food',
+            'transportation': 'Transportation'
+        },
+        'Flexible_spending': {
+            'study_materials': 'Study Materials',
+            'entertainment': 'Entertainment',
+            'technology': 'Technology',
+            'personal_care': 'Personal Care'
+        },
+        'Others': {
+            'apparel': 'Apparel',
+            'travel': 'Travel',
+            'others': 'Others'
+        }
+    }
+
+    if request.method == 'POST':
+        # 获取用户选择的分类
+        selected_category_level_1 = request.form.get('category_level_1', 'All Spending')
+        selected_category_level_2 = request.form.get('category_level_2', 'All')
+
+        ### 板块一和三的数据从 Record 模型中获取 ###
+
+        # 获取当前用户的所有消费记录
+        user_records_query = Record.query.filter_by(user_id=user_id)
+
+        # 如果选择了特定的分类，则进行过滤
+        if selected_category_level_2 != 'All':
+            # 拼接分类名称（Category Level 1: Category Level 2）
+            selected_category = f"{selected_category_level_1}:{selected_category_level_2}"
+            user_records_query = user_records_query.filter(Record.category == selected_category)
+
+        # 获取用户的消费记录，按照日期降序排序
+        user_records = user_records_query.order_by(Record.date.desc()).all()
+
+        ### 板块二的数据从 Detail 模型中获取 ###
+
+        # 获取所有用户的 Detail 数据
+        all_details = Detail.query.all()
+
+        # 从 Detail 模型中提取金额数据用于正态分布图
+        detail_amounts = []
+        for detail in all_details:
+            if selected_category_level_2 != 'All':
+                amount = getattr(detail, selected_category_level_2, 0.0)
+                if amount and amount > 0:
+                    detail_amounts.append(amount)
+            else:
+                # 如果选择了 "All"，累加所有分类的金额
+                total_amount = sum([
+                    getattr(detail, field, 0.0)
+                    for field in category_mapping.get(selected_category_level_1, {}).values()
+                ])
+                if total_amount > 0:
+                    detail_amounts.append(total_amount)
+
+        # 生成正态分布图
+        if detail_amounts:
+            generate_normal_distribution_chart(detail_amounts)
+        else:
+            # 如果没有数据，可以显示占位图或提示
+            pass
+
+        # 生成用户的月度消费柱状图（板块三）
+        if user_records:
+            generate_monthly_spending_chart(user_records)
+        else:
+            # 如果没有数据，可以显示占位图或提示
+            pass
+
+    else:
+        user_records = []
+        detail_amounts = []
+
+    return render_template(
+        'details_and_charts.html',
+        records=user_records,
+        selected_category_level_1=selected_category_level_1,
+        selected_category_level_2=selected_category_level_2,
+        category_mapping=category_mapping
+    )
+
+
 
 
 #Adding saving goals
@@ -274,28 +478,54 @@ def setting():
         data = request.get_json()
         action = data.get('action')
 
+        # 修改密码
         if action == 'change_password':
             current_password = data.get('current_password')
             new_password = data.get('new_password')
 
-            if not user or not check_password_hash(user.password, current_password):
+            # 验证当前密码是否匹配（注意：需要移除 `check_password_hash`，直接比较明文密码）
+            if not user or user.password != current_password:
                 return jsonify(success=False, message="Incorrect current password."), 400
 
-            user.password = generate_password_hash(new_password)
+            # 存储明文新密码（不加密）
+            user.password = new_password
             db.session.commit()
             return jsonify(success=True, message="Password updated successfully.")
 
-        else:
-            new_email = request.form.get('email')
-            new_nickname = request.form.get('nickname')
+        # 修改用户名
+        elif action == 'change_username':
+            new_username = data.get('new_username')
+            if not new_username:
+                return jsonify(success=False, message="Username cannot be empty."), 400
 
-            if user:
-                user.email = new_email
-                user.nickname = new_nickname
-                db.session.commit()
-                flash("Settings updated successfully.", "success")
-            else:
-                flash("User not found.", "error")
+            # 检查用户名是否已存在
+            existing_user = User.query.filter_by(username=new_username).first()
+            if existing_user:
+                return jsonify(success=False, message="Username already taken."), 400
+
+            user.username = new_username
+            db.session.commit()
+            return jsonify(success=True, message="Username updated successfully.")
+
+        # 修改邮箱
+        elif action == 'change_email':
+            new_email = data.get('new_email')
+            if not new_email or not re.match(r"[^@]+@[^@]+\.[^@]+", new_email):
+                return jsonify(success=False, message="Invalid email address."), 400
+
+            user.emailaddress = new_email 
+            db.session.commit()
+            return jsonify(success=True, message="Email updated successfully.")
+
+        # 修改昵称
+        elif action == 'change_nickname':
+            new_nickname = data.get('new_nickname')
+            if not new_nickname:
+                return jsonify(success=False, message="Nickname cannot be empty."), 400
+
+            user.nickname = new_nickname
+            db.session.commit()
+            return jsonify(success=True, message="Nickname updated successfully.")
 
     return render_template('settings.html', active_page='setting', user=user)
 
@@ -394,13 +624,65 @@ def userProfile():
         return render_template('login.html')
     if request.method == 'POST':
         return handle_user_profile_update(request)
-    user = get_user()
+    user_id = session.get('user_id')
+    user = get_user(user_id)
     return render_template('userProfile.html', active_page='userProfile', user=user, time=time)
 
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404 
+    return render_template('404.html'), 404
+
+@app.route('/budget', methods=['GET', 'POST'])
+def budget_allocation():
+    if 'user_id' not in session:
+        flash("Please log in to view your budget allocation.", "error")
+        return redirect(url_for('login'))
+
+    user_id = int(session.get('user_id'))
+
+    if request.method == 'POST':
+        try:
+            # Fetch combined financial data from the database
+            category_averages = fetch_combined_financial_data(user_id, db.session)
+
+            # Fetch user's average disposable income and average spending from the User table
+            user = User.query.filter_by(user_id=user_id).first()
+            if not user:
+                return jsonify({"error": "User not found."}), 404
+
+            avg_disposable_income = user.average_income or 0.0
+            avg_spending = user.average_spending or 0.0
+
+            # Fetch or set savings goal
+            saving_goal_record = Saving_Goal.query.filter_by(user_id=user_id).order_by(Saving_Goal.end_date.desc()).first()
+            if saving_goal_record:
+                savings_goal = saving_goal_record.amount
+            else:
+                savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
+
+            # Perform budget allocation
+            allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
+
+            # Generate insights
+            insights = generate_insights(allocations, category_averages)
+
+            # Prepare the response data
+            response_data = {
+                "Disposable Income": round(avg_disposable_income, 2),
+                "Savings Goal": round(allocations.get('Savings', 0.0), 2),
+                "Budget After Savings": round(avg_disposable_income - allocations.get('Savings', 0.0), 2),
+                "Allocations": {category: round(amount, 2) for category, amount in allocations.items()},
+                "Insights": insights
+            }
+
+            return jsonify(response_data)
+
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    # For GET request, render a simple form or page
+    return render_template('budget.html')
 
 if __name__ == "__main__":
     app.run(debug=True)    

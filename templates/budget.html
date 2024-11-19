@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Budget Allocation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Budget Allocation Advice</h1>
+    <button id="allocateBudgetBtn">Get Budget Allocation</button>
+    <div id="budgetResult" style="margin-top:20px;"></div>
+
+    <script>
+        document.getElementById('allocateBudgetBtn').addEventListener('click', function() {
+            fetch('{{ url_for("budget_allocation") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    let resultDiv = document.getElementById('budgetResult');
+                    let htmlContent = `
+                        <h2>Budget Allocation</h2>
+                        <p><strong>Disposable Income:</strong> $${data["Disposable Income"]}</p>
+                        <p><strong>Savings Goal:</strong> $${data["Savings Goal"]}</p>
+                        <p><strong>Budget After Savings:</strong> $${data["Budget After Savings"]}</p>
+                        <h3>Allocations:</h3>
+                        <ul>
+                            ${Object.entries(data["Allocations"]).map(([category, amount]) => `<li><strong>${category}:</strong> $${amount}</li>`).join('')}
+                        </ul>
+                        <h3>Insights:</h3>
+                        <ul>
+                            ${data["Insights"].map(insight => `<li>${insight}</li>`).join('')}
+                        </ul>
+                    `;
+                    resultDiv.innerHTML = htmlContent;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while fetching budget allocation.');
+            });
+        });
+    </script>
+</body>
+</html>
