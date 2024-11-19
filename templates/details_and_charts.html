@@ -1,115 +1,588 @@
-{% extends "base.html" %}
+import datetime
+from datetime import timedelta, datetime
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import CSRFProtect
+import os
+import re
+import time
+from sqlalchemy import inspect
+from werkzeug.security import check_password_hash, generate_password_hash
+from import_database import initialize_database
+from database import db, Detail, User, Saving_Goal, Record  
+from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
+from database import User, Detail, Saving_Goal, Record
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np  
+import plotly
+import plotly.express as px
+import json
 
-{% block title %}Details and Charts{% endblock %}
+app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/profile_pictures')
 
-{% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Details and Charts</title>
-    <!-- Include your CSS files properly -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
-    <script>
-        function updateSubcategories() {
-            const level1 = document.getElementById("category_level_1").value;
-            const level2 = document.getElementById("category_level_2");
-            level2.innerHTML = "";
-            level2.disabled = false;
+
+# #database connection
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+
+
+with app.app_context():
+    # Check db file exists or not 
+    if not os.path.exists(os.path.join('instance', 'data.db')):
+        # create the db file and import database
+        db.create_all()
+        initialize_database()
+        print("Database and data initialized.")
+    else:
+        #Check the table exists or not 
+        if not Detail.query.first():
+            initialize_database()
+            print("Data imported into existing database.")
+        else:
+            print("Database already initialized, no need to import CSV.")
+
+
+# 11111 question: we should make the formatbetween newRecords and get_data the same, and make sure user_id been used in the same way
+@app.route('/data')
+def get_data():
+    with app.app_context():
+        users = User.query.all()
+
+    if not users:
+        return "No data found in the database."
+
+    result = []
+    for user in users:
+        user_info = f"Username: {user.username}, Email: {user.emailadress}, Gender: {user.gender}, Age: {user.age}, Year in School: {user.year_in_school}, Major: {user.major}"
+        result.append(user_info)
+
+        spendings = Detail.query.filter_by(user_id=user.user_id).all()
+        if spendings:
+            for spending in spendings:
+                income = spending.income if spending.income is not None else 0.0
+                living_expense = spending.living_expense if spending.living_expense is not None else 0.0
+                allowance = spending.allowance if spending.allowance is not None else 0.0
+                disposable_income = income + living_expense + allowance
+                spending_info = f" - Spending ID: {spending.detail_id}, Disposable Income: {disposable_income}, Housing: {spending.housing}, Food: {spending.food}, Transportation: {spending.transportation}, Personal Care: {spending.personal_care}, Others: {spending.others}"
+                result.append(spending_info)
+        else:
+            result.append(" - No spending records found.")
+
+        saving_goals = Saving_Goal.query.filter_by(user_id=user.user_id).all()
+        if saving_goals:
+            for goal in saving_goals:
+                goal_info = f" - Saving Goal ID: {goal.saving_goal_id}, Amount: {goal.amount}, Start Date: {goal.start_date}, End Date: {goal.end_date}, Progress: {goal.progress}, Progress Amount: {goal.progress_amount}"
+                result.append(goal_info)
+        else:
+            result.append(" - No saving goals found.")
+
+        spending_records = Record.query.filter_by(user_id=user.user_id).all()
+        if spending_records:
+            for record in spending_records:
+                record_info = f" - Spending Record ID: {record.record_id}, Amount: {record.amount}, Date: {record.date}, Category: {record.category}"
+                result.append(record_info)
+        else:
+            result.append(" - No spending records found.")
+
+        result.append("<hr>")
+
+    return '<br>'.join(result)
+
+@app.route('/')
+def loginPage():
+    return render_template('login.html')
+
+@app.route('/home')
+def home():
+    if 'user_id' not in session:
+        return render_template('login.html') 
+
+    user_id = session.get('user_id')
+    user = User.query.filter_by(user_id = user_id).first()
+    spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.date.desc()).first()
+    savingGoal = Saving_Goal.query.filter_by(user_id = user.user_id).first()
+    return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and user.password == password:
+            session['user_id'] = user.user_id
+            return redirect(url_for('home'))
+        else:
+            flash('username or password is incorrect ', 'error')
+            return redirect(url_for('login'))
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm-password']
+        if password != confirm_password:
+            flash('Passwords do not match.')
+            return redirect(url_for('register'))
+
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            flash('Invalid email address.')
+            return redirect(url_for('register'))
+        
+        existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+        if existing_user:
+            flash('Username or email already exists', 'error')
+            return redirect(url_for('register'))
+        
+        new_user = User(username=username, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        session['user_id'] = new_user.user_id
+
+        flash('Registration successful! Please complete this survey.')
+        return redirect(url_for('survey'))
+    return render_template('register.html')
+
+
+
+
+
+
+
+# newRecords part
+@app.route('/newRecords', methods=['GET', 'POST'])
+def newRecords():
+    if 'user_id' not in session:
+        return render_template('login.html')
+    if request.method == 'POST':
+        amount = request.form.get('amount')
+        category_level_1 = request.form.get('category-level-1')
+        category_level_2 = request.form.get('category-level-2')
+        date = request.form.get('date')
+        note = request.form.get('note')
+        user_id = session.get('user_id')
+
+
+        if not amount or not category_level_1 or not category_level_2 or not date:
+            flash('Please fill out all required fields', 'error')
+            return redirect(url_for('newRecords'))
+
+        # Make category level 1 and 2 to one categorie,  eg. Necessities: Housing
+        category=f"{category_level_1}:{category_level_2}"
+
+        try:
+            date_obj = datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            flash('Invalid date format', 'error')
+            return redirect(url_for('newRecords'))
+
+        new_record = Record(
+            amount=round(float(amount),2),
+            category=category,
+            date=date_obj,
+            note=note,
+            user_id=user_id
+            )
+
+        db.session.add(new_record)
+        db.session.commit()
+
+        # flash('New record added successfully', 'success')
+        # return redirect(url_for('newRecords'))
+        return redirect(url_for('newRecords', added=True))
+
+    return render_template('newRecords.html', active_page='newRecords')
+
+
+
+
+
+# Import your models
+from database import User, Detail, Saving_Goal, Record
+
+def generate_normal_distribution_chart(amounts):
+
+    amounts = np.array(amounts)
+
+    # 绘制直方图和正态分布曲线
+    plt.figure(figsize=(10, 6))
+    count, bins, ignored = plt.hist(amounts, bins=15, density=True, alpha=0.6, color='b')
+
+    # 计算正态分布曲线
+    mu, sigma = np.mean(amounts), np.std(amounts)
+    y = ((1 / (np.sqrt(2 * np.pi) * sigma)) *
+         np.exp(-0.5 * (1 / sigma * (bins - mu))**2))
+
+    plt.plot(bins, y, '--', color='r')
+    plt.xlabel('Spending Amount')
+    plt.ylabel('Density')
+    plt.title('Spending Distribution Across All Users')
+    plt.savefig('static/spending_distribution.png')
+    plt.close()
+
+
+
+def generate_monthly_spending_chart(records):
+    if not records:
+        # 如果记录列表为空，直接返回
+        return
     
-            let options = [];
-            if (level1 === "All Spending") {
-                options = ["All"];
-            } else if (level1 === "Disposable_income") {
-                options = ["All", "living_expenses", "Allowance", "Income"];
-            } else if (level1 === "Necessities") {
-                options = ["All", "Tuition", "Housing", "Food", "Transportation"];
-            } else if (level1 === "Flexible_spending") {
-                options = ["All", "Study_material", "Entertainment", "Technology", "Personal_care"];
-            } else if (level1 === "Others") {
-                options = ["All", "Apparel", "Travel", "Others"];
-            } else {
-                level2.disabled = true;
-                return;
-            }
-    
-            options.forEach(option => {
-                const opt = document.createElement("option");
-                opt.value = option;
-                opt.textContent = option;
-                // 保持二级分类的选择
-                if (option === "{{ selected_category_level_2 }}") {
-                    opt.selected = true;
-                }
-                level2.appendChild(opt);
-            });
+    # 创建 DataFrame
+    data = []
+    for record in records:
+        data.append({
+            'amount': record.amount,
+            'date': record.date
+        })
+    df = pd.DataFrame(data)
+
+    if df.empty:
+        return
+
+    df['month'] = pd.to_datetime(df['date']).dt.month
+    monthly_data = df.groupby('month')['amount'].sum()
+
+    plt.figure(figsize=(10, 6))
+    monthly_data.plot(kind='bar', color='green')
+    plt.xlabel('Month')
+    plt.ylabel('Total Spending')
+    plt.title('Monthly Spending for Selected Category')
+    plt.savefig('static/monthly_spending.png')
+    plt.close()
+
+
+
+
+@app.route('/details_and_charts', methods=['GET', 'POST'])
+def details_and_charts():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session.get('user_id')
+
+    # 默认选择
+    selected_category_level_1 = 'All Spending'
+    selected_category_level_2 = 'All'
+
+    # 定义友好名称与字段名称的映射
+    category_mapping = {
+        'Disposable_income': {
+            'allowance': 'Allowance',
+            'income': 'Income',
+            'living_expense': 'Living Expense'
+        },
+        'Necessities': {
+            'tuition': 'Tuition',
+            'housing': 'Housing',
+            'food': 'Food',
+            'transportation': 'Transportation'
+        },
+        'Flexible_spending': {
+            'study_materials': 'Study Materials',
+            'entertainment': 'Entertainment',
+            'technology': 'Technology',
+            'personal_care': 'Personal Care'
+        },
+        'Others': {
+            'apparel': 'Apparel',
+            'travel': 'Travel',
+            'others': 'Others'
         }
-    
-        // 页面加载时调用函数以更新二级分类并设置选中项
-        window.onload = function() {
-            updateSubcategories();
-        };
-    </script>
-</head>
-<body>
-    <div class="container">
-        <!-- Start of the form -->
-        <form method="POST">
-            <div class="category-selection">
-                <label for="category_level_1">Category-Level-1:</label>
-                <select id="category_level_1" name="category_level_1" onchange="updateSubcategories()">
-                    <option value="All Spending" {% if selected_category_level_1 == 'All Spending' %}selected{% endif %}>All Spending</option>
-                    <option value="Necessities" {% if selected_category_level_1 == 'Necessities' %}selected{% endif %}>Necessities</option>
-                    <option value="Flexible_spending" {% if selected_category_level_1 == 'Flexible_spending' %}selected{% endif %}>Flexible Spending</option>
-                    <option value="Others" {% if selected_category_level_1 == 'Others' %}selected{% endif %}>Others</option>
-                    <option value="Disposable_income" {% if selected_category_level_1 == 'Disposable_income' %}selected{% endif %}>Disposable Income</option>
-                </select>
+    }
+
+    if request.method == 'POST':
+        # 获取用户选择的分类
+        selected_category_level_1 = request.form.get('category_level_1', 'All Spending')
+        selected_category_level_2 = request.form.get('category_level_2', 'All')
+
+        ### 板块一和三的数据从 Record 模型中获取 ###
+
+        # 获取当前用户的所有消费记录
+        user_records_query = Record.query.filter_by(user_id=user_id)
+
+        # 如果选择了特定的分类，则进行过滤
+        if selected_category_level_2 != 'All':
+            # 拼接分类名称（Category Level 1: Category Level 2）
+            selected_category = f"{selected_category_level_1}:{selected_category_level_2}"
+            user_records_query = user_records_query.filter(Record.category == selected_category)
+
+        # 获取用户的消费记录，按照日期降序排序
+        user_records = user_records_query.order_by(Record.date.desc()).all()
+
+        ### 板块二的数据从 Detail 模型中获取 ###
+
+        # 获取所有用户的 Detail 数据
+        all_details = Detail.query.all()
+
+        # 从 Detail 模型中提取金额数据用于正态分布图
+        detail_amounts = []
+        for detail in all_details:
+            if selected_category_level_2 != 'All':
+                amount = getattr(detail, selected_category_level_2, 0.0)
+                if amount and amount > 0:
+                    detail_amounts.append(amount)
+            else:
+                # 如果选择了 "All"，累加所有分类的金额
+                total_amount = sum([
+                    getattr(detail, field, 0.0)
+                    for field in category_mapping.get(selected_category_level_1, {}).values()
+                ])
+                if total_amount > 0:
+                    detail_amounts.append(total_amount)
+
+        # 生成正态分布图
+        if detail_amounts:
+            generate_normal_distribution_chart(detail_amounts)
+        else:
+            # 如果没有数据，可以显示占位图或提示
+            pass
+
+        # 生成用户的月度消费柱状图（板块三）
+        if user_records:
+            generate_monthly_spending_chart(user_records)
+        else:
+            # 如果没有数据，可以显示占位图或提示
+            pass
+
+    else:
+        user_records = []
+        detail_amounts = []
+
+    return render_template(
+        'details_and_charts.html',
+        records=user_records,
+        selected_category_level_1=selected_category_level_1,
+        selected_category_level_2=selected_category_level_2,
+        category_mapping=category_mapping
+    )
+
+
+
+
+
+
+
+
+#Adding saving goals
+@app.route('/savingGoal', methods=['GET', 'POST'])
+def show_saving_goal_page():
+    if 'user_id' not in session:
+        return render_template('login.html')
+
+    if request.method == 'POST':
+        # Handle form submission
+        amount = float(request.form.get('amount'))
+        start_date_str = request.form.get('start-date')
+        end_date_str = request.form.get('end-date')
+        progress = request.form.get('progress')
+
+        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+        progress_amount_str = request.form.get('progress_amount')
+        if progress_amount_str:
+            progress_amount = float(progress_amount_str)
+        else:
+            progress_amount = amount  # If progress is 'finished', set progress_amount to the total amount
+
+        user_id = session.get('user_id')
+
+        # Save the new goal to the database
+        new_goal = Saving_Goal(
+            user_id=user_id,
+            amount=amount,
+            start_datum=start_date,
+            end_datum=end_date,
+            progress=progress,
+            progress_amount=progress_amount
+        )
+        db.session.add(new_goal)
+        db.session.commit()
+
+        flash('Saving Goal added successfully!', 'success')
+
+        # After saving, redirect to the same page to show updated goals list
+        return redirect(url_for('show_saving_goal_page'))
+
+    # If it's a GET request, fetch all the goals for the logged-in user
+    user_id = session.get('user_id')
+    goals = Saving_Goal.query.filter_by(user_id=user_id).all()  # Only fetch goals for the logged-in user
+
+    return render_template('savingGoal.html', active_page='savingGoal', goals=goals)
+
+
+@app.route('/delete_selected_goals', methods=['POST'])
+def delete_selected_goals():
+    if 'user_id' not in session:
+        return render_template('login.html')
+
+    goal_ids = request.form.getlist('goal_ids')
+
+    if not goal_ids:
+        flash("No goals selected for deletion.", "warning")
+        return redirect(url_for('show_saving_goal_page'))
+
+    # 将goal_ids转换为整数类型
+    goal_ids = [int(goal_id) for goal_id in goal_ids if goal_id]
+
+    if goal_ids:
+        Saving_Goal.query.filter(Saving_Goal.saving_goal_id.in_(goal_ids)).delete(synchronize_session=False)
+        db.session.commit()
+        flash("Selected goals deleted successfully!", "success")
+    else:
+        flash("No valid goals to delete.", "warning")
+
+    return redirect(url_for('show_saving_goal_page'))
+
+
+
+@app.route('/setting')
+def setting():
+    user_id = session.get('user_id')
+
+    if not user_id:
+        flash("You must be logged in to access settings.", "error")
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(user_id=user_id).first()
+
+    if request.method == 'POST':
+        data = request.get_json()
+        action = data.get('action')
+
+        if action == 'change_password':
+            current_password = data.get('current_password')
+            new_password = data.get('new_password')
+
+            if not user or not check_password_hash(user.password, current_password):
+                return jsonify(success=False, message="Incorrect current password."), 400
+
+            user.password = generate_password_hash(new_password)
+            db.session.commit()
+            return jsonify(success=True, message="Password updated successfully.")
+
+        else:
+            new_email = request.form.get('email')
+            new_nickname = request.form.get('nickname')
+
+            if user:
+                user.email = new_email
+                user.nickname = new_nickname
+                db.session.commit()
+                flash("Settings updated successfully.", "success")
+            else:
+                flash("User not found.", "error")
+
+    return render_template('settings.html', active_page='setting', user=user)
+
+@app.route('/survey', methods=['GET', 'POST'])
+def survey():
+    if 'user_id' not in session:
+        return render_template('login.html')
+    if request.method == 'POST':
+        user_id = session.get('user_id')
+        if not user_id:
+        # 如果没有找到 user_id，可能是直接访问该 URL，重定向到合适的页面
+            # flash('Please register first.')
+            user_id = 777  # For testing, we use user_id 777
         
-                <label for="category_level_2">Subcategory-Level-2:</label>
-                <select id="category_level_2" name="category_level_2">
-                    <!--  -->
-                </select>
-            </div>
-        
-            <!--  -->
-            <button type="submit">Filter</button>
-        </form>
-        <!-- End of the form -->
 
-        <div class="block block-1 spending-summary">
-            <h3>Spending Records</h3>
-            <div class="spending-records" id="spending-records" style="overflow-y: auto; max-height: 400px;">
-                {% if records %}
-                    {% for record in records %}
-                        <div class="record">
-                            <p>Amount: {{ record.amount }}, Category: {{ record.category }}, Date: {{ record.date }}</p>
-                            <button onclick="showNote('{{ record.note }}')" class="btn btn-secondary">Show Note</button>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No records to display.</p>
-                {% endif %}
-            </div>
-        </div>
+        # Check if the skip checkbox is checked
+        skip = request.form.get('skipFinancialRecords', None)
 
-        <div class="block block-2">
-            <h3>Spending Distribution Chart</h3>
-            <img src="{{ url_for('static', filename='spending_distribution.png') }}" alt="Spending Distribution">
-        </div>
+        if skip:
+            # Save the first and third question's answers to the User table
+            average_income = request.form.get('averageDisposableIncome', 0.0)
+            average_spending = request.form.get('averageSpending', 0.0)
 
-        <div class="block block-3">
-            <h3>Monthly Spending Chart</h3>
-            <img src="{{ url_for('static', filename='monthly_spending.png') }}" alt="Monthly Spending">
-        </div>
+            user = User.query.filter_by(user_id=user_id).first()
+            if user:
+                user.average_income = average_income
+                user.average_spending = average_spending
+                db.session.commit()
 
-        <script>
-            function showNote(note) {
-                alert(note);
+            return "Survey data (average income and average spending) has been saved successfully."
+        else:
+            # Save the second question's answer to the Saving_Goal table
+            saving_goal_amount = request.form.get('goalAmount', 0.0)
+            current_date = datetime.now()
+            start_date = current_date
+            end_date = current_date + timedelta(days=30)
+            saving_goal_id = f"{user_id}{current_date.strftime('%Y%m%d')}"
+
+            new_saving_goal = Saving_Goal(
+                saving_goal_id=saving_goal_id,
+                user_id=user_id,
+                amount=saving_goal_amount,
+                start_date= start_date,
+                end_date =end_date,
+                progress="In Progress",
+                progress_amount=0.0
+            )
+            db.session.add(new_saving_goal)
+
+            # Save the monthly financial records to the Detail table
+            current_month = datetime.now().month
+            current_year = datetime.now().year
+            months = []
+
+            for i in range(1, 4):
+                month = current_month - i
+                year = current_year
+                if month <= 0:
+                    month += 12
+                    year -= 1
+                months.append((month, year))
+
+            last_day_of_month = {
+                1: "01.31", 2: "02.28", 3: "03.31", 4: "04.30", 5: "05.31", 6: "06.30",
+                7: "07.31", 8: "08.31", 9: "09.30", 10: "10.31", 11: "11.30", 12: "12.31"
             }
-        </script>
-    </div>
-</body>
-</html>
-{% endblock %}
+
+            for month, year in months:
+                month_name = datetime(year, month, 1).strftime('%B')
+                detail_data = {
+                    'user_id': user_id,
+                    'date': datetime.strptime(f"{year}-{month:02d}-{last_day_of_month[month].split('.')[1]}", "%Y-%m-%d")
+                }
+                for category in [
+                    "income", "allowance", "living_expense", "tuition", "housing", "food",
+                    "transportation", "study_materials", "entertainment", "personal_care",
+                    "technology", "apparel", "travel", "others"
+                ]:
+                    amount = request.form.get(f'{month_name}_{category.capitalize()}', 0.0)
+                    detail_data[category] = amount
+
+                new_detail = Detail(**detail_data)
+                db.session.add(new_detail)
+
+            db.session.commit()
+
+            return "Survey data (saving goal and spending details) have been saved successfully."
+
+    return render_template('financial_survey_html_.html')
+
+@app.route('/userProfile', methods=['GET', 'POST'])
+def userProfile():
+    if 'user_id' not in session:
+        return render_template('login.html')
+    if request.method == 'POST':
+        return handle_user_profile_update(request)
+    user = get_user()
+    return render_template('userProfile.html', active_page='userProfile', user=user, time=time)
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404 
+
+if __name__ == "__main__":
+    app.run(debug=True)    
