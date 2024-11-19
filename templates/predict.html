@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictions</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Predicted Spending for Next Month</h1>
+        <p>Below are the forecasts for your spending categories for the next month:</p>
+        
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Predicted Amount (€)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category, amount in predictions.items() %}
+                <tr>
+                    <td>{{ category }}</td>
+                    <td>{{ "%.2f"|format(amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
