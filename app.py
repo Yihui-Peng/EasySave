@@ -324,14 +324,13 @@ def predict():
     return render_template('predict.html', predictions=predictions)
 
 
-# Import your models
-from database import User, Detail, Saving_Goal, Record
+
 
 def generate_normal_distribution_chart(amounts):
 
     amounts = np.array(amounts)
 
-    # 绘制直方图和正态分布曲线
+    # 直方图和正态分布曲线
     plt.figure(figsize=(10, 6))
     count, bins, ignored = plt.hist(amounts, bins=15, density=True, alpha=0.6, color='b')
 
@@ -354,7 +353,7 @@ def generate_monthly_spending_chart(records):
         # 如果记录列表为空，直接返回
         return
     
-    # 创建 DataFrame
+    #  DataFrame
     data = []
     for record in records:
         data.append({
@@ -391,7 +390,6 @@ def details_and_charts():
     selected_category_level_1 = 'All Spending'
     selected_category_level_2 = 'All'
 
-    # 定义友好名称与字段名称的映射
     category_mapping = {
         'Disposable_income': {
             'allowance': 'Allowance',
@@ -436,12 +434,10 @@ def details_and_charts():
         # 获取用户的消费记录，按照日期降序排序
         user_records = user_records_query.order_by(Record.date.desc()).all()
 
-        ### 板块二的数据从 Detail 模型中获取 ###
-
         # 获取所有用户的 Detail 数据
         all_details = Detail.query.all()
 
-        # 从 Detail 模型中提取金额数据用于正态分布图
+        # 从 Detail 中提取数据用于正态分布图
         detail_amounts = []
         for detail in all_details:
             if selected_category_level_2 != 'All':
