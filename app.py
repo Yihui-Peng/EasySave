@@ -178,6 +178,9 @@ def register():
     return render_template('login.html')
 
 
+
+
+
 # newRecords part
 @app.route('/newRecords', methods=['GET', 'POST'])
 def newRecords():
@@ -224,49 +227,61 @@ def newRecords():
 
 
 
+
+
 # Import your models
 from database import User, Detail, Saving_Goal, Record
 
-def generate_normal_distribution_chart(filtered_data):
-    # Extract the amount data
-    amounts = filtered_data['amount']
+def generate_normal_distribution_chart(amounts):
 
-    # Generate histogram and fit normal distribution curve
+    amounts = np.array(amounts)
+
+    # 绘制直方图和正态分布曲线
     plt.figure(figsize=(10, 6))
     count, bins, ignored = plt.hist(amounts, bins=15, density=True, alpha=0.6, color='b')
 
-    # Fit normal distribution curve
-    mean, std = np.mean(amounts), np.std(amounts)
-    plt.plot(
-        bins,
-        1 / (std * np.sqrt(2 * np.pi)) * np.exp(-((bins - mean) ** 2) / (2 * std ** 2)),
-        linewidth=2,
-        color='r'
-    )
+    # 计算正态分布曲线
+    mu, sigma = np.mean(amounts), np.std(amounts)
+    y = ((1 / (np.sqrt(2 * np.pi) * sigma)) *
+         np.exp(-0.5 * (1 / sigma * (bins - mu))**2))
 
+    plt.plot(bins, y, '--', color='r')
     plt.xlabel('Spending Amount')
     plt.ylabel('Density')
-    plt.title('Spending Distribution')
-    plt.grid()
+    plt.title('Spending Distribution Across All Users')
     plt.savefig('static/spending_distribution.png')
-    plt.close()  # Close the figure
+    plt.close()
 
-def generate_monthly_spending_chart(filtered_data):
-    # Create a copy to avoid SettingWithCopyWarning
-    filtered_data = filtered_data.copy()
-    # Add a 'month' column
-    filtered_data['month'] = pd.to_datetime(filtered_data['date']).dt.month
-    monthly_data = filtered_data.groupby('month')['amount'].sum()
 
-    # Generate bar chart
+
+def generate_monthly_spending_chart(records):
+    if not records:
+        # 如果记录列表为空，直接返回
+        return
+    
+    # 创建 DataFrame
+    data = []
+    for record in records:
+        data.append({
+            'amount': record.amount,
+            'date': record.date
+        })
+    df = pd.DataFrame(data)
+
+    if df.empty:
+        return
+
+    df['month'] = pd.to_datetime(df['date']).dt.month
+    monthly_data = df.groupby('month')['amount'].sum()
+
     plt.figure(figsize=(10, 6))
-    monthly_data.plot(kind='bar', color='skyblue')
+    monthly_data.plot(kind='bar', color='green')
     plt.xlabel('Month')
     plt.ylabel('Total Spending')
-    plt.title('Monthly Spending')
-    plt.grid(axis='y')
+    plt.title('Monthly Spending for Selected Category')
     plt.savefig('static/monthly_spending.png')
-    plt.close()  # Close the figure
+    plt.close()
+
 
 
 
@@ -277,57 +292,102 @@ def details_and_charts():
 
     user_id = session.get('user_id')
 
-    # 初始化选定的分类
+    # 默认选择
     selected_category_level_1 = 'All Spending'
     selected_category_level_2 = 'All'
 
+    # 定义友好名称与字段名称的映射
+    category_mapping = {
+        'Disposable_income': {
+            'allowance': 'Allowance',
+            'income': 'Income',
+            'living_expense': 'Living Expense'
+        },
+        'Necessities': {
+            'tuition': 'Tuition',
+            'housing': 'Housing',
+            'food': 'Food',
+            'transportation': 'Transportation'
+        },
+        'Flexible_spending': {
+            'study_materials': 'Study Materials',
+            'entertainment': 'Entertainment',
+            'technology': 'Technology',
+            'personal_care': 'Personal Care'
+        },
+        'Others': {
+            'apparel': 'Apparel',
+            'travel': 'Travel',
+            'others': 'Others'
+        }
+    }
+
     if request.method == 'POST':
-        # 获取用户选择的一级和二级分类
+        # 获取用户选择的分类
         selected_category_level_1 = request.form.get('category_level_1', 'All Spending')
         selected_category_level_2 = request.form.get('category_level_2', 'All')
 
-        # 构建查询条件
-        query = Record.query.filter_by(user_id=user_id)
+        ### 板块一和三的数据从 Record 模型中获取 ###
 
-        if selected_category_level_1 != 'All Spending':
+        # 获取当前用户的所有消费记录
+        user_records_query = Record.query.filter_by(user_id=user_id)
+
+        # 如果选择了特定的分类，则进行过滤
+        if selected_category_level_2 != 'All':
+            # 拼接分类名称（Category Level 1: Category Level 2）
+            selected_category = f"{selected_category_level_1}:{selected_category_level_2}"
+            user_records_query = user_records_query.filter(Record.category == selected_category)
+
+        # 获取用户的消费记录，按照日期降序排序
+        user_records = user_records_query.order_by(Record.date.desc()).all()
+
+        ### 板块二的数据从 Detail 模型中获取 ###
+
+        # 获取所有用户的 Detail 数据
+        all_details = Detail.query.all()
+
+        # 从 Detail 模型中提取金额数据用于正态分布图
+        detail_amounts = []
+        for detail in all_details:
             if selected_category_level_2 != 'All':
-                # 过滤指定的一级和二级分类
-                category_filter = f"{selected_category_level_1}:{selected_category_level_2}"
-                query = query.filter(Record.category == category_filter)
+                amount = getattr(detail, selected_category_level_2, 0.0)
+                if amount and amount > 0:
+                    detail_amounts.append(amount)
             else:
-                # 仅过滤一级分类，使用like匹配
-                query = query.filter(Record.category.like(f"{selected_category_level_1}:%"))
-        # 如果选择了“All Spending”，则不进行额外的过滤
+                # 如果选择了 "All"，累加所有分类的金额
+                total_amount = sum([
+                    getattr(detail, field, 0.0)
+                    for field in category_mapping.get(selected_category_level_1, {}).values()
+                ])
+                if total_amount > 0:
+                    detail_amounts.append(total_amount)
 
-        filtered_records = query.all()
+        # 生成正态分布图
+        if detail_amounts:
+            generate_normal_distribution_chart(detail_amounts)
+        else:
+            # 如果没有数据，可以显示占位图或提示
+            pass
+
+        # 生成用户的月度消费柱状图（板块三）
+        if user_records:
+            generate_monthly_spending_chart(user_records)
+        else:
+            # 如果没有数据，可以显示占位图或提示
+            pass
+
     else:
-        # 对于GET请求，获取当前用户的所有记录
-        filtered_records = Record.query.filter_by(user_id=user_id).all()
-
-    # 将记录转换为DataFrame
-    data = []
-    for record in filtered_records:
-        data.append({
-            'amount': record.amount,
-            'date': record.date,
-            'category': record.category,
-        })
-    filtered_data = pd.DataFrame(data)
-
-    # 生成图表
-    if not filtered_data.empty:
-        generate_normal_distribution_chart(filtered_data)
-        generate_monthly_spending_chart(filtered_data)
-    else:
-        # 如果没有数据，可选择显示提示或占位图表
-        pass
+        user_records = []
+        detail_amounts = []
 
     return render_template(
         'details_and_charts.html',
-        records=filtered_records,
+        records=user_records,
         selected_category_level_1=selected_category_level_1,
-        selected_category_level_2=selected_category_level_2
+        selected_category_level_2=selected_category_level_2,
+        category_mapping=category_mapping
     )
+
 
 
 
