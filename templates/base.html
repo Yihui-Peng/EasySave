@@ -32,6 +32,9 @@
                             <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="/home">Home</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('predict') }}">Predict</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {% if active_page == 'newSpending' %}active{% endif %}" href="/newRecords">Add New Records</a>
                         </li>
                         <li class="nav-item">
@@ -69,3 +72,4 @@
     {% block scripts %}{% endblock %}
 </body>
 </html>
+

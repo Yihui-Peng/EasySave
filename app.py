@@ -17,6 +17,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from budget_allocation_algorithm import fetch_combined_financial_data, allocate_budget, generate_insights
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.tools.sm_exceptions import ConvergenceWarning
+import warnings
+import pandas as pd
+import numpy as np
 
 
 
@@ -226,17 +232,105 @@ def newRecords():
     return render_template('newRecords.html', active_page='newRecords')
 
 
+def generate_and_forecast_spending_data(start_date, end_date, forecast_days=30):
+    """
+    Generate mock spending data and perform ARIMA forecasting for each category.
+
+    Args:
+        start_date (str): Start date for the data generation (e.g., '2023-01-01').
+        end_date (str): End date for the data generation (e.g., '2023-12-31').
+        forecast_days (int): Number of days to forecast. Defaults to 30.
+
+    Returns:
+        dict: Forecast results for each category.
+    """
+    # Suppress warnings for convergence issues
+    warnings.filterwarnings("ignore", category=ConvergenceWarning)
+
+    # Generate mock user spending data
+    np.random.seed(42)
+    months = pd.date_range(start=start_date, end=end_date, freq='M')
+    data = {
+        'datum': months,
+        'Living_expense': np.random.randint(500, 1200, len(months)),
+        'Allowance': np.random.randint(100, 300, len(months)),
+        'Income': np.random.randint(800, 1500, len(months)),
+        'Tuition': np.random.randint(3000, 5000, len(months)),
+        'Housing': np.random.randint(400, 900, len(months)),
+        'Food': np.random.randint(100, 400, len(months)),
+        'Transportation': np.random.randint(50, 200, len(months)),
+        'Study_material': np.random.randint(50, 300, len(months)),
+        'Entertainment': np.random.randint(20, 150, len(months)),
+        'Personal_care': np.random.randint(20, 100, len(months)),
+        'Technology': np.random.randint(50, 300, len(months)),
+        'Travel': np.random.randint(50, 400, len(months)),
+        'Others': np.random.randint(20, 200, len(months))
+    }
+    df = pd.DataFrame(data)
+    columns_to_sum = [
+        'Living_expense', 'Allowance', 'Housing', 'Food', 'Transportation',
+        'Study_material', 'Entertainment', 'Personal_care', 'Technology',
+        'Travel', 'Others'
+    ]
+    existing_columns = [col for col in columns_to_sum if col in df.columns]
+    df['Total_spending'] = df[existing_columns].sum(axis=1)
+
+    # Set time index
+    df['datum'] = pd.to_datetime(df['datum'])
+    df.set_index('datum', inplace=True)
+
+    # Forecast results dictionary
+    forecast_results = {}
+
+    # Perform ARIMA forecasting for each category
+    for column in df.columns:
+        if column != 'Total_spending':
+            data_series = df[column]
+
+            # Clean and preprocess data
+            if data_series.isna().any():
+                data_series = data_series.fillna(0)
+            if not np.isfinite(data_series).all():
+                data_series = data_series.replace([np.inf, -np.inf], 0)
+
+            # Check for stationarity
+            if adfuller(data_series)[1] > 0.05:
+                data_series = data_series.diff().dropna()
+
+            # Build ARIMA model with error handling
+            try:
+                model = ARIMA(data_series, order=(2, 1, 2))
+                model_fit = model.fit()
+            except np.linalg.LinAlgError:
+                model = ARIMA(data_series, order=(1, 1, 1))
+                model_fit = model.fit()
+
+            # Forecast future data
+            forecast = model_fit.get_forecast(steps=forecast_days)
+            forecast_mean = forecast.predicted_mean.clip(lower=0)  # Ensure no negative values
+            forecast_results[column] = forecast_mean
+
+    return forecast_results
+
+@app.route('/predict', methods=['GET'])
+def predict():
+    # Call the function to generate predictions
+    forecast_results = generate_and_forecast_spending_data(start_date='2023-01-01', end_date='2023-12-31')
+
+    # Calculate average prediction for the next month
+    predictions = {category: values.mean() for category, values in forecast_results.items()}
+
+    # Render the predictions on the HTML page
+    return render_template('predict.html', predictions=predictions)
 
 
 
-# Import your models
-from database import User, Detail, Saving_Goal, Record
 
 def generate_normal_distribution_chart(amounts):
 
     amounts = np.array(amounts)
 
-    # 绘制直方图和正态分布曲线
+    # 直方图和正态分布曲线
     plt.figure(figsize=(10, 6))
     count, bins, ignored = plt.hist(amounts, bins=15, density=True, alpha=0.6, color='b')
 
@@ -259,7 +353,7 @@ def generate_monthly_spending_chart(records):
         # 如果记录列表为空，直接返回
         return
     
-    # 创建 DataFrame
+    #  DataFrame
     data = []
     for record in records:
         data.append({
@@ -296,7 +390,6 @@ def details_and_charts():
     selected_category_level_1 = 'All Spending'
     selected_category_level_2 = 'All'
 
-    # 定义友好名称与字段名称的映射
     category_mapping = {
         'Disposable_income': {
             'allowance': 'Allowance',
@@ -341,12 +434,10 @@ def details_and_charts():
         # 获取用户的消费记录，按照日期降序排序
         user_records = user_records_query.order_by(Record.date.desc()).all()
 
-        ### 板块二的数据从 Detail 模型中获取 ###
-
         # 获取所有用户的 Detail 数据
         all_details = Detail.query.all()
 
-        # 从 Detail 模型中提取金额数据用于正态分布图
+        # 从 Detail 中提取数据用于正态分布图
         detail_amounts = []
         for detail in all_details:
             if selected_category_level_2 != 'All':
