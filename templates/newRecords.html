@@ -80,13 +80,13 @@
             /* If users didn't choose meaningful options in level 1, the level 2 drop-down box will be banned */
             let options = [];
             if (level1 === "Necessities") {
-                options = ["Tuition", "Housing", "Food", "Transportation"];
+                options = ["tuition", "housing", "food", "transportation"];
             } else if (level1 === "Flexible_spending") {
-                options = ["Study_material", "Entertainment", "Technology", "Personal_care"];
+                options = ["study_materials", "entertainment", "technology", "personal_care"];
             } else if (level1 === "Others") {
-                options = ["Apparel", "Travel", "Others"];
+                options = ["apparel", "travel", "others"];
             } else if (level1 === "Disposable_income") {
-                options = ["living_expenses", "Allowance", "Income"];
+                options = ["living_expenses", "allowance", "income"];
             } else {
                 level2.disabled = true;
                 return;
