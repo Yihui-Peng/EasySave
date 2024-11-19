@@ -135,9 +135,10 @@ def home():
     allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
 
     #Generate insights
-    insights = generate_insights(allocations, category_averages)
+    # insights = generate_insights(allocations, category_averages)
 
-    return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal, allocations = allocations, insights = insights)
+    # return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal, allocations = allocations, insights = insights)
+    return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -173,7 +174,7 @@ def register():
             flash('Username or email already exists', 'error')
             return render_template('login.html', show_register=True)
         
-        new_user = User(username=username, emailaddress=emailaddress, password=password, profile_picture = 'default_picture.png')
+        new_user = User(username=username, emailaddress=emailaddress, password=password)
         db.session.add(new_user)
         db.session.commit()
 
@@ -622,10 +623,12 @@ def setting():
 
 @app.route('/survey', methods=['GET', 'POST'])
 def survey():
+    user_id = session.get('user_id')
+    print({user_id})
     if 'user_id' not in session:
         return render_template('login.html')
     if request.method == 'POST':
-        user_id = session.get('user_id')
+        
         if not user_id:
         # 如果没有找到 user_id，可能是直接访问该 URL，重定向到合适的页面
             # flash('Please register first.')

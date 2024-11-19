@@ -22,7 +22,7 @@ def import_csv_to_db(csv_file):
                 user_data = User(
                     username = default_username,
                     nickname = None,
-                    emailadress = None,
+                    emailaddress = None,
                     password = None,
                     age=row.get('age', None),
                     gender=row.get('gender', 'Unknown'),
@@ -56,8 +56,8 @@ def import_csv_to_db(csv_file):
 
 def generate_test_data():
     # Adding users
-    user1 = User(username='test_user1', nickname='tester1', emailadress='test1@example.com', password='password1', age=20, gender='Male', year_in_school='Sophomore', major='Computer Science')
-    user2 = User(username='test_user2', nickname='tester2', emailadress='test2@example.com', password='password2', age=22, gender='Female', year_in_school='Junior', major='Electrical Engineering')
+    user1 = User(username='test_user1', nickname='tester1', emailaddress='test1@example.com', password='password1', age=20, gender='Male', year_in_school='Sophomore', major='Computer Science')
+    user2 = User(username='test_user2', nickname='tester2', emailaddress='test2@example.com', password='password2', age=22, gender='Female', year_in_school='Junior', major='Electrical Engineering')
     db.session.add_all([user1, user2])
     db.session.commit()
 
