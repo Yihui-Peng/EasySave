@@ -178,6 +178,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
+        print(f"New user created with user_id: {new_user.user_id}")  # 添加调试输出
         session['user_id'] = new_user.user_id
 
         flash('Registration successful! Please complete this survey.')
@@ -623,92 +624,133 @@ def setting():
 
 @app.route('/survey', methods=['GET', 'POST'])
 def survey():
+    # 获取 user_id
     user_id = session.get('user_id')
-    print({user_id})
-    if 'user_id' not in session:
-        return render_template('login.html')
+
+    print(f"[DEBUG] Session user_id: {user_id}, type: {type(user_id)}")
+
+    if not user_id:
+        flash("Please log in to complete the survey.", "error")
+        return redirect(url_for('login'))
+
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        flash("Invalid user ID. Please log in again.", "error")
+        return redirect(url_for('login'))
+
+    # 获取用户对象
+    user = User.query.filter_by(user_id=user_id).first()
+    print(f"[DEBUG] User query result: {user}")
+
+    if not user:
+        print("[DEBUG] User not found in database.")
+        flash("User not found. Please log in again.", "error")
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
-        
-        if not user_id:
-        # 如果没有找到 user_id，可能是直接访问该 URL，重定向到合适的页面
-            # flash('Please register first.')
-            user_id = 777  # For testing, we use user_id 777
-        
+        # 获取第一个和第三个问题的答案
+        average_income = request.form.get('averageDisposableIncome', 0.0)
+        average_spending = request.form.get('averageSpending', 0.0)
 
-        # Check if the skip checkbox is checked
-        skip = request.form.get('skipFinancialRecords', None)
-        print("skip: {skip}")
-
-        if skip:
-            # Save the first and third question's answers to the User table
-            average_income = request.form.get('averageDisposableIncome', 0.0)
-            average_spending = request.form.get('averageSpending', 0.0)
-
-            user = User.query.filter_by(user_id=user_id).first()
-            if user:
-                user.average_income = average_income
-                user.average_spending = average_spending
-                db.session.commit()
-
-            print("Successfully saved data, redirecting to home...")  # Debugging output
-            return redirect(url_for('home'))
-        else:
-            # Save the second question's answer to the Saving_Goal table
-            saving_goal_amount = request.form.get('goalAmount', 0.0)
-            current_date = datetime.now()
-            start_date = current_date
-            end_date = current_date + timedelta(days=30)
-            saving_goal_id = f"{user_id}{current_date.strftime('%Y%m%d')}"
-
-            new_saving_goal = Saving_Goal(
-                saving_goal_id=saving_goal_id,
-                user_id=user_id,
-                amount=saving_goal_amount,
-                start_date= start_date,
-                end_date =end_date,
-                progress="In Progress",
-                progress_amount=0.0
-            )
-            db.session.add(new_saving_goal)
-
-            # Save the monthly financial records to the Detail table
-            current_month = datetime.now().month
-            current_year = datetime.now().year
-            months = []
-
-            for i in range(1, 4):
-                month = current_month - i
-                year = current_year
-                if month <= 0:
-                    month += 12
-                    year -= 1
-                months.append((month, year))
-
-            last_day_of_month = {
-                1: "01.31", 2: "02.28", 3: "03.31", 4: "04.30", 5: "05.31", 6: "06.30",
-                7: "07.31", 8: "08.31", 9: "09.30", 10: "10.31", 11: "11.30", 12: "12.31"
-            }
-
-            for month, year in months:
-                month_name = datetime(year, month, 1).strftime('%B')
-                detail_data = {
-                    'user_id': user_id,
-                    'date': datetime.strptime(f"{year}-{month:02d}-{last_day_of_month[month].split('.')[1]}", "%Y-%m-%d")
-                }
-                for category in [
-                    "income", "allowance", "living_expense", "tuition", "housing", "food",
-                    "transportation", "study_materials", "entertainment", "personal_care",
-                    "technology", "apparel", "travel", "others"
-                ]:
-                    amount = request.form.get(f'{month_name}_{category.capitalize()}', 0.0)
-                    detail_data[category] = amount
-
-                new_detail = Detail(**detail_data)
-                db.session.add(new_detail)
-
+        try:
+            # 更新用户的平均收入和支出字段
+            user.average_income = float(average_income)
+            user.average_spending = float(average_spending)
             db.session.commit()
+            print(f"[DEBUG] User data saved: Average Income = {average_income}, Average Spending = {average_spending}")
+        except Exception as e:
+            db.session.rollback()
+            print(f"[ERROR] An error occurred while saving user data: {str(e)}")  # 调试输出
+            flash(f"An error occurred while saving user data: {str(e)}", "error")
+            return redirect(url_for('survey'))
 
-            return redirect(url_for('home'))
+        # 处理第二个问题：储蓄目标
+        savings_goal_choice = request.form.get('savingsGoal', None)
+        if savings_goal_choice == 'yes':
+            saving_goal_amount = request.form.get('goalAmount', 0.0)
+            if float(saving_goal_amount) > 0:
+                try:
+                    current_date = datetime.now()
+                    start_date = current_date
+                    end_date = current_date + timedelta(days=30)
+
+                    print(f"[DEBUG] Attempting to save saving goal for user_id {user_id} with amount {saving_goal_amount}")
+
+                    new_saving_goal = Saving_Goal(
+                        user_id=user_id,
+                        amount=float(saving_goal_amount),
+                        start_date=start_date,
+                        end_date=end_date,
+                        progress=None,
+                        progress_amount=None
+                    )
+                    db.session.add(new_saving_goal)
+                    db.session.commit()
+                    print("[DEBUG] Saving goal saved successfully.")
+                except Exception as e:
+                    db.session.rollback()
+                    print(f"[ERROR] An error occurred while saving the saving goal: {str(e)}")  # 调试输出
+                    flash(f"An error occurred while saving the saving goal: {str(e)}", "error")
+                    return redirect(url_for('survey'))
+
+        # 处理第四个问题：财务记录
+        skip = request.form.get('skipFinancialRecords', None)
+        print(f"[DEBUG] Skip financial records: {skip}")  # 调试输出
+
+        if not skip:
+            try:
+                current_month = datetime.now().month
+                current_year = datetime.now().year
+                months = []
+
+                for i in range(1, 4):
+                    month = current_month - i
+                    year = current_year
+                    if month <= 0:
+                        month += 12
+                        year -= 1
+                    months.append((month, year))
+
+                last_day_of_month = {
+                    1: "31", 2: "28", 3: "31", 4: "30", 5: "31", 6: "30",
+                    7: "31", 8: "31", 9: "30", 10: "31", 11: "30", 12: "31"
+                }
+
+                for month, year in months:
+                    month_name = datetime(year, month, 1).strftime('%B')
+                    detail_data = {
+                        'user_id': user_id,
+                        'date': datetime.strptime(f"{year}-{month:02d}-{last_day_of_month[month]}", "%Y-%m-%d")
+                    }
+                    for category in [
+                        "Income", "Allowance", "LivingExpense", "Tuition", "Housing", "Food",
+                        "Transportation", "StudyMaterial", "Entertainment", "PersonalCare",
+                        "Technology", "Apparel", "Travel", "Others"
+                    ]:
+                        amount = request.form.get(f'{month_name}_{category}', 0.0)
+                        if amount == '':
+                            amount = 0.0
+                        detail_data[category.lower()] = float(amount)
+                        print(f"[DEBUG] Retrieved amount for {month_name}_{category}: {amount}")  # 调试输出
+
+                    # 创建新的 Detail 实例并保存
+                    new_detail = Detail(**detail_data)
+                    db.session.add(new_detail)
+
+                db.session.commit()
+                print("[DEBUG] Financial records saved successfully.")
+            except Exception as e:
+                db.session.rollback()
+                print(f"[ERROR] An error occurred while saving financial records: {str(e)}")  # 调试输出
+                flash(f"An error occurred while saving financial records: {str(e)}", "error")
+                return redirect(url_for('survey'))
+        else:
+            print("[DEBUG] User chose to skip financial records.")
+
+        # 在所有数据处理后，显示感谢消息并重定向至主页
+        flash("Thank you for completing the survey!", "success")
+        return redirect(url_for('home'))
 
     return render_template('financial_survey_html_.html')
 
@@ -779,4 +821,4 @@ def budget_allocation():
     return render_template('budget.html')
 
 if __name__ == "__main__":
-    app.run(debug=True)    
+    app.run(debug=True, use_reloader=False)
