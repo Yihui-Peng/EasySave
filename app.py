@@ -1,22 +1,15 @@
 import os
-from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import CSRFProtect
-from werkzeug.security import check_password_hash, generate_password_hash
 from database import db, Detail, User, Saving_Goal, Record
 import datetime
 from datetime import timedelta, datetime
 import re
 import time
-from sqlalchemy import inspect
 from import_database import initialize_database
-from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
+from user_profile import get_user, handle_user_profile_update
 from flask_migrate import Migrate
-import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
-from budget_allocation_algorithm import fetch_combined_financial_data, allocate_budget, generate_insights
+from budget_allocation_algorithm.budget_allocation_algorithm import fetch_combined_financial_data, allocate_budget, generate_insights
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tools.sm_exceptions import ConvergenceWarning
@@ -107,39 +100,61 @@ def loginPage():
 @app.route('/home')
 def home():
     if 'user_id' not in session:
-        return render_template('login.html') 
+        return render_template('login.html')
 
     user_id = session.get('user_id')
-    user = User.query.filter_by(user_id = user_id).first()
+    user = User.query.filter_by(user_id=user_id).first()
 
-    #Fetch the latest spending record
-    spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.date.desc()).first()
+    if not user:
+        flash('User not found.', 'error')
+        return redirect(url_for('login'))
 
-    #Fetch the latest saving goal
-    savingGoal = Saving_Goal.query.filter_by(user_id = user.user_id).first()
+    # Fetch the latest spending record
+    spending = Record.query.filter_by(user_id=user.user_id).order_by(Record.date.desc()).first()
+
+    # Fetch the latest saving goal
+    savingGoal = Saving_Goal.query.filter_by(user_id=user.user_id).order_by(Saving_Goal.end_date.desc()).first()
 
     # Fetch combined financial data
     category_averages = fetch_combined_financial_data(user_id, db.session)
+    print(f"[DEBUG] Category Averages: {category_averages}")
 
     # Get average disposable income and average spending
     avg_disposable_income = user.average_income or 0.0
     avg_spending = user.average_spending or 0.0
+    print(f"[DEBUG] Average Disposable Income: {avg_disposable_income}")
+    print(f"[DEBUG] Average Spending: {avg_spending}")
 
     # Determine savings goal
     if savingGoal:
         savings_goal = savingGoal.amount
     else:
         savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
+    print(f"[DEBUG] Savings Goal: {savings_goal}")
 
     # Allocate budget
     allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
+    print(f"[DEBUG] Allocations: {allocations}")
+    print(f"[DEBUG] Sum of Allocations: {sum(allocations.values())}")
 
-    #Generate insights
-    # insights = generate_insights(allocations, category_averages)
+    # Generate insights
+    insights = generate_insights(allocations, category_averages)
+    print(f"[DEBUG] Insights: {insights}")
 
-    # return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal, allocations = allocations, insights = insights)
-    return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal)
+    # Calculate daily budget (sum of allocations excluding 'Savings')
+    daily_budget = sum(amount for category, amount in allocations.items() if category != 'Savings')
+    print(f"[DEBUG] Daily Budget: {daily_budget}")
 
+    return render_template(
+        'index.html',
+        active_page='home',
+        user=user,
+        prev_spending=spending,
+        savingGoal=savingGoal,
+        allocations=allocations,
+        insights=insights,
+        daily_budget=round(daily_budget, 2)
+    )
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':

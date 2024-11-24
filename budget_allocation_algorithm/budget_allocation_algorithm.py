@@ -1,4 +1,5 @@
-# budget_allocation_algorithm.py
+# This algorithm gives insights about how to spend money.
+# These insights are printed on the home page.
 
 from database import Detail, User
 from sqlalchemy.orm import Session
@@ -82,24 +83,41 @@ def allocate_budget(avg_disposable_income, savings_goal, category_averages):
     Allocate the budget based on disposable income, savings goal, and average category spending.
     Implements the 50/30/20 rule as a base and adjusts based on user data.
     """
+    import logging
+    logger = logging.getLogger(__name__)
+
     # Define budget percentages
     savings_percentage = 0.20
     needs_percentage = 0.50
     wants_percentage = 0.30
 
+    logger.debug(f"Average Disposable Income: {avg_disposable_income}")
+    logger.debug(f"Initial Savings Goal: {savings_goal}")
+
     # Adjust savings goal if it exceeds the default savings percentage
     default_savings = avg_disposable_income * savings_percentage
     if savings_goal < default_savings:
         savings_goal = default_savings
+        logger.debug(f"Savings Goal adjusted to default savings: {savings_goal}")
     elif savings_goal > avg_disposable_income * 0.5:
         # Limit savings goal to a maximum of 50% of disposable income
         savings_goal = avg_disposable_income * 0.5
+        logger.debug(f"Savings Goal limited to 50% of disposable income: {savings_goal}")
 
     budget_after_savings = avg_disposable_income - savings_goal
+    logger.debug(f"Budget after Savings: {budget_after_savings}")
 
     # Calculate allocations based on 50/30/20 rule
-    needs_budget = budget_after_savings * needs_percentage / (needs_percentage + wants_percentage)
-    wants_budget = budget_after_savings * wants_percentage / (needs_percentage + wants_percentage)
+    if (needs_percentage + wants_percentage) > 0:
+        needs_budget = budget_after_savings * needs_percentage / (needs_percentage + wants_percentage)
+        wants_budget = budget_after_savings * wants_percentage / (needs_percentage + wants_percentage)
+    else:
+        needs_budget = 0.0
+        wants_budget = 0.0
+        logger.warning("Needs and Wants percentages sum to zero. Allocating zero budget to needs and wants.")
+
+    logger.debug(f"Needs Budget: {needs_budget}")
+    logger.debug(f"Wants Budget: {wants_budget}")
 
     # Map categories to needs and wants
     needs_categories = ['Housing', 'Food', 'Transportation', 'Personal Care', 'Study Material', 'Tuition', 'Technology']
@@ -109,21 +127,39 @@ def allocate_budget(avg_disposable_income, savings_goal, category_averages):
 
     # Allocate to needs
     total_needs = sum([category_averages.get(cat, 0.0) for cat in needs_categories])
-    for category in needs_categories:
-        avg = category_averages.get(category, 0.0)
-        ratio = avg / total_needs if total_needs > 0 else 0
-        allocations[category] = needs_budget * ratio
+    logger.debug(f"Total Needs Category Averages: {total_needs}")
+
+    if total_needs > 0:
+        for category in needs_categories:
+            avg = category_averages.get(category, 0.0)
+            ratio = avg / total_needs
+            allocations[category] = needs_budget * ratio
+            logger.debug(f"Allocating {allocations[category]} to {category} (Ratio: {ratio})")
+    else:
+        logger.warning("Total Needs Category Averages is zero. Allocating zero to needs categories.")
+        for category in needs_categories:
+            allocations[category] = 0.0
 
     # Allocate to wants
     total_wants = sum([category_averages.get(cat, 0.0) for cat in wants_categories])
-    for category in wants_categories:
-        avg = category_averages.get(category, 0.0)
-        ratio = avg / total_wants if total_wants > 0 else 0
-        allocations[category] = wants_budget * ratio
+    logger.debug(f"Total Wants Category Averages: {total_wants}")
+
+    if total_wants > 0:
+        for category in wants_categories:
+            avg = category_averages.get(category, 0.0)
+            ratio = avg / total_wants
+            allocations[category] = wants_budget * ratio
+            logger.debug(f"Allocating {allocations[category]} to {category} (Ratio: {ratio})")
+    else:
+        logger.warning("Total Wants Category Averages is zero. Allocating zero to wants categories.")
+        for category in wants_categories:
+            allocations[category] = 0.0
 
     # Include Savings
     allocations['Savings'] = savings_goal
+    logger.debug(f"Allocating {savings_goal} to Savings")
 
+    logger.debug(f"Final Allocations: {allocations}")
     return allocations
 
 def generate_insights(allocations, category_averages):
@@ -131,13 +167,20 @@ def generate_insights(allocations, category_averages):
     Generate personalized insights based on budget allocations and spending patterns.
     """
     insights = []
+    total_allocated = sum(allocations.values())
+
+    print(f"[DEBUG] Total Allocated in Insights: {total_allocated}")
+
+    if total_allocated == 0:
+        insights.append("No budget allocations available to generate insights.")
+        return insights
 
     # Example Insight 1: High spending categories
     high_spending_threshold = 0.15  # 15%
     for category, allocated in allocations.items():
         if category == 'Savings':
             continue
-        proportion = allocated / sum(allocations.values())
+        proportion = allocated / total_allocated
         if proportion > high_spending_threshold:
             insights.append(f"Consider reviewing your spending on {category}, as it consumes a significant portion of your budget.")
 
