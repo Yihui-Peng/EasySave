@@ -1,0 +1,238 @@
+.goals-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+}
+.goals-container h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+.goal-item {
+    color: #FFFFFF;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+}
+
+
+
+
+.goal-name {
+    border-radius: 10px;
+    font-size: 1em;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 70px;
+    padding-right: 70px;
+}
+.goal-name-1 {
+    background-color: #BA8D86;
+}
+.goal-name-2 {
+    background-color: #5C7096;
+}
+.goal-name-3 {
+    background-color: #CE9439;
+}
+.goal-name-4 {
+    background-color: #6DA283;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 24px;
+    margin-left: 20px;
+    background-color: #FFFFFF;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    right: 8px;  /* 根据需要调整 */
+    transform: translateY(-50%);
+    font-weight: bold;
+    font-size: 0.8em;
+}
+.progress-text-1 {
+    color: #D3BBB7;
+}
+.progress-text-2 {
+    color: #97A5C0;
+}
+.progress-text-3 {
+    color: #E4BD80;
+}
+.progress-text-4 {
+    color: #B8D9C6;
+}
+
+
+.progress-bar-fill {
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: #000000;
+}
+.progress-bar-fill-1 {
+
+    background-color: #D3BBB7;
+}
+.progress-bar-fill-2 {
+    background-color: #97A5C0;
+}
+.progress-bar-fill-3 {
+    background-color: #E4BD80;
+}
+.progress-bar-fill-4 {
+    background-color: #B8D9C6;
+}
+
+.goal-date{
+    margin-left: 20px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-radius: 10px;
+    font-size: 1em;
+    color: #000000;
+}
+.goal-date-1{
+    background-color: #EAD6D2;
+}
+.goal-date-2{
+    background-color: #C5D0E3;
+}
+.goal-date-3{
+    background-color: #E6CEA8;
+}
+.goal-date-4{
+    background-color: #D1ECDD;
+}
+
+
+.save-btn {
+    align-self: flex-end;
+    padding: 15px 25px;
+    border: none;
+    border-radius: 10px;
+    background-color: #97A5C0;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 20px;
+}
+.save-btn:hover {
+    background-color: #75809C;
+}
+
+
+
+.goal-form {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    display: none;
+    z-index: 1000;
+    padding-top: 60px;
+}
+
+.goal-form .form-group {
+    margin-bottom: 20px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #F3EDE6;
+    font-size: 1em;
+}
+.goal-form label {
+    color: #B7A9A7;
+    font-weight: bold;
+    display: block;
+}
+.goal-form input, .goal-form select {
+    border: none;
+    background-color: #F3EDE6;
+    outline: none;
+    width: 100%;
+}
+.goal-form button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: #D3A96A;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+}
+.goal-form .close-btn {
+    position: absolute;
+    right:6%;
+    top: 2%;
+    background-color: #C39289;
+    color: #FFFFFF;
+    border-radius: 100%;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.records-table  {
+    background-color: #FFFFFF;
+    display: block;
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 30px; 
+}
+.records-table thead, records-table tbody{
+    padding-left: 50px;
+}
+.records-table thead, .records-table tbody tr {
+    display: table;
+    width: 95%;
+    table-layout: fixed;
+    margin-bottom: 20px;
+}
+.records-table tbody tr {
+    padding-left: 20px;
+}
+.records-table span{
+    display: inline-block;
+    width: 30px; 
+    height: 30px; 
+    border: 2px solid #000000;   
+    border-radius: 30px; 
+    text-align: center; 
+    line-height: 30px; 
+    color: black;
+}
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 999;
+}

@@ -78,6 +78,9 @@ def generate_test_data():
     spending_record2 = Record(user_id=user2.user_id, amount=60.0, date=datetime(2024, 4, 7), category='Transport', note='charge-ov chipcard')
     spending_record3 = Record(user_id=user1.user_id, amount=150.0, date=datetime(2024, 4, 10), category='Entertainment', note='KTV')
     db.session.add_all([spending_record1, spending_record2, spending_record3])
+
+
+    
     db.session.commit() 
     
     print("Test data has been successfully generated.")

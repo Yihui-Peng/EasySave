@@ -1,16 +1,10 @@
 {% extends "base.html" %}
 
 {% block title %}Details and Charts{% endblock %}
-
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Details and Charts</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
     <script>
         function updateSubcategories() {
             const level1 = document.getElementById("category_level_1").value;
@@ -72,8 +66,8 @@
 
 
     </script>
-</head>
-<body>
+
+
     <div class="container">
         <!-- Start of the form -->
         <form method="POST">
@@ -135,7 +129,5 @@
             }
         </script>
     </div>
-</body>
-</html>
 {% endblock %}
 

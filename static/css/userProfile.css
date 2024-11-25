@@ -1,0 +1,91 @@
+.profile-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    border-radius: 20px;
+    max-width: 800px;
+    margin: 40px auto;
+}
+.profile-pic {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 30px;
+    width: 25%;
+    height: 25%
+}
+.profile-pic img {
+    border-radius: 50%;
+    border: 3px solid #97A5C0;
+    width: 70%;
+    height: 70%;
+    object-fit: cover;
+}
+.profile-pic button {
+    margin-top: 10px;
+    padding: 5px 50px;
+    border:2px solid #A9B7AA;
+    border-radius: 20px;
+    background-color: #FFFFFF;
+    color: #000000;
+    cursor: pointer;
+    font-size: 1.3em;
+}
+.profile-pic button:hover {
+    background-color: #c89085;
+}
+.profile-info {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+}
+.profile-info h1 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+.profile-info .input-group {
+    border:none;
+    border-radius: 20px;
+    background-color: #FDFBFA;
+    display: flex;
+    padding-left: 20px;
+    flex-direction: column;
+    gap: 5px;
+}
+.profile-info label {
+    color: #766464;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+.profile-info input[type="text"],
+.profile-info input[type="email"],
+.profile-info input[type="number"],
+.profile-info select {
+    color: #000000;
+    border: none;
+    background-color: #FDFBFA;
+    border-bottom-right-radius: 20px;
+    padding-left: 40px;
+    font-size: 1em;
+    outline: none;
+}
+.save-btn {
+    align-self: flex-end;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: #97A5C0;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 15px;
+}
+.save-btn:hover {
+    background-color: #75809C;
+}

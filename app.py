@@ -5,11 +5,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 from werkzeug.security import check_password_hash, generate_password_hash
 from database import db, Detail, User, Saving_Goal, Record
-import datetime
 from datetime import timedelta, datetime
 import re
 import time
-from sqlalchemy import inspect
+from sqlalchemy import func, inspect
 from import_database import initialize_database
 from user_profile import get_user, update_email, update_nickname, update_profile_picture, allowed_file, default_picture_filename, handle_user_profile_update
 from flask_migrate import Migrate
@@ -113,12 +112,24 @@ def home():
     user = User.query.filter_by(user_id = user_id).first()
 
     #Fetch the latest spending record
-    spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.date.desc()).first()
+    spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.date.desc()).limit(3).all()
+    
 
-    #Fetch the latest saving goal
-    savingGoal = Saving_Goal.query.filter_by(user_id = user.user_id).first()
+    # 查询今天的所有记录
+    today = datetime.now().date()
+    today_records = Record.query.filter(
+        Record.user_id == user.user_id,
+        func.date(Record.date) == today
+    ).all()
 
-    # Fetch combined financial data
+
+    savingGoals = Saving_Goal.query.filter_by(user_id = user.user_id).limit(3).all()
+    achievedGoals = Saving_Goal.query.filter(
+        Saving_Goal.user_id == user.user_id,
+        Saving_Goal.progress == "finished"
+        ).order_by(Saving_Goal.end_date.desc()).limit(3).all()
+    print(achievedGoals)
+    # Fetch combined financial datas
     category_averages = fetch_combined_financial_data(user_id, db.session)
 
     # Get average disposable income and average spending
@@ -126,19 +137,18 @@ def home():
     avg_spending = user.average_spending or 0.0
 
     # Determine savings goal
-    if savingGoal:
-        savings_goal = savingGoal.amount
-    else:
-        savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
-
-    # Allocate budget
-    allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
-
-    #Generate insights
-    # insights = generate_insights(allocations, category_averages)
+    for goal in savingGoals:
+        if goal:
+            savings_goal = goal.amount
+        else:
+            savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
+        # Allocate budget
+        allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
+        #Generate insights
+        # insights = generate_insights(allocations, category_averages)
 
     # return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal, allocations = allocations, insights = insights)
-    return render_template('index.html', active_page='home', user = user, prev_spending = spending, savingGoal = savingGoal)
+    return render_template('index.html', active_page='home', user = user, spending = spending, savingGoals = savingGoals, today_records = today_records, achievedGoals = achievedGoals)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -194,13 +204,14 @@ def register():
 def newRecords():
     if 'user_id' not in session:
         return render_template('login.html')
+    user_id = session.get('user_id')
+    user = User.query.filter_by(user_id = user_id).first()
     if request.method == 'POST':
         amount = request.form.get('amount')
         category_level_1 = request.form.get('category-level-1')
         category_level_2 = request.form.get('category-level-2')
         date = request.form.get('date')
         note = request.form.get('note')
-        user_id = session.get('user_id')
 
 
         if not amount or not category_level_1 or not category_level_2 or not date:
@@ -231,7 +242,7 @@ def newRecords():
         # return redirect(url_for('newRecords'))
         return redirect(url_for('newRecords', added=True))
 
-    return render_template('newRecords.html', active_page='newRecords')
+    return render_template('newRecords.html', active_page='newRecords', user=user)
 
 
 def generate_and_forecast_spending_data(start_date, end_date, forecast_days=30):
@@ -383,11 +394,12 @@ def generate_monthly_spending_chart(records):
 
 @app.route('/details_and_charts', methods=['GET', 'POST'])
 def details_and_charts():
+    user_id = session.get('user_id')
+    user = User.query.filter_by(user_id = user_id).first()
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    user_id = session.get('user_id')
-
+    
     # 默认选择
     selected_category_level_1 = 'All Spending'
     selected_category_level_2 = 'All'
@@ -475,6 +487,7 @@ def details_and_charts():
 
     return render_template(
         'details_and_charts.html',
+        user = user,
         records=user_records,
         selected_category_level_1=selected_category_level_1,
         selected_category_level_2=selected_category_level_2,
@@ -497,8 +510,8 @@ def show_saving_goal_page():
         end_date_str = request.form.get('end-date')
         progress = request.form.get('progress')
 
-        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
-        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
 
         progress_amount_str = request.form.get('progress_amount')
         if progress_amount_str:
@@ -527,9 +540,12 @@ def show_saving_goal_page():
 
     # If it's a GET request, fetch all the goals for the logged-in user
     user_id = session.get('user_id')
+    user = User.query.filter_by(user_id = user_id).first()
     goals = Saving_Goal.query.filter_by(user_id=user_id).all()  # Only fetch goals for the logged-in user
-
-    return render_template('savingGoal.html', active_page='savingGoal', goals=goals)
+    onGoingGoals = Saving_Goal.query.filter(
+        Saving_Goal.user_id == user_id,
+        Saving_Goal.progress == 'ongoing').order_by(Saving_Goal.end_date.desc()).limit(4).all()
+    return render_template('savingGoal.html', active_page='savingGoal', user = user, goals=goals, onGoingGoals = onGoingGoals)
 
 
 @app.route('/delete_selected_goals', methods=['POST'])
@@ -756,12 +772,13 @@ def survey():
 
 @app.route('/userProfile', methods=['GET', 'POST'])
 def userProfile():
+    user_id = session.get('user_id')
+    user = get_user(user_id)
     if 'user_id' not in session:
         return render_template('login.html')
     if request.method == 'POST':
-        return handle_user_profile_update(request)
-    user_id = session.get('user_id')
-    user = get_user(user_id)
+        return handle_user_profile_update(request, user_id)
+    
     return render_template('userProfile.html', active_page='userProfile', user=user, time=time)
 
 
@@ -819,6 +836,13 @@ def budget_allocation():
 
     # For GET request, render a simple form or page
     return render_template('budget.html')
+
+@app.route('/logout')
+def logout():
+    session['user_id'] = None
+    return redirect(url_for('login'))
+    
+
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)

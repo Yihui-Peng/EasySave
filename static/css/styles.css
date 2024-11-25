@@ -3,8 +3,10 @@
     --primary-color: #0d6efd; /* Bootstrap's primary blue */
     --secondary-color: #6c757d; /* Bootstrap's secondary gray */
     --accent-color: #198754; /* Bootstrap's success green */
-    --background-color: #f8f9fa; /* Light gray background */
-    --header-bg-color: #343a40; /* Darker header for contrast */
+    --background-color: #F3EDE6; /* Light gray background */
+    --sidebar-bg-color: #EFD8CC; /* Soft pink for sidebar background */
+    --sidebar-text-color: #333333; /* Dark text for sidebar */
+    --header-bg-color: #EFD8CC; /* Darker header for contrast */
     --header-text-color: #ffffff; /* White text in header */
     --footer-bg-color: #343a40; /* Matching footer to header */
     --footer-text-color: #ffffff; /* White text in footer */
@@ -12,73 +14,72 @@
     --card-border-color: #dee2e6; /* Light border for cards */
     --button-hover-color: #0b5ed7; /* Darker blue on hover */
     --button-active-color: #0a58ca; /* Even darker on active */
-    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern sans-serif font */
+    --font-family: 'Arvo', Tahoma, Geneva, Verdana, sans-serif; /* Modern sans-serif font */
 }
 
 /* Apply Global Styles */
 body {
     font-family: var(--font-family);
     background-color: var(--background-color);
-    margin: 0; /* Remove default margin */
-    padding: 0; /* Remove default padding */
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
-/* Header Styles */
-header {
-    background-color: var(--header-bg-color);
-    color: var(--header-text-color);
-    padding: 15px 30px;
+/* Sidebar Styles */
+#sidebar {
+    background-color: var(--sidebar-bg-color);
+    min-height: 100vh;
+    padding: 20px;
+    border-top-right-radius: 30px;
+    border-bottom-right-radius: 30px;
 }
 
-/* Navbar Styles */
-.navbar {
-    background-color: var(--header-bg-color) !important; /* Ensure navbar matches header */
-}
-
-.navbar-brand {
-    font-weight: bold;
-    font-size: 1.5rem;
-}
-
-.nav-link {
-    color: var(--header-text-color) !important;
+#sidebar .nav-link {
+    color: var(--sidebar-text-color);
+    background-color: #F6F1F1;
+    font-weight: 500;
+    margin: 10px 0;
     transition: color 0.3s, background-color 0.3s;
+    border-radius: 30px;
+    padding: 10px;
 }
 
-.nav-link:hover,
-.nav-link:focus {
-    color: var(--primary-color) !important;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
+#sidebar .nav-link.active {
+    background-color: var(--primary-color);
+    color: #ffffff !important;
 }
 
-.nav-link.active {
+#sidebar .nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.1);
     color: var(--primary-color) !important;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 5px;
+}
+
+#sidebar .text-danger {
+    margin-top: auto;
+    background-color: transparent;
+    padding-left: 15px;
+    display: flex;
+    align-items: center;
+}
+#sidebar img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
 }
 
 /* Main Content Styles */
 main {
     padding: 30px;
+    background-color: var(--background-color);
 }
 
-/* Footer Styles */
-footer {
-    background-color: var(--footer-bg-color);
-    color: var(--footer-text-color);
-    text-align: center;
-    padding: 15px 0;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-}
-
-/* Card Styles */
 .card {
     background-color: var(--card-bg-color);
     border: 1px solid var(--card-border-color);
     border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Button Styles */
@@ -103,38 +104,15 @@ button.btn-primary:active {
     border-color: var(--button-active-color);
 }
 
-button.btn-success {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-}
-
-button.btn-success:hover {
-    background-color: #157347; /* Darker green on hover */
-    border-color: #146c43;
-}
-
-button.btn-warning {
-    background-color: #ffc107; /* Bootstrap's warning yellow */
-    border-color: #ffc107;
-}
-
-button.btn-warning:hover {
-    background-color: #e0a800;
-    border-color: #d39e00;
-}
-
-/* Form Styles */
-form .form-label {
-    font-weight: bold;
-}
-
-.form-control {
-    border-radius: 5px;
-}
-
 /* Responsive Adjustments */
 @media (max-width: 768px) {
+    #sidebar {
+        display: none;
+    }
     header, footer {
         text-align: center;
+    }
+    main {
+        padding: 15px;
     }
 }

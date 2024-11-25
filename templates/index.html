@@ -4,107 +4,149 @@
 {% block styles %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 {% endblock %}
+
 {% block content %}
-    <h2>Welcome, {{ user.nickname }}</h2>
-    <p>This is the home page.</p>
-
-    <div class="spending-summary">
-       
-        <div class="previous-spending">
-            <h2>Previous Records</h2>
-            {% if prev_spending %}
-            <p id="Spending_name">{{ prev_spending.category + " " + prev_spending.date.strftime('%Y-%m-%d') }}</p>
-            <p id="Spending_amount"> €{{ prev_spending.amount }}</p>
-            <p id="Note">Note: {{ prev_spending.note }}</p>
-            {% endif %}
-        </div>
-     
-
-       
-        <div class="saving-goal">
-            <h2>Saving Goal</h2>
-            {% if savingGoal %}
-            <canvas id="myPieChart" width="200" height="200"></canvas>
-            {% endif %}
-        </div>
-        
-        
-        <div class="remaining-today">
-            <h2>Today's Remaining</h2>
-            <p id="todayRemaining">666</p>
-        </div>
-    </div>
     
-    <div class="container">
-        <div class="advice-section">
-            <h2>Advices</h2>
-            {% if insights %}
-                <ul>
-                    {% for insight in insights %}
-                        <li>{{ insight }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No insights available at the moment.</p>
+<div class="flex-container">
+    <!-- Today's Budget -->
+    <div>
+        {% set ns = namespace(total_amount=0) %}  <!-- 使用 namespace 来声明 total_amount -->
+        {% set buget = 95 %}
+        {% for record in today_records %}
+            {% if record.category not in ["allowance", "income", "living_expenses"] %}  
+                {% set ns.total_amount = ns.total_amount + record.amount %}        
             {% endif %}
-        </div>
-        <div class="new-records">
-            <h2>New Records</h2>
-            <form action="" method="post">
-                <!-- Form inputs for adding new spending -->
-            </form>
-        </div>
+        {% endfor %}
+        <h1>Today's Budget</h1>
+        <h2 class="buget-text">
+            <span id="spent" style="color: #58A778;">{{ ns.total_amount }}</span> 
+            / 
+            <span id="total" style="color: black;">{{ buget }}</span>
+        </h2>
+        <button class="btn-add-record add-new-records" onclick="window.location.href='/newRecords'">Add New Records</button>
     </div>
 
-    {% if savingGoal %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var ctx = document.getElementById('myPieChart').getContext('2d');
-            var used = parseFloat('{{ savingGoal.progress_amount | default(0) }}');
-            var total = parseFloat('{{ savingGoal.amount | default(1) }}');
-            var remaining = total - used;
+    <!-- Detial Records -->
+    <div class="detail-records">
+        <h2>Detail Records</h2>
+        <table class="records-table">
+            <tbody>
+                {%for record in spending%}
+                    <tr>
+                        <td>{{record.date.strftime('%m-%d')}}</td>
+                        <td>{{record.category.split(':')[1]}}</td>
+                        <td>{{record.amount}}</td>
+                    </tr>
+                {%endfor%}
+            </tbody>
+        </table>
+        <p class="more-link"><a href="#">More...</a></p>
+    </div>
 
-            var myPieChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Used', 'Remaining'],
-                    datasets: [{
-                        data: [used, remaining],
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.2)', // Red
-                            'rgba(54, 162, 235, 0.2)'  // Blue
-                        ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top'
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        },
-                        datalabels: {
-                            formatter: (value, context) => {
-                                let sum = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                let percentage = (value / sum * 100).toFixed(2) + "%";
-                                return percentage;
-                            },
-                            color: '#fff',
-                        }
-                    }
-                }
-            });
+    <!-- Achieved GOALS-->
+    <div class="achieved-goals">
+        <h3>Achieved GOALs</h3>
+        {%for goal in achievedGoals%}
+            <div class="goal-item">
+                <span class="goal-name">{{goal.name}}</span>
+                <span class="goal-date">{{goal.end_date.strftime('%Y-%m-%d')}}</span>
+                <span class="goal-amount">{{goal.amount}}</span>
+            </div>
+        {%endfor%}
+    </div>
+
+    <div class="spending">
+        <!-- Today Spending -->
+        <svg viewBox="0 0 100 100" class="circular-chart">
+            <circle class="circle-bg-spending" cx="50" cy="50" r="29" />
+            <circle class="circle-center-spending" cx="50" cy="50" r="19.6" />
+            {% if today_records is not none %}
+                {% set circumference = 2 * 3.14159 * 29 %}
+                {% set ns = namespace(prev_filled_length=0) %}
+
+                {% for record in today_records %}
+                    {% if record.category not in ["allowance", "income", "living_expenses"] %}
+                        {% set percentage = (((record.amount / 95) * 100) | round) %}
+                        {% set filled_length = (percentage / 100) * circumference %}
+                        {% set stroke_dasharray = "{} {}".format(filled_length, circumference) %}
+                        {% if  ns.prev_filled_length == 0 %}
+                            {% set stroke_dashoffset =  ns.prev_filled_length %}
+                        {%else%}
+                            {%set stroke_dashoffset =  filled_length + ns.prev_filled_length%}
+                        {%endif%}
+                        <circle class="circle spending-progress spending-{{ loop.index }}" 
+                                cx="50" cy="50" r="29" 
+                                stroke-dasharray="{{ stroke_dasharray }}" 
+                                stroke-dashoffset="{{ stroke_dashoffset }}">
+                                <title>{{record.category}}  {{record.amount}}</title>   
+                        </circle>
+                        {% set ns.prev_filled_length = ns.prev_filled_length + filled_length %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </svg>
+   
+
+
+        <!-- Saving Goals -->
+        {% if savingGoals is not none %}
+        <div class="saving-goals">
+            <svg viewBox="0 0 36 36" class="circular-chart">
+                    {% set ns = namespace(radius = 5.3) %}
+                    <circle class="circle-bg" cx="18" cy="18" r="{{ns.radius * (savingGoals|length)}}" />
+                {% for goal in savingGoals %}
+                    {% set percentage = ((goal.progress_amount / goal.amount) * 100 if goal.amount != 0 else 0) | round %}
+                    {% set circumference = 2 * 3.14159 * ns.radius %}
+                    {% set filled_length = (percentage / 100) * circumference %}
+                    {% set stroke_dasharray = "{} {}".format(filled_length, circumference) %}
+                    <circle class="circle goal-{{loop.index}}" 
+                        cx="18" cy="18" r="{{ ns.radius }}" 
+                        stroke-dasharray="{{ stroke_dasharray }}">
+                    <title>{{ goal.progress_amount }}/{{ goal.amount }}  {{ ((goal.progress_amount / goal.amount) * 100) | round }}%</title>
+                    </circle>
+                    {% set ns.radius = ns.radius + 5 %}
+                {% endfor %}
+
+                <!-- 中间的圆 -->
+                <circle class="circle-center" cx="18" cy="18" r="3"/>
+            </svg>
+        </div>
+        {% endif %}
+    </div>
+
+    
+</div>
+    <script>
+        function updateBudgetColor() {
+            // 获取花费金额的元素
+            const spentElement = document.getElementById("spent");
+            
+            // 获取花费和预算数值
+            const spentText = spentElement.textContent.replace(',', '.');
+            const totalText = document.getElementById("total").textContent.replace(',', '.');
+            const spent = parseFloat(spentText);
+            const total = parseFloat(totalText);
+            
+            // 计算花费占预算的比例
+            const percentage = spent / total;
+
+            // 根据比例更新花费部分的颜色
+            if (percentage > 1) {
+                spentElement.style.color = "#B95756";
+            } else if (percentage > 0.85) {
+                spentElement.style.color = "#FD9270";
+            } else {
+                spentElement.style.color = "#58A778"; // 绿色
+            }
+        }
+        // 初始化颜色更新
+        updateBudgetColor();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateBudgetColor();
         });
+
     </script>
-    {% endif %}
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}

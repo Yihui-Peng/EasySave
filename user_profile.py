@@ -75,13 +75,9 @@ def update_profile_picture(user, file):
     return False, None
 
 
-def handle_user_profile_update(request):
+def handle_user_profile_update(request, user_id):
     """Handle the user profile update logic based on the form type."""
     form_type = request.form.get('form_type')
-
-    # Access user_id from session
-    from flask import session
-    user_id = session.get('user_id')
     if not user_id:
         flash("User not logged in.", "error")
         return redirect(url_for('login'))
@@ -111,24 +107,24 @@ def handle_user_profile_update(request):
 
     elif form_type == 'update_profile':
         # Update user data
-        username = request.form.get('username').strip()
+        # username = request.form.get('username').strip()
         email = request.form.get('email').strip()
         nickname = request.form.get('nickname').strip()
-        average_income = request.form.get('average_income')
-        average_spending = request.form.get('average_spending')
+        # average_income = request.form.get('average_income')
+        # average_spending = request.form.get('average_spending')
         age = request.form.get('age')
         gender = request.form.get('gender')
         year_in_school = request.form.get('year_in_school')
         major = request.form.get('major')
 
-        # Update Username
-        if username:
-            success, message = update_username(user, username)
-            if not success:
-                flash(message, 'danger')
-                return redirect(url_for('userProfile'))
-            else:
-                flash(message, 'success')
+        # # Update Username
+        # if username:
+        #     success, message = update_username(user, username)
+        #     if not success:
+        #         flash(message, 'danger')
+        #         return redirect(url_for('userProfile'))
+        #     else:
+        #         flash(message, 'success')
 
         # Update Email
         if email:
@@ -140,18 +136,18 @@ def handle_user_profile_update(request):
             update_nickname(user, nickname)
 
         # Update Average Income
-        if average_income:
-            try:
-                user.average_income = float(average_income)
-            except ValueError:
-                flash('Invalid input for average income.', 'warning')
+        # if average_income:
+        #     try:
+        #         user.average_income = float(average_income)
+        #     except ValueError:
+        #         flash('Invalid input for average income.', 'warning')
 
-        # Update Average Spending
-        if average_spending:
-            try:
-                user.average_spending = float(average_spending)
-            except ValueError:
-                flash('Invalid input for average spending.', 'warning')
+        # # Update Average Spending
+        # if average_spending:
+        #     try:
+        #         user.average_spending = float(average_spending)
+        #     except ValueError:
+        #         flash('Invalid input for average spending.', 'warning')
 
         # Update Age
         if age:
@@ -174,6 +170,6 @@ def handle_user_profile_update(request):
 
         db.session.commit()
         flash('Profile information updated successfully!', 'success')
-
+    
     # After handling POST, redirect to the same route to perform a GET request
     return redirect(url_for('userProfile'))

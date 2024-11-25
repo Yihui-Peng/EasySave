@@ -1,70 +1,233 @@
 .spending-summary {
     display: flex;
     justify-content: space-around;
-    margin-bottom: 20px; /* Adds space between the rows */
+    align-items: center;
+    margin: 20px 0;
 }
-
 .spending-summary > div {
-    background-color: white;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    text-align: center;
     flex: 1;
+    margin: 0 15px;
+    text-align: center;
 }
 
-.saving-goal p {
-    display: inline-block;
-    background-color: #fff;
-    border-radius: 50%;
-    padding: 20px;
-    width: 100px;
-    height: 100px;
-    line-height: 60px; /* Adjust this to center the text vertically */
-    border: 2px solid black; /* Optional: adds border to the circle */
-}
-
-
-.container {
+.flex-container {
     display: flex;
-    justify-content: space-between;
-    margin-top: 20px; /* Add some space between the rows */
-}
-
-.advice-section, .new-records {          /* change new-spending to new-records*/
-    flex: 40%;
-    background-color: white;
-    padding: 20px;
-    margin: 5px; /* Slight margin between the two sections */
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Make sure margins and paddings are consistent and do not overflow */
-.advice-section ul {
-    list-style: none;
-    padding: 0;
-    margin: 0; /* Remove default margin */
-}
-
-.advice-section li {
-    padding: 10px 0; /* Add padding for spacing */
-    border-bottom: 1px solid #ccc;
-}
-
-.advice-section li:last-child {
-    border-bottom: none; /* No border at the bottom of the last item */
-}
-
-form {
-    display: flex;
-    flex-direction: column;
+    flex-direction: row;  /* 水平排列子元素 */
+    gap: 15px;  /* 设置子元素之间的间距 */
 }
 
 
-input, button {
+
+.circular-chart {
+    max-width: 100%;  /* 保证 SVG 图像可以适应容器的大小 */
+}
+
+
+
+.btn-add-record{
+    padding: 15px 15px;
+    background-color: #d8a49d;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+.btn-add-record:hover {
+    background-color: #c89085;
+}
+
+
+.detail-records {
+    margin-top: 40px;
+}
+
+
+
+.saving-goals {
+    position:absolute;
+    left: 60%;
+    top: 20%;
+    width: 20%;
+    height: 20%;
+}
+
+.circular-chart {
+    display: block;
+    margin: 10px auto;
+    max-width: 100%;
+    max-height: 100%;
+    position:absolute;
+    left: 30%;
+}
+
+.circle-bg {
+    fill: #FFFFFF;
+    stroke: #FFFFFF;
+    stroke-width: 5;
+}
+
+
+.circle {
+    fill: none;
+    stroke-width: 5;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    transition: stroke-dasharray 0.5s ease-out;
+}
+
+/* 每个目标进度条的颜色 */
+.goal-1 {
+    stroke: #75809C; /* 内层颜色 */
+}
+
+.goal-2 {
+    stroke: #97A5C0; /* 中层颜色 */
+}
+
+.goal-3 {
+    stroke: #D3BBB7; /* 外层颜色 */
+}
+
+/* 中间的实心圆心 */
+.circle-center {
+    fill: #EFD8CC; /* 圆心的填充颜色，可以根据需要修改 */
+}
+
+
+/* spending */
+
+.spending-progress {
+    fill: none;
+    stroke-width: 20;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+
+.circle-bg-spending{
+    stroke: #FFFFFF;
+    stroke-width: 20;
+}
+
+.circle-center-spending {
+    fill: #ffffff;  /* 中间的圆，白色 */
+}
+
+.spending-1 {
+    stroke: #CCD2CC;  
+}
+
+.spending-2 {
+    stroke: #A9B7AA;  
+}
+
+.spending-3{
+    stroke: #728A7A;
+}
+.spending-4{
+    stroke: #C69491;
+}
+
+.spending-5{
+    stroke: #F9C8C2;
+}
+
+/* Detail records */
+.detail-records {
+    background-color: #ffffff;  /* 设置背景色为白色 */
+    border-radius: 10px;        /* 设置圆角 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* 添加阴影 */
+    padding: 20px;              /* 设置内部填充 */
+    padding-bottom: 0px;
+    width: 20%;
+    margin: 20px auto;          /* 居中显示 */
+    position: absolute;
+    top: 60%;
+    font-family: 'Arial', sans-serif;  /* 选择适合的字体 */
+}
+
+.detail-records h2 {
+    font-weight: bold;
+    margin-top: 0;
+    text-align: left;
+    font-size: 1em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);  /* 设置阴影 */
+}
+
+.records-table {
+    width: 100%;                /* 表格宽度设置为100% */
+    border-collapse: collapse;  /* 合并表格边框 */
+    margin-top: 10px;
+}
+
+.records-table th, .records-table td {
     padding: 10px;
-    margin-top: 5px; /* Spacing between form items */
-    width: 100%; /* Full width of the form */
-    box-sizing: border-box; /* Include padding and border in the width */
+    text-align: left;           /* 设置文本对齐方式 */
+}
+
+.records-table th {
+    background-color: #f5f5f5;  /* 设置表头背景色 */
+    font-weight: bold;
+}
+
+.records-table td {
+    font-size: 1em;
+}
+
+.more-link {
+    text-align: right;
+    margin-top: 10px;
+    font-size: 1em;
+}
+
+.more-link a {
+    color: #333;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.more-link a:hover {
+    text-decoration: underline;
+}
+
+.achieved-goals {
+    background-color: #D3BBB7; 
+    padding: 20px;
+    border-radius: 20px;  /* 圆角 */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);  /* 阴影，增加立体感 */
+    max-width: 20%;  /* 宽度限制 */
+    width: 100%;
+    margin: 20px auto; /* 居中对齐 */
+    font-family: 'Georgia', serif; /* 字体 */
+    position: absolute;
+    right: 5%;
+    bottom: 10%;
+}
+
+.achieved-goals h3 {
+    font-weight: bold;
+    font-style: italic;  /* 斜体 */
+    font-size: 1.3em;
+    margin-bottom: 10px;
+}
+
+.goal-item {
+    display: flex;
+    justify-content: space-between;  /* 子元素水平对齐，左右分布 */
+    margin-bottom: 5px;
+}
+
+.goal-name {
+    font-style: italic;  /* 斜体 */
+    flex: 1.5;
+}
+
+.goal-date, .goal-amount {
+    margin-left: 20px;
+    font-weight: bold;
 }
