@@ -160,14 +160,14 @@ def home():
 
     # Calculate daily budget (sum of allocations excluding 'Savings')
     daily_budget = sum(amount for category, amount in allocations.items() if category != 'Savings')
-    # print(f"[DEBUG] Daily Budget: {daily_budget}")
+    print(f"[DEBUG] Daily Budget: {daily_budget}")
 
     return render_template(
         'index.html',
         active_page='home',
         user=user,
         prev_spending=spending,
-        savingGoal=savingGoal,
+        savingGoals=savingGoals,
         allocations=allocations,
         insights=insights,
         daily_budget=round(daily_budget, 2),

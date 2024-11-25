@@ -180,6 +180,8 @@
 }
 
 .more-link {
+    z-index: 10; /* 确保该值大于覆盖的元素 */
+    position: relative; /* 为了 z-index 起作用 */
     text-align: right;
     margin-top: 10px;
     font-size: 1em;
