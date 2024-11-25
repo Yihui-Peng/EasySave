@@ -11,7 +11,6 @@
     <!-- Today's Budget -->
     <div>
         {% set ns = namespace(total_amount=0) %}  <!-- 使用 namespace 来声明 total_amount -->
-        {% set buget = 95 %}
         {% for record in today_records %}
             {% if record.category not in ["allowance", "income", "living_expenses"] %}  
                 {% set ns.total_amount = ns.total_amount + record.amount %}        
@@ -21,7 +20,7 @@
         <h2 class="buget-text">
             <span id="spent" style="color: #58A778;">{{ ns.total_amount }}</span> 
             / 
-            <span id="total" style="color: black;">{{ buget }}</span>
+            <span id="total" style="color: black;">{{ daily_budget }}</span>
         </h2>
         <button class="btn-add-record add-new-records" onclick="window.location.href='/newRecords'">Add New Records</button>
     </div>
