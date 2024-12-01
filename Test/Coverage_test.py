@@ -1,19 +1,7 @@
-
-from selenium import webdriver
-from selenium.webdriver import ActionChains
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
-import time
-
-# 初始化 WebDriver (假设使用 Chrome)
-from selenium.webdriver.support.wait import WebDriverWait
-
-driver = webdriver.Chrome()  # 更新为你的 chromedriver 路径
-
 import time
 import requests
 from selenium import webdriver
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -47,6 +35,119 @@ def add_test_result(test_case_id, status, comment=''):
         print(f"Successfully updated result for Test Case ID {test_case_id}")
     else:
         print(f"Failed to update result for Test Case ID {test_case_id}, Status Code: {response.status_code}")
+
+
+def test_register_page():
+    try:
+        # 打开注册页面
+        driver.get("http://127.0.0.1:5000")  # 根据你的 Flask 应用地址更新
+        assert "Register" in driver.title, "注册页面加载失败，页面标题不正确"
+
+        register_link = driver.find_element(By.XPATH, "//p[contains(text(),\"Don't have an account?\")]/a")
+
+        register_link.click()
+
+        time.sleep(2)
+
+        # 确保注册表单元素显示
+        username_field = driver.find_element(By.ID, "new-username")
+        email_field = driver.find_element(By.ID, "email")
+        password_field = driver.find_element(By.ID, "new-password")
+        confirm_password_field = driver.find_element(By.ID, "confirm-password")
+        register_button = driver.find_element(By.CLASS_NAME, "btn")
+
+        assert username_field.is_displayed(), "用户名字段未显示"
+        assert email_field.is_displayed(), "邮箱字段未显示"
+        assert password_field.is_displayed(), "密码字段未显示"
+        assert confirm_password_field.is_displayed(), "确认密码字段未显示"
+        assert register_button.is_enabled(), "注册按钮未启用"
+
+        style = register_button.get_attribute("style")
+        print(f"Button styles: {style}")
+
+        # 1. 测试密码不匹配
+        username_field.send_keys("testuser")
+        email_field.send_keys("testuser@example.com")
+        password_field.send_keys("password123")
+        confirm_password_field.send_keys("password124")  # 密码不匹配
+        register_button.click()
+        
+        # 确认提示密码不匹配
+        time.sleep(2)  # 等待页面更新
+        alert_message = driver.find_element(By.CLASS_NAME, "flash-message").text
+        assert "Passwords do not match." in alert_message, f"未显示预期错误消息：{alert_message}"
+
+
+        username_field.clear()
+        email_field.clear()
+        password_field.clear()
+        confirm_password_field.clear()
+
+        # 2. 测试无效邮箱格式
+        username_field.send_keys("testuser6")
+        email_field.send_keys("invalid-email")  # 无效的邮箱
+        password_field.send_keys("password123")
+        confirm_password_field.send_keys("password123")
+        register_button.click()
+
+        # 确认提示无效邮箱格式
+        time.sleep(2)  # 等待页面更新
+        alert_message = driver.find_element(By.CLASS_NAME, "flash-message").text
+        assert "Invalid email address." in alert_message, f"未显示预期错误消息：{alert_message}"
+
+        # 清空输入框
+        username_field.clear()
+        email_field.clear()
+        password_field.clear()
+        confirm_password_field.clear()
+
+        # 3. 测试已存在用户名或邮箱
+        username_field.send_keys("test_user1")
+        email_field.send_keys("newuser@example.com")  # 假设这个用户已存在
+        password_field.send_keys("password123")
+        confirm_password_field.send_keys("password123")
+        register_button.click()
+
+        # 确认提示用户名或邮箱已存在
+        time.sleep(2)  # 等待页面更新
+        alert_message = driver.find_element(By.CLASS_NAME, "flash-message").text
+        assert "Username or email already exists" in alert_message, f"未显示预期错误消息：{alert_message}"
+
+        # 清空输入框
+        username_field.clear()
+        email_field.clear()
+        password_field.clear()
+        confirm_password_field.clear()
+
+        # 4. 测试成功注册
+        username_field.send_keys("newuser")
+        email_field.send_keys("newuser@example.com")
+        password_field.send_keys("password123")
+        confirm_password_field.send_keys("password123")
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "btn")))
+        register_button.click()
+
+
+        #WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "btn")))
+
+        # 等待页面跳转并检查是否成功跳转到问卷页面
+        WebDriverWait(driver, 10).until(EC.url_contains("survey"))
+        assert "survey" in driver.current_url, f"未跳转到问卷页面，当前URL: {driver.current_url}"
+
+        print("注册成功！")
+
+        # 记录测试结果到 TestRail：假设测试用例 ID 为 2
+        add_test_result(10, 1, "Registration successful")  # 测试通过，提交到 TestRail
+
+    except Exception as e:
+        print(f"Test failed due to: {str(e)}")
+
+        # 记录测试结果到 TestRail：测试失败
+        add_test_result(10, 5, f"Registration test failed: {str(e)}")  # 测试失败，提交到 TestRail
+
+    finally:
+        # 关闭浏览器
+        driver.quit()
 
 
 def test_login_with_invalid_credentials():
@@ -83,9 +184,11 @@ def test_login_with_invalid_credentials():
         # 关闭浏览器
         driver.quit()
 
-def test_login_and_add_goal():
+def test_login_page():
     try:
-        # 打开 Flask 登录页面
+
+        driver = webdriver.Chrome()
+
         driver.get("http://127.0.0.1:5000")  # 根据你的 Flask 应用地址更新
 
         # 输入用户名和密码并登录
@@ -95,6 +198,10 @@ def test_login_and_add_goal():
         # 输入用户名和密码
         username_field.send_keys("test_user1")
         password_field.send_keys("password1")
+        """
+        login_button = driver.find_element(By.CLASS_NAME, "btn")
+        assert login_button.is_enabled(), "login button is not enabled"
+        login_button.click()"""
 
         # 提交登录表单
         login_button = driver.find_element(By.CLASS_NAME, "btn")
@@ -104,10 +211,36 @@ def test_login_and_add_goal():
         time.sleep(2)  # 等待一会儿，确保页面加载
         assert "home" in driver.current_url  # 确保跳转到主页
 
-        print("登录成功！")
-
         # 记录测试结果到 TestRail：假设测试用例 ID 为 1
         add_test_result(7, 1, "Login successful")  # 测试通过，提交到 TestRail
+
+    except Exception as e:
+        print(f"Test failed due to: {str(e)}")
+        # 记录测试结果到 TestRail：测试失败
+        add_test_result(7, 5, f"Login test failed: {str(e)}")  # 测试失败，提交到 TestRail
+    finally:
+        # 关闭浏览器
+        driver.quit()
+
+
+def test_login_and_add_goal():
+    try:
+        # 初始化 WebDriver（例如使用 Chrome 浏览器）
+        driver = webdriver.Chrome()
+
+        # 1. 打开 Flask 登录页面
+        driver.get("http://127.0.0.1:5000")  # 根据你的 Flask 应用地址更新
+
+        # 登录步骤
+        username_field = driver.find_element(By.ID, "username")
+        password_field = driver.find_element(By.ID, "password")
+        username_field.send_keys("test_user1")  # 假设用户名为 "test_user1"
+        password_field.send_keys("password1")  # 假设密码为 "password1"
+        login_button = driver.find_element(By.CLASS_NAME, "btn")
+        login_button.click()
+
+        # 等待页面跳转，确认登录成功
+        WebDriverWait(driver, 10).until(EC.url_contains("home"))
 
         # 打开保存目标页面
         driver.get("http://127.0.0.1:5000/savingGoal")
@@ -187,6 +320,12 @@ def test_new_records():
         date_field = driver.find_element(By.ID, "date")
         note_field = driver.find_element(By.ID, "note")
 
+        assert amount_field.is_displayed(), "amount is not displayed"
+        assert category_level_1_field.is_displayed(), "level 1 category field is not displayed"
+        assert category_level_2_field.is_displayed(), "level 2 category field is not displayed"
+        assert date_field.is_displayed(), "date field is not displayed"
+        assert note_field.is_displayed(), "note field is not displayed"
+
         # 填写表单数据
         amount_field.send_keys("100.50")
         category_level_1_field.send_keys("Necessities")
@@ -210,29 +349,10 @@ def test_new_records():
         assert alert_text == "New record added successfully", f"Expected alert text not found. Got: {alert_text}"
         alert.accept()  # 关闭弹窗
 
-        # 确认 URL 是否回到 newRecords 页面并且存在 "added" 参数
-        #assert "added=True" in driver.current_url, "未成功跳转到带 'added' 参数的页面"
-
-        # 检查页面是否显示成功消息
-        """flash_message = driver.find_element(By.CLASS_NAME, "flash-message")
-        assert " New record added successfully" in flash_message.text, f"错误消息: {flash_message.text}"""
-
-        print("记录添加成功！")
-
-        # 记录测试结果到 TestRail：假设测试用例 ID 为 9
+        # 记录测试结果到 TestRail
         add_test_result(8, 1, "Record added successfully")  # 测试通过，提交到 TestRail
 
     except Exception as e:
-        print(f"Test failed due to: {str(e)}")
-
-        # 打印当前页面的 HTML，帮助调试
-        page_source = driver.page_source
-        print("当前页面的 HTML 内容:\n", page_source)
-
-        # 截图当前页面以帮助调试
-        screenshot_path = "new_record_failure_screenshot.png"
-        driver.save_screenshot(screenshot_path)
-        print(f"截图已保存至：{screenshot_path}")
 
         # 记录测试结果到 TestRail：测试失败
         add_test_result(8, 5, f"New record test failed: {str(e)}")  # 测试失败，提交到 TestRail
@@ -432,10 +552,17 @@ def test_user_profile_update():
     finally:
         driver.quit()
 
+
+
+
+
+
+
 # 执行测试
 #test_login_with_invalid_credentials()
 #test_login_and_add_goal()
 #test_new_records()
 #test_settings_page()
 #test_user_profile_update()
-
+#test_login_page()
+test_register_page()
