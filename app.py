@@ -851,8 +851,13 @@ def budget_allocation():
 def logout():
     session['user_id'] = None
     return redirect(url_for('login'))
-    
 
+
+#Needed for profile picture
+@app.context_processor
+def inject_time():
+    import time
+    return dict(time=time)
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)

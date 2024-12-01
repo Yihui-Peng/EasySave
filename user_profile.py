@@ -51,28 +51,28 @@ def update_username(user, new_username):
 
 
 def update_profile_picture(user, file):
-    """Save a new profile picture and update the user's profile picture data."""
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        unique_filename = f"{int(time.time())}_{filename}"  # Append timestamp to filename
+        unique_filename = f"{int(time.time())}_{filename}"
         upload_folder = current_app.config['UPLOAD_FOLDER']
         filepath = os.path.join(upload_folder, unique_filename)
 
         # Save the file
         file.save(filepath)
 
-        # Get the old filename to delete
-        old_filename = user.profile_picture if user.profile_picture else default_picture_filename
+        # Delete the old profile picture if it's not the default
+        old_filename = user.profile_picture
         if old_filename and old_filename != default_picture_filename:
             old_filepath = os.path.join(upload_folder, old_filename)
             if os.path.exists(old_filepath):
                 os.remove(old_filepath)
 
-        # Update to the new filename
+        # Update the user's profile_picture field
         user.profile_picture = unique_filename
         db.session.commit()
         return True, unique_filename
     return False, None
+
 
 
 def handle_user_profile_update(request, user_id):

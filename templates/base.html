@@ -21,11 +21,12 @@
         <div class="row">
             <!-- Sidebar -->
             <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block sidebar">
-                <div class="position-sticky">
-                    <div class="text-center py-4">
-                        <h4><a href="/home" class="text-decoration-none text-dark">Easy Save</a></h4>
-                        <img src="{{ url_for('static', filename='profile_pictures/' ~ (user.profile_picture | default('default_picture.png'))) }}" alt="Profile Picture" class="rounded-circle mb-3" width="100">
-                    </div>
+    <div class="position-sticky">
+        <div class="text-center py-4">
+            <h4><a href="/home" class="text-decoration-none text-dark">Easy Save</a></h4>
+            <img src="{{ url_for('static', filename='profile_pictures/' ~ (user.profile_picture | default('default_picture.png'))) }}?t={{ time.time() }}"
+                 alt="Profile Picture" class="rounded-circle mb-3" width="100">
+        </div>
                     <ul class="nav flex-column">
                         <li class="nav-item">
                             <a class="nav-link {% if active_page == 'userProfile' %}active{% endif %}" href="/userProfile">

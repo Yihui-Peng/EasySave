@@ -5,51 +5,66 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/userProfile.css') }}">
 {% endblock %}
 {% block content %}
-<form class="profile-container" action="{{ url_for('userProfile') }}" method="post">
+<form class="profile-container" action="{{ url_for('userProfile') }}" method="post" enctype="multipart/form-data">
     <input type="hidden" name="form_type" value="update_profile">
     <div class="profile-pic">
         <img src="{{ url_for('static', filename='profile_pictures/' ~ (user.profile_picture | default('default_picture.png'))) }}?t={{ time.time() }}"
-            alt="Profile Picture">
-        <button type="button">Change image</button>
+     alt="Profile Picture" id="profile_picture_display">
+
+        <!-- Hidden file input -->
+        <input type="file" name="profile_picture" id="profile_picture_input" style="display:none;" accept="image/*">
+        <!-- Change Image Button -->
+        <button type="button" onclick="document.getElementById('profile_picture_input').click();">Change Image</button>
     </div>
     <div class="profile-info">
-        <h1>User_id: 777 <span
+        <h1>User_id: {{ user.user_id }} <span
                 style="background-color: #D3A96A; padding: 3px 6px; border-radius: 5px; font-size: 0.8em; color: #fff;">SVIP</span>
         </h1>
         <p>Username cannot be changed once set, but the Nickname can be edited as a displayed name.</p>
         <div class="input-group">
             <label for="username">User Name</label>
-            <input type="text" id="username" name="username" value="{{user.username}}" disabled>
+            <input type="text" id="username" name="username" value="{{ user.username }}" disabled>
         </div>
         <div class="input-group">
             <label for="gender">Gender</label>
             <select id="gender" name="gender">
-                <option value="female" {% if user.gender=='female' %}selected{% endif %}>Female</option>
-                <option value="male" {% if user.gender=='male' %}selected{% endif %}>Male</option>
-                <option value="alien" {% if user.gender=='alien' %}selected{% endif %}>Alien</option>
+                <option value="female" {% if user.gender == 'female' %}selected{% endif %}>Female</option>
+                <option value="male" {% if user.gender == 'male' %}selected{% endif %}>Male</option>
+                <option value="alien" {% if user.gender == 'alien' %}selected{% endif %}>Alien</option>
             </select>
         </div>
         <div class="input-group">
             <label for="nickname">Nick Name</label>
-            <input type="text" id="nickname" name="nickname" value="{{user.nickname}}">
+            <input type="text" id="nickname" name="nickname" value="{{ user.nickname }}">
         </div>
         <div class="input-group">
             <label for="age">Age</label>
-            <input type="number" id="age" name="age" value="{{user.age}}">
+            <input type="number" id="age" name="age" value="{{ user.age }}">
         </div>
         <div class="input-group">
             <label for="year">Year in School</label>
-            <input type="number" id="year" name="year_in_school" value="{{user.year_in_school}}">
+            <input type="number" id="year" name="year_in_school" value="{{ user.year_in_school }}">
         </div>
         <div class="input-group">
             <label for="major">Major</label>
-            <input type="text" id="major" name="major" value="{{user.major}}">
+            <input type="text" id="major" name="major" value="{{ user.major }}">
         </div>
         <div class="input-group">
             <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" value="{{user.emailaddress}}">
+            <input type="email" id="email" name="email" value="{{ user.emailaddress }}">
         </div>
         <button class="save-btn" type="submit">Save Changes</button>
     </div>
 </form>
+
+<!-- JavaScript to auto-submit the form when a file is selected -->
+<script>
+    document.getElementById('profile_picture_input').addEventListener('change', function() {
+        // Change form_type to 'upload_picture' before submitting
+        document.querySelector('input[name="form_type"]').value = 'upload_picture';
+        // Submit the form when a file is selected
+        this.form.submit();
+    });
+</script>
+
 {% endblock %}
