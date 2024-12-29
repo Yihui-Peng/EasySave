@@ -3,108 +3,113 @@
 {% block title %}Saving Goal{% endblock %}
 
 {% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/savingGoal.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/savingGoal.css') }}">
 {% endblock %}
 
 {% block content %}
 
-<div class="goals-container">
-    <h2>On-going Goals</h2>
-    {% for goal in onGoingGoals %}
-    {%if goal.progress == "ongoing"%}
-    {% set percentage = ((goal.progress_amount / goal.amount) * 100) | round %}
-    <div class="goal-item">
-        <div class="goal-name goal-name-{{ loop.index }}"> {{ goal.name if goal.name else "General" }}</div>
-        <div class="progress-bar ">
+    <div class="goals-container">
+        <h2>On-going Goals</h2>
+        {% for goal in onGoingGoals %}
+            {% if goal.progress == "ongoing" %}
+                {% set percentage = ((goal.progress_amount / goal.amount) * 100) | round %}
+                <div class="goal-item">
+                    <div class="goal-name goal-name-{{ loop.index }}"> {{ goal.name if goal.name else "General" }}</div>
+                    <div class="progress-bar ">
 
-            <div class="progress-bar-fill progress-bar-fill-{{ loop.index }}" style="width: {{ percentage }}%;">{{
-                percentage }}%</div>
-            {% if percentage <= 80 %} <span class="progress-text progress-text-{{ loop.index }}">{{ goal.progress_amount
-                }} / {{ goal.amount }}</span>
-                {% endif %}
+                        <div class="progress-bar-fill progress-bar-fill-{{ loop.index }}"
+                             style="width: {{ percentage }}%;">{{ percentage }}%
+                        </div>
+                        {% if percentage <= 80 %}
+                            <span class="progress-text progress-text-{{ loop.index }}">{{ goal.progress_amount }} / {{ goal.amount }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="goal-date goal-date-{{ loop.index }}">{{ goal.end_date.strftime('%Y-%m-%d') }}</div>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <!--add new saving Goal-->
+        <button class="save-btn" id="add-goal-btn" type="button" style="margin-top: 20px;">Add a new goal</button>
+        <div class="goal-form" id="goal-form">
+            <button class="close-btn" id="close-form-btn">&times;</button>
+            <form method="POST" action="/savingGoal">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" placeholder="Enter goal name">
+                </div>
+                <div class="form-group">
+                    <label for="start-date">Start Date</label>
+                    <input type="date" id="start-date" name="start-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="end-date">End Date</label>
+                    <input type="date" id="end-date" name="end-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Amount</label>
+                    <input type="number" id="amount" name="amount" placeholder="Enter amount" required>
+                </div>
+                <div class="form-group">
+                    <label for="progress">Progress</label>
+                    <select id="progress" name="progress" required>
+                        <option value="">Select Progress</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="finished">Finished</option>
+                    </select>
+                </div>
+                <div class="form-group" id="progress-amount-group" style="display: none;">
+                    <label for="progress-amount">Progress Amount</label>
+                    <input type="number" id="progress-amount" name="progress_amount" placeholder="Progress amount">
+                </div>
+                <button type="submit">Save</button>
+            </form>
         </div>
-        <div class="goal-date goal-date-{{ loop.index }}">{{ goal.end_date.strftime('%Y-%m-%d') }}</div>
-    </div>
-    {%endif%}
-    {% endfor %}
-
-    <!--add new saving Goal-->
-    <button class="save-btn" id="add-goal-btn" type="button" style="margin-top: 20px;">Add a new goal</button>
-    <div class="goal-form" id="goal-form">
-        <button class="close-btn" id="close-form-btn">&times;</button>
-        <form method="POST" action="/savingGoal">
-            <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" placeholder="Enter goal name">
-            </div>
-            <div class="form-group">
-                <label for="start-date">Start Date</label>
-                <input type="date" id="start-date" name="start-date" required>
-            </div>
-            <div class="form-group">
-                <label for="end-date">End Date</label>
-                <input type="date" id="end-date" name="end-date" required>
-            </div>
-            <div class="form-group">
-                <label for="amount">Amount</label>
-                <input type="number" id="amount" name="amount" placeholder="Enter amount" required>
-            </div>
-            <div class="form-group">
-                <label for="progress">Progress</label>
-                <select id="progress" name="progress" required>
-                    <option value="">Select Progress</option>
-                    <option value="ongoing">Ongoing</option>
-                    <option value="finished">Finished</option>
-                </select>
-            </div>
-            <div class="form-group" id="progress-amount-group" style="display: none;">
-                <label for="progress-amount">Progress Amount</label>
-                <input type="number" id="progress-amount" name="progress_amount" placeholder="Progress amount">
-            </div>
-            <button type="submit">Save</button>
-        </form>
-    </div>
 
 
-    <!--Previous Goals-->
-    <h2>Previous Goals</h2>
-    <table class="records-table" style="width: 100%; border-collapse: collapse;">
-        <thead>
+        <!--Previous Goals-->
+        <h2>Previous Goals</h2>
+        <table class="records-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
             <tr>
                 <th style="text-align: left; padding: 20px; border-bottom: 2px solid #97A5C0;">End Date</th>
                 <th style="text-align: left; padding: 20px; border-bottom: 2px solid #97A5C0;">Goal</th>
                 <th style="text-align: left; padding: 20px; border-bottom: 2px solid #97A5C0;">Amount</th>
                 <th style="text-align: left; padding: 20px; border-bottom: 2px solid #97A5C0;">Result</th>
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
 
-            {%for goal in goals%}
-            <tr style="padding-left: 20px;">
-                <td>{{goal.end_date.strftime('%Y-%m-%d')}}</td>
-                <td>{{goal.name}}</td>
-                <td>{{goal.amount}}</td>
-                {%if goal.progress == "finished"%}
-                <td>
-                    <span>✔</span>
-                </td>
-                {%else%}
-                <td>
-                    <span style="font-size: 0.8em;">{{((goal.progress_amount / goal.amount) * 100) | round}}%</span>
-                </td>
-                {%endif%}
-            <tr>
-            {%endfor%}
-        </tbody>
-    </table>
+            {% for goal in goals %}
+                <tr style="padding-left: 20px;">
+                    <td>{{ goal.end_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ goal.name }}</td>
+                    <td>{{ goal.amount }}</td>
+                    {% if goal.progress == "finished" %}
+                        <td>
+                            <span>✔</span>
+                        </td>
+                    {% else %}
+                        <td>
+                            {% if goal.amount and goal.progress_amount and goal.amount != 0 %}
+                                <span style="font-size: 0.8em;">
+      {{ ((goal.progress_amount / goal.amount) * 100) | round }}%
+    </span>
+                            {% else %}
+                                <span style="font-size: 0.8em;">0%</span>
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                <tr>
+            {% endfor %}
+            </tbody>
+        </table>
 
 
+    </div>
 
-
-</div>
-
-<!--Deleting Goal-->
-<!-- Goal list
+    <!--Deleting Goal-->
+    <!-- Goal list
 <div id="goal-list">
     <h2>Goals</h2>
     <form method="POST" action="/delete_selected_goals" id="delete-goals-form">
@@ -124,210 +129,211 @@
     </form>
 </div> -->
 
-<!-- Goal form
-<div class="goal-form">
-    <form method="POST" action="/savingGoal">
-         Goal Amount 
-        <label for="amount">Amount:</label>
-        <input type="number" id="amount" name="amount" placeholder="Enter amount" required><br>
+    <!-- Goal form
+    <div class="goal-form">
+        <form method="POST" action="/savingGoal">
+             Goal Amount
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" name="amount" placeholder="Enter amount" required><br>
 
-        Start Date
-        <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" for="start-date">Start Date</label>
-            <input type="date" id="start-date" name="start-date" class="form-control" lang="en" required>
-        </div>
+            Start Date
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="start-date">Start Date</label>
+                <input type="date" id="start-date" name="start-date" class="form-control" lang="en" required>
+            </div>
 
-         End Date 
-        <div class="form-group" style="margin-bottom: 20px;">
-            <label class="form-label" for="end-date">End Date</label>
-            <input type="date" id="end-date" name="end-date" class="form-control" lang="en" required>
-        </div>
+             End Date
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="end-date">End Date</label>
+                <input type="date" id="end-date" name="end-date" class="form-control" lang="en" required>
+            </div>
 
-        Progress 
-        <label for="progress">Progress:</label>
-        <select id="progress" name="progress" required>
-        <option value="">Select Progress</option>
-        <option value="ongoing">Ongoing</option>
-        <option value="finished">Finished</option>
-        </select><br>
-
-
-        Progress Amount (Visible only when "Ongoing") 
-    <label for="progress-amount" id="progress-amount-label" style="display:none;">Progress Amount:</label>
-    <input type="number" id="progress-amount" name="progress_amount" style="display:none;" placeholder="Progress amount"><br>
+            Progress
+            <label for="progress">Progress:</label>
+            <select id="progress" name="progress" required>
+            <option value="">Select Progress</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="finished">Finished</option>
+            </select><br>
 
 
-        <button type="submit">Add Goal</button>
-    </form>
-</div> -->
+            Progress Amount (Visible only when "Ongoing")
+        <label for="progress-amount" id="progress-amount-label" style="display:none;">Progress Amount:</label>
+        <input type="number" id="progress-amount" name="progress_amount" style="display:none;" placeholder="Progress amount"><br>
+
+
+            <button type="submit">Add Goal</button>
+        </form>
+    </div> -->
 
 
 
-<script>
-    document.getElementById('add-goal-btn').addEventListener('click', function () {
-        document.getElementById('goal-form').style.display = 'block';
-        document.getElementById('overlay').style.display = 'block';
-    });
-
-    document.getElementById('close-form-btn').addEventListener('click', function () {
-        document.getElementById('goal-form').style.display = 'none';
-        document.getElementById('overlay').style.display = 'none';
-    });
-
-    document.getElementById('overlay').addEventListener('click', function () {
-        document.getElementById('goal-form').style.display = 'none';
-        document.getElementById('overlay').style.display = 'none';
-    });
-    // Optional JavaScript to enable/disable the "Delete" button based on selected checkboxes
-    const deleteButton = document.getElementById('delete-selected-goals');
-    const checkboxes = document.querySelectorAll('input[name="goal_ids"]');
-
-    // Enable or disable delete button based on checkbox selection
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function () {
-            const selected = Array.from(checkboxes).some(chk => chk.checked);
-            deleteButton.disabled = !selected;  // Enable if at least one checkbox is checked
+    <script>
+        document.getElementById('add-goal-btn').addEventListener('click', function () {
+            document.getElementById('goal-form').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
         });
-    });
 
-
-    const goals = [];
-    let selectedGoalIndex = -1;
-
-    // Toggle progress amount visibility based on progress selection
-    document.getElementById('progress').addEventListener('change', function () {
-        if (this.value === 'ongoing') {
-            document.getElementById('progress-amount-group').style.display = 'block';
-        } else {
-            document.getElementById('progress-amount-group').style.display = 'none';
-        }
-    });
-
-
-
-    // Add a new goal to the list
-    function addGoal() {
-        const amount = parseFloat(document.getElementById('amount').value);
-
-        // Get start and end dates from the date inputs
-        const startDate = document.getElementById('start-date').value;
-        const endDate = document.getElementById('end-date').value;
-
-        const progress = document.getElementById('progress').value;
-        const progressAmount = parseFloat(document.getElementById('progress-amount').value);
-
-        // Validate input values
-        if (!amount || !startDate || !endDate) {
-            alert("Please fill in all fields.");
-            return;
-        }
-
-        const startDateObj = new Date(startDate);
-        const endDateObj = new Date(endDate);
-
-        // Ensure valid dates
-        if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
-            alert("Invalid date format. Please check the selected dates.");
-            return;
-        }
-
-        // Check if the start date is before the end date
-        if (startDateObj > endDateObj) {
-            alert("Start date cannot be later than end date.");
-            return;
-        }
-
-        if (progress === "ongoing" && progressAmount >= amount) {
-            alert("Progress amount must be less than the goal amount.");
-            return;
-        }
-
-        const goal = {
-            amount,
-            start_date: startDate,
-            end_date: endDate,
-            progress,
-            progress_amount
-        };
-
-        goals.push(goal);
-        updateGoalList();
-        clearFields();
-    }
-
-    // Update the goal list display
-    function updateGoalList() {
-        const list = document.getElementById('goal-list-items');
-        list.innerHTML = "";
-        goals.forEach((goal, index) => {
-            const listItem = document.createElement('li');
-            listItem.classList.add('goal-item');
-
-            // Add a checkbox to each goal
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = 'goal-checkbox-' + index;
-            checkbox.onclick = function () { toggleGoalSelection(index, checkbox); };
-
-            // Display goal details in list item
-            const goalText = document.createElement('span');
-            goalText.textContent = `Goal: $${goal.amount} | Progress: ${goal.progress} | Progress Amount: ${goal.progress_amount}`;
-
-            listItem.appendChild(checkbox);
-            listItem.appendChild(goalText);
-            list.appendChild(listItem);
+        document.getElementById('close-form-btn').addEventListener('click', function () {
+            document.getElementById('goal-form').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
         });
-    }
 
-    // Toggle selection of a goal
-    function toggleGoalSelection(index, checkbox) {
-        if (checkbox.checked) {
-            selectedGoalIndex = index;
-        } else {
-            selectedGoalIndex = -1;
-            document.getElementById('goal-details').style.display = 'none';
+        document.getElementById('overlay').addEventListener('click', function () {
+            document.getElementById('goal-form').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        });
+        // Optional JavaScript to enable/disable the "Delete" button based on selected checkboxes
+        const deleteButton = document.getElementById('delete-selected-goals');
+        const checkboxes = document.querySelectorAll('input[name="goal_ids"]');
+
+        // Enable or disable delete button based on checkbox selection
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                const selected = Array.from(checkboxes).some(chk => chk.checked);
+                deleteButton.disabled = !selected;  // Enable if at least one checkbox is checked
+            });
+        });
+
+
+        const goals = [];
+        let selectedGoalIndex = -1;
+
+        // Toggle progress amount visibility based on progress selection
+        document.getElementById('progress').addEventListener('change', function () {
+            if (this.value === 'ongoing') {
+                document.getElementById('progress-amount-group').style.display = 'block';
+            } else {
+                document.getElementById('progress-amount-group').style.display = 'none';
+            }
+        });
+
+
+        // Add a new goal to the list
+        function addGoal() {
+            const amount = parseFloat(document.getElementById('amount').value);
+
+            // Get start and end dates from the date inputs
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+
+            const progress = document.getElementById('progress').value;
+            const progressAmount = parseFloat(document.getElementById('progress-amount').value);
+
+            // Validate input values
+            if (!amount || !startDate || !endDate) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            const startDateObj = new Date(startDate);
+            const endDateObj = new Date(endDate);
+
+            // Ensure valid dates
+            if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
+                alert("Invalid date format. Please check the selected dates.");
+                return;
+            }
+
+            // Check if the start date is before the end date
+            if (startDateObj > endDateObj) {
+                alert("Start date cannot be later than end date.");
+                return;
+            }
+
+            if (progress === "ongoing" && progressAmount >= amount) {
+                alert("Progress amount must be less than the goal amount.");
+                return;
+            }
+
+            const goal = {
+                amount,
+                start_date: startDate,
+                end_date: endDate,
+                progress,
+                progress_amount
+            };
+
+            goals.push(goal);
+            updateGoalList();
+            clearFields();
         }
-    }
 
-    // Show selected goal details
-    function showGoalDetails() {
-        if (selectedGoalIndex === -1) {
-            alert("Please select a goal first.");
-            return;
+        // Update the goal list display
+        function updateGoalList() {
+            const list = document.getElementById('goal-list-items');
+            list.innerHTML = "";
+            goals.forEach((goal, index) => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('goal-item');
+
+                // Add a checkbox to each goal
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = 'goal-checkbox-' + index;
+                checkbox.onclick = function () {
+                    toggleGoalSelection(index, checkbox);
+                };
+
+                // Display goal details in list item
+                const goalText = document.createElement('span');
+                goalText.textContent = `Goal: $${goal.amount} | Progress: ${goal.progress} | Progress Amount: ${goal.progress_amount}`;
+
+                listItem.appendChild(checkbox);
+                listItem.appendChild(goalText);
+                list.appendChild(listItem);
+            });
         }
 
-        const goal = goals[selectedGoalIndex];
-        const goalDetails = document.getElementById('goal-detail-info');
-        goalDetails.innerHTML = `
+        // Toggle selection of a goal
+        function toggleGoalSelection(index, checkbox) {
+            if (checkbox.checked) {
+                selectedGoalIndex = index;
+            } else {
+                selectedGoalIndex = -1;
+                document.getElementById('goal-details').style.display = 'none';
+            }
+        }
+
+        // Show selected goal details
+        function showGoalDetails() {
+            if (selectedGoalIndex === -1) {
+                alert("Please select a goal first.");
+                return;
+            }
+
+            const goal = goals[selectedGoalIndex];
+            const goalDetails = document.getElementById('goal-detail-info');
+            goalDetails.innerHTML = `
                 <strong>Amount:</strong> $${goal.amount}<br>
                 <strong>Start Date:</strong> ${goal.start_date}<br>
                 <strong>End Date:</strong> ${goal.end_date}<br>
                 <strong>Progress:</strong> ${goal.progress}<br>
                 <strong>Progress Amount:</strong> ${goal.progress_amount}<br>
             `;
-        document.getElementById('goal-details').style.display = 'block';
-    }
-
-    // Delete selected goal
-    function deleteSelectedGoals() {
-        if (selectedGoalIndex === -1) {
-            alert("Please select a goal to delete.");
-            return;
+            document.getElementById('goal-details').style.display = 'block';
         }
 
-        goals.splice(selectedGoalIndex, 1);
-        updateGoalList();
-        document.getElementById('goal-details').style.display = 'none';
-        selectedGoalIndex = -1;
-    }
+        // Delete selected goal
+        function deleteSelectedGoals() {
+            if (selectedGoalIndex === -1) {
+                alert("Please select a goal to delete.");
+                return;
+            }
 
-    // Clear the form fields
-    function clearFields() {
-        document.getElementById('amount').value = '';
-        document.getElementById('start-date').value = '';
-        document.getElementById('end-date').value = '';
-        document.getElementById('progress').value = '';
-        document.getElementById('progress-amount').value = '';
-    }
-</script>
+            goals.splice(selectedGoalIndex, 1);
+            updateGoalList();
+            document.getElementById('goal-details').style.display = 'none';
+            selectedGoalIndex = -1;
+        }
+
+        // Clear the form fields
+        function clearFields() {
+            document.getElementById('amount').value = '';
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+            document.getElementById('progress').value = '';
+            document.getElementById('progress-amount').value = '';
+        }
+    </script>
 {% endblock %}

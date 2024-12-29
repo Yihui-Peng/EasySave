@@ -2,7 +2,7 @@ import os
 from werkzeug.utils import secure_filename
 from flask import current_app, flash, redirect, url_for
 from database import db, User
-import time 
+import time
 
 default_picture_filename = "default_picture.png"
 
@@ -49,7 +49,6 @@ def update_username(user, new_username):
     return True, "Username updated successfully."
 
 
-
 def update_profile_picture(user, file):
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
@@ -72,7 +71,6 @@ def update_profile_picture(user, file):
         db.session.commit()
         return True, unique_filename
     return False, None
-
 
 
 def handle_user_profile_update(request, user_id):
@@ -170,6 +168,6 @@ def handle_user_profile_update(request, user_id):
 
         db.session.commit()
         flash('Profile information updated successfully!', 'success')
-    
+
     # After handling POST, redirect to the same route to perform a GET request
     return redirect(url_for('userProfile'))

@@ -19,13 +19,11 @@ import numpy as np
 import json
 
 
-
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/profile_pictures')
 
-
-# #database connection
+#database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
@@ -48,7 +46,7 @@ with app.app_context():
             print("Database already initialized, no need to import CSV.")
 
 
-# 11111 question: we should make the formatbetween newRecords and get_data the same, and make sure user_id been used in the same way
+# 11111 question: we should make the format between newRecords and get_data the same, and make sure user_id been used in the same way
 @app.route('/data')
 def get_data():
     with app.app_context():
@@ -108,8 +106,6 @@ def home():
 
     #Fetch the latest spending record
     spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.date.desc()).limit(3).all()
-    
-
     # 查询今天的所有记录
     today = datetime.now().date()
     today_records = Record.query.filter(
@@ -119,7 +115,6 @@ def home():
     if not user:
         flash('User not found.', 'error')
         return redirect(url_for('login'))
-
 
     # Fetch the latest saving goal
     savingGoal = Saving_Goal.query.filter_by(user_id=user.user_id).order_by(Saving_Goal.end_date.desc()).first()
@@ -142,22 +137,16 @@ def home():
     print(f"[DEBUG] Average Spending: {avg_spending}")
 
     # Determine savings goal
-
-
     if savingGoal:
         savings_goal = savingGoal.amount
     else:
         savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
-    # print(f"[DEBUG] Savings Goal: {savings_goal}")
 
     # Allocate budget
     allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
-    # print(f"[DEBUG] Allocations: {allocations}")
-    # print(f"[DEBUG] Sum of Allocations: {sum(allocations.values())}")
 
     # Generate insights
     insights = generate_insights(allocations, category_averages)
-    # print(f"[DEBUG] Insights: {insights}")
 
     # Calculate daily budget (sum of allocations excluding 'Savings')
     daily_budget = sum(amount for category, amount in allocations.items() if category != 'Savings')
