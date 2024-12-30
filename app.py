@@ -353,24 +353,6 @@ def predict():
 
 
 
-
-
-def get_distribution_data(amounts):
-    if not amounts:
-        return {'labels': [], 'values': []}
-
-    amounts = np.array(amounts)
-
-    counts, bin_edges = np.histogram(amounts, bins=10)
-    labels = []
-    for i in range(len(bin_edges) - 1):
-        labels.append(f"{bin_edges[i]:.1f}-{bin_edges[i + 1]:.1f}")
-    values = counts.tolist()
-
-    return {'labels': labels, 'values': values}
-
-
-
 def get_monthly_spending_data(records):
     if not records:
         return {'labels': [], 'values': []}
@@ -395,6 +377,7 @@ def get_monthly_spending_data(records):
     return {'labels': labels, 'values': values}
 
 
+
 @app.route('/details_and_charts', methods=['GET', 'POST'])
 def details_and_charts():
     if 'user_id' not in session:
@@ -402,12 +385,10 @@ def details_and_charts():
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id=user_id).first()
 
-    # 初始化变量
     selected_category_level_1 = 'All Spending'
     selected_category_level_2 = 'All'
     user_records = []
     detail_amounts = []
-    distribution_data = {'labels': [], 'values': []}
     monthly_data = {'labels': [], 'values': []}
 
     category_mapping = {
@@ -436,11 +417,11 @@ def details_and_charts():
     }
 
     if request.method == 'POST':
-        # 获取用户选择
+
         selected_category_level_1 = request.form.get('category_level_1', 'All Spending')
         selected_category_level_2 = request.form.get('category_level_2', 'All')
 
-        # 获取当前用户的所有消费记录
+
         user_records_query = Record.query.filter_by(user_id=user_id)
 
         if selected_category_level_2 != 'All':
@@ -470,8 +451,6 @@ def details_and_charts():
                 if total_amount > 0:
                     detail_amounts.append(total_amount)
 
-        # 获取正态分布数据
-        distribution_data = get_distribution_data(detail_amounts)
 
         # 获取月度消费数据
         monthly_data = get_monthly_spending_data(user_records)
@@ -481,7 +460,6 @@ def details_and_charts():
         pass  # detail_amounts 已在函数开头初始化为空列表
 
     # 序列化数据
-    distribution_data_json = json.dumps(distribution_data)
     monthly_data_json = json.dumps(monthly_data)
 
     return render_template(
@@ -491,10 +469,8 @@ def details_and_charts():
         selected_category_level_1=selected_category_level_1,
         selected_category_level_2=selected_category_level_2,
         category_mapping=category_mapping,
-        distribution_data_json=distribution_data_json,
         monthly_data_json=monthly_data_json
     )
-
 
 
 
