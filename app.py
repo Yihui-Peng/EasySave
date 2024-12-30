@@ -115,9 +115,6 @@ def home():
         Record.user_id == user.user_id,
         func.date(Record.date) == today
     ).all()
-    if not user:
-        flash('User not found.', 'error')
-        return redirect(url_for('login'))
 
 
     # Fetch the latest saving goal
@@ -129,7 +126,6 @@ def home():
         Saving_Goal.user_id == user.user_id,
         Saving_Goal.progress == "finished"
         ).order_by(Saving_Goal.end_date.desc()).limit(3).all()
-    print(achievedGoals)
     # Fetch combined financial datas
     category_averages = fetch_combined_financial_data(user_id, db.session)
     print(f"[DEBUG] Category Averages: {category_averages}")
@@ -166,7 +162,7 @@ def home():
         'index.html',
         active_page='home',
         user=user,
-        prev_spending=spending,
+        spending=spending,
         savingGoals=savingGoals,
         allocations=allocations,
         insights=insights,

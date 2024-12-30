@@ -78,14 +78,13 @@
             </tr>
         </thead>
         <tbody>
-
             {%for goal in goals%}
-            <tr style="padding-left: 20px;">
-                <td>{{goal.end_date.strftime('%Y-%m-%d')}}</td>
-                <td>{{goal.name}}</td>
-                <td>{{goal.amount}}</td>
+            <tr>
+                <td style="text-align: left; padding: 20px;">{{goal.end_date.strftime('%Y-%m-%d')}}</td>
+                <td style="text-align: left; padding: 20px;">{{goal.name}}</td>
+                <td style="text-align: left; padding: 20px;">{{goal.amount}}</td>
                 {%if goal.progress == "finished"%}
-                <td>
+                <td style="text-align: left; padding: 20px;">
                     <span>✔</span>
                 </td>
                 {%else%}

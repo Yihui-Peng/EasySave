@@ -7,20 +7,31 @@
 {% block content %}
 <form class="profile-container" action="{{ url_for('userProfile') }}" method="post">
     <input type="hidden" name="form_type" value="update_profile">
+    
+    <!-- Profile Picture Section -->
     <div class="profile-pic">
         <img src="{{ url_for('static', filename='profile_pictures/' ~ (user.profile_picture | default('default_picture.png'))) }}?t={{ time.time() }}"
             alt="Profile Picture">
         <button type="button">Change image</button>
     </div>
+    
+    <!-- Profile Info Section -->
     <div class="profile-info">
-        <h1>User_id: 777 <span
-                style="background-color: #D3A96A; padding: 3px 6px; border-radius: 5px; font-size: 0.8em; color: #fff;">SVIP</span>
+        <h1>
+            User Name: {{user.username}}
+            <span style="background-color: #D3A96A; padding: 3px 6px; border-radius: 5px; font-size: 0.8em; color: #fff;">
+                SVIP
+            </span>
         </h1>
         <p>Username cannot be changed once set, but the Nickname can be edited as a displayed name.</p>
+        
+        <!-- Nickname -->
         <div class="input-group">
-            <label for="username">User Name</label>
-            <input type="text" id="username" name="username" value="{{user.username}}" disabled>
+            <label for="nickname">Nick Name</label>
+            <input type="text" id="nickname" name="nickname" value="{{user.nickname}}">
         </div>
+        
+        <!-- Gender -->
         <div class="input-group">
             <label for="gender">Gender</label>
             <select id="gender" name="gender">
@@ -29,26 +40,32 @@
                 <option value="alien" {% if user.gender=='alien' %}selected{% endif %}>Alien</option>
             </select>
         </div>
-        <div class="input-group">
-            <label for="nickname">Nick Name</label>
-            <input type="text" id="nickname" name="nickname" value="{{user.nickname}}">
-        </div>
+        
+        <!-- Age -->
         <div class="input-group">
             <label for="age">Age</label>
             <input type="number" id="age" name="age" value="{{user.age}}">
         </div>
+        
+        <!-- Year in School -->
         <div class="input-group">
             <label for="year">Year in School</label>
             <input type="number" id="year" name="year_in_school" value="{{user.year_in_school}}">
         </div>
+        
+        <!-- Major -->
         <div class="input-group">
             <label for="major">Major</label>
             <input type="text" id="major" name="major" value="{{user.major}}">
         </div>
+        
+        <!-- Email -->
         <div class="input-group">
             <label for="email">Email Address</label>
             <input type="email" id="email" name="email" value="{{user.emailaddress}}">
         </div>
+        
+        <!-- Save Button -->
         <button class="save-btn" type="submit">Save Changes</button>
     </div>
 </form>
