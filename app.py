@@ -17,7 +17,6 @@ import warnings
 import pandas as pd
 import numpy as np
 import json
-pip install scipy
 
 
 app = Flask(__name__)
