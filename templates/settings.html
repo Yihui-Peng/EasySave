@@ -16,12 +16,12 @@
 {% block content %}
     <h1>Settings Menu</h1>
     <div id="menu" class="section">
-        <div class="option" onclick="selectLanguage()">1: Select Language</div>
-        <div class="option" onclick="accountSecurity()">2: Account Security</div>
-        <div class="option" onclick="colorSetting()">3: Color Setting</div>
-        <div class="option" onclick="signOut()">4: Sign Out</div>
-        <div class="option" onclick="companyInfo()">6: Company Info</div>
-        <div class="option" onclick="exitSystem()">0: Exit</div>
+        
+        <div class="option" onclick="accountSecurity()">Account Security</div>
+        
+        <div class="option" onclick="signOut()">Sign Out</div>
+        <div class="option" onclick="companyInfo()">Company Info</div>
+        
     </div>
 
     <!-- Select Language Section -->
@@ -36,10 +36,8 @@
     <!-- Account Security Section -->
     <div id="account-section" class="section hidden">
         <h2>Account Security</h2>
-        <div class="option" onclick="updateUsername()">1: Change Username</div>
-        <div class="option" onclick="updateEmail()">2: Change Email</div>
-        <div class="option" onclick="bindPhone()">3: Bind Phone Number</div>
-        <div class="option" onclick="changePassword()">4: Change Password</div>
+        
+        <div class="option" onclick="changePassword()">1: Change Password</div>
         <div class="back" onclick="goBack()">Back to Menu</div>
     </div>
 
@@ -106,47 +104,6 @@
             window.close(); // Note: Only works in certain browsers
         }
 
-        function updateUsername() {
-            const newUsername = prompt("Enter your new username:");
-            if (newUsername) {
-                fetch('/setting', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'change_username', new_username: newUsername })
-                })
-                .then(response => response.json())
-                .then(data => alert(data.message))
-                .catch(error => console.error('Error:', error));
-            }
-        }
-
-        function updateEmail() {
-            const newEmail = prompt("Enter your new email:");
-            if (newEmail) {
-                fetch('/setting', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'change_email', new_email: newEmail })
-                })
-                .then(response => response.json())
-                .then(data => alert(data.message))
-                .catch(error => console.error('Error:', error));
-            }
-        }
-
-        function bindPhone() {
-            const newPhone = prompt("Enter your phone number:");
-            if (newPhone) {
-                fetch('/setting', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'bind_phone', new_phone: newPhone })
-                })
-                .then(response => response.json())
-                .then(data => alert(data.message))
-                .catch(error => console.error('Error:', error));
-            }
-        }
 
         function changePassword() {
             const currentPassword = prompt("Enter your current password:");
