@@ -536,7 +536,7 @@ def delete_selected_goals():
         flash("No goals selected for deletion.", "warning")
         return redirect(url_for('show_saving_goal_page'))
 
-    # 将goal_ids转换为整数类型
+
     goal_ids = [int(goal_id) for goal_id in goal_ids if goal_id]
 
     if goal_ids:

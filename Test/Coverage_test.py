@@ -6,15 +6,15 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-# TestRail 配置
+# TestRail configuration
 API_URL = 'https://myawesomeproject6.testrail.io/index.php?/api/v2/'
-API_KEY = 'aa6e0Skj1xL0CZDIc5fF-.a.bMYyReOnZunMPSesI'  # 从 TestRail 获取的 API 密钥
-USER = 's3845567@vuw.leidenuniv.nl'  # TestRail 登录邮箱
-PROJECT_ID = 1  # 项目 ID
-RUN_ID = 1  # 测试执行 ID
+API_KEY = 'aa6e0Skj1xL0CZDIc5fF-.a.bMYyReOnZunMPSesI'
+USER = 's3845567@vuw.leidenuniv.nl'
+PROJECT_ID = 1
+RUN_ID = 1
 
-# Selenium WebDriver 配置
-driver = webdriver.Chrome()  # 使用 Chrome 浏览器
+# Selenium WebDriver configuration
+driver = webdriver.Chrome()
 
 
 def add_test_result(test_case_id, status, comment=''):
@@ -39,9 +39,9 @@ def add_test_result(test_case_id, status, comment=''):
 
 def test_register_page():
     try:
-        # 打开注册页面
-        driver.get("http://127.0.0.1:5000")  # 根据你的 Flask 应用地址更新
-        assert "Register" in driver.title, "注册页面加载失败，页面标题不正确"
+        # opening register page
+        driver.get("http://127.0.0.1:5000")
+        assert "Register" in driver.title, "Error when loading the register page"
 
         register_link = driver.find_element(By.XPATH, "//p[contains(text(),\"Don't have an account?\")]/a")
 
@@ -49,33 +49,33 @@ def test_register_page():
 
         time.sleep(2)
 
-        # 确保注册表单元素显示
+        # Ensuring the registration form is shown
         username_field = driver.find_element(By.ID, "new-username")
         email_field = driver.find_element(By.ID, "email")
         password_field = driver.find_element(By.ID, "new-password")
         confirm_password_field = driver.find_element(By.ID, "confirm-password")
         register_button = driver.find_element(By.CLASS_NAME, "btn")
 
-        assert username_field.is_displayed(), "用户名字段未显示"
-        assert email_field.is_displayed(), "邮箱字段未显示"
-        assert password_field.is_displayed(), "密码字段未显示"
-        assert confirm_password_field.is_displayed(), "确认密码字段未显示"
-        assert register_button.is_enabled(), "注册按钮未启用"
+        assert username_field.is_displayed(), "username field is not displayed"
+        assert email_field.is_displayed(), "email field is not displayed"
+        assert password_field.is_displayed(), "password field is not displayed"
+        assert confirm_password_field.is_displayed(), "confirm password field is not displayed"
+        assert register_button.is_enabled(), "register button field is not displayed"
 
         style = register_button.get_attribute("style")
         print(f"Button styles: {style}")
 
-        # 1. 测试密码不匹配
+        # 1. Testing the result when the password is wrong
         username_field.send_keys("testuser")
         email_field.send_keys("testuser@example.com")
         password_field.send_keys("password123")
         confirm_password_field.send_keys("password124")  # 密码不匹配
         register_button.click()
         
-        # 确认提示密码不匹配
-        time.sleep(2)  # 等待页面更新
+        # Ensuring notification about wrong password
+        time.sleep(2)  # waiting for the page to update
         alert_message = driver.find_element(By.CLASS_NAME, "flash-message").text
-        assert "Passwords do not match." in alert_message, f"未显示预期错误消息：{alert_message}"
+        assert "Passwords do not match." in alert_message, f"Not showing expected message：{alert_message}"
 
 
         username_field.clear()
@@ -83,43 +83,43 @@ def test_register_page():
         password_field.clear()
         confirm_password_field.clear()
 
-        # 2. 测试无效邮箱格式
+        # 2. testing invalid email
         username_field.send_keys("testuser6")
-        email_field.send_keys("invalid-email")  # 无效的邮箱
+        email_field.send_keys("invalid-email")
         password_field.send_keys("password123")
         confirm_password_field.send_keys("password123")
         register_button.click()
 
-        # 确认提示无效邮箱格式
-        time.sleep(2)  # 等待页面更新
+        # Ensuring notification about invalid email
+        time.sleep(2)
         alert_message = driver.find_element(By.CLASS_NAME, "flash-message").text
-        assert "Invalid email address." in alert_message, f"未显示预期错误消息：{alert_message}"
+        assert "Invalid email address." in alert_message, f"Not showing expected message：{alert_message}"
 
-        # 清空输入框
+        # Emptying input field
         username_field.clear()
         email_field.clear()
         password_field.clear()
         confirm_password_field.clear()
 
-        # 3. 测试已存在用户名或邮箱
+        # Testing existing username or email
         username_field.send_keys("test_user1")
         email_field.send_keys("newuser@example.com")  # 假设这个用户已存在
         password_field.send_keys("password123")
         confirm_password_field.send_keys("password123")
         register_button.click()
 
-        # 确认提示用户名或邮箱已存在
-        time.sleep(2)  # 等待页面更新
+        # Ensuring notification about existing username or email
+        time.sleep(2)
         alert_message = driver.find_element(By.CLASS_NAME, "flash-message").text
-        assert "Username or email already exists" in alert_message, f"未显示预期错误消息：{alert_message}"
+        assert "Username or email already exists" in alert_message, f"Not showing expected message：{alert_message}"
 
-        # 清空输入框
+
         username_field.clear()
         email_field.clear()
         password_field.clear()
         confirm_password_field.clear()
 
-        # 4. 测试成功注册
+        # 4. Testing successful registration
         username_field.send_keys("newuser")
         email_field.send_keys("newuser@example.com")
         password_field.send_keys("password123")
@@ -130,58 +130,54 @@ def test_register_page():
 
         #WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "btn")))
 
-        # 等待页面跳转并检查是否成功跳转到问卷页面
+
         WebDriverWait(driver, 10).until(EC.url_contains("survey"))
-        assert "survey" in driver.current_url, f"未跳转到问卷页面，当前URL: {driver.current_url}"
+        assert "survey" in driver.current_url, f"didn't go to survey page: {driver.current_url}"
 
-        print("注册成功！")
+        print("successful registration!")
 
-        # 记录测试结果到 TestRail：假设测试用例 ID 为 2
-        add_test_result(10, 1, "Registration successful")  # 测试通过，提交到 TestRail
+        # Updating result to testrail page with testcase ID 10
+        add_test_result(10, 1, "Registration successful")
 
     except Exception as e:
         print(f"Test failed due to: {str(e)}")
 
-        # 记录测试结果到 TestRail：测试失败
-        add_test_result(10, 5, f"Registration test failed: {str(e)}")  # 测试失败，提交到 TestRail
+        # Updating result to testrail page
+        add_test_result(10, 5, f"Registration test failed: {str(e)}")
 
     finally:
-        # 关闭浏览器
         driver.quit()
 
 
 def test_login_with_invalid_credentials():
     try:
-        # 打开 Flask 登录页面
         driver.get("http://127.0.0.1:5000")
 
-        # 输入用户名和密码并登录
+        # Input username and password to login
         username_field = driver.find_element(By.ID, "username")
         password_field = driver.find_element(By.ID, "password")
 
-        # 输入错误的用户名和密码
+        # Input wrong username and password
         username_field.send_keys("wrong_user")
         password_field.send_keys("wrong_password")
 
-        # 提交登录表单
+
         login_button = driver.find_element(By.CLASS_NAME, "btn")
         login_button.click()
 
-        # 等待页面加载并检查是否返回到登录页
+        # Waiting for the page to see if it stays in login page
 
         WebDriverWait(driver, 10).until(EC.url_contains("login"))
 
-        print("错误登录测试成功！")
+        print("wrong login test successful")
 
-        # 记录测试结果到 TestRail：假设测试用例 ID 为 8
-        add_test_result(7, 1, "Login failed as expected with incorrect credentials")  # 测试通过，提交到 TestRail
+        # Update the test result to testrail with testcase ID 7
+        add_test_result(7, 1, "Login failed as expected with incorrect credentials")
 
     except Exception as e:
         print(f"Test failed due to: {str(e)}")
-        # 记录测试结果到 TestRail：测试失败
-        add_test_result(7, 5, f"Login failed test failed: {str(e)}")  # 测试失败，提交到 TestRail
+        add_test_result(7, 5, f"Login failed test failed: {str(e)}")
     finally:
-        # 关闭浏览器
         driver.quit()
 
 def test_login_page():
@@ -189,13 +185,13 @@ def test_login_page():
 
         driver = webdriver.Chrome()
 
-        driver.get("http://127.0.0.1:5000")  # 根据你的 Flask 应用地址更新
+        driver.get("http://127.0.0.1:5000")
 
-        # 输入用户名和密码并登录
+        # Input username and password to login
         username_field = driver.find_element(By.ID, "username")
         password_field = driver.find_element(By.ID, "password")
 
-        # 输入用户名和密码
+        # Input right username and password
         username_field.send_keys("test_user1")
         password_field.send_keys("password1")
         """
@@ -203,117 +199,108 @@ def test_login_page():
         assert login_button.is_enabled(), "login button is not enabled"
         login_button.click()"""
 
-        # 提交登录表单
+        # Submitting login form
         login_button = driver.find_element(By.CLASS_NAME, "btn")
         login_button.click()
 
-        # 等待页面跳转并检查是否登录成功
-        time.sleep(2)  # 等待一会儿，确保页面加载
-        assert "home" in driver.current_url  # 确保跳转到主页
+        # Waiting for the page to see if it goes to home page
+        time.sleep(2)
+        assert "home" in driver.current_url
 
-        # 记录测试结果到 TestRail：假设测试用例 ID 为 1
-        add_test_result(7, 1, "Login successful")  # 测试通过，提交到 TestRail
+        # Update the test result to testrail with testcase ID 7
+        add_test_result(7, 1, "Login successful")
 
     except Exception as e:
         print(f"Test failed due to: {str(e)}")
-        # 记录测试结果到 TestRail：测试失败
-        add_test_result(7, 5, f"Login test failed: {str(e)}")  # 测试失败，提交到 TestRail
+        # Update the test result to testrail with testcase ID 7
+        add_test_result(7, 5, f"Login test failed: {str(e)}")
     finally:
-        # 关闭浏览器
         driver.quit()
 
 
 def test_login_and_add_goal():
     try:
-        # 初始化 WebDriver（例如使用 Chrome 浏览器）
         driver = webdriver.Chrome()
 
-        # 1. 打开 Flask 登录页面
-        driver.get("http://127.0.0.1:5000")  # 根据你的 Flask 应用地址更新
+        driver.get("http://127.0.0.1:5000")
 
-        # 登录步骤
+        # login
         username_field = driver.find_element(By.ID, "username")
         password_field = driver.find_element(By.ID, "password")
-        username_field.send_keys("test_user1")  # 假设用户名为 "test_user1"
-        password_field.send_keys("password1")  # 假设密码为 "password1"
+        username_field.send_keys("test_user1")
+        password_field.send_keys("password1")
         login_button = driver.find_element(By.CLASS_NAME, "btn")
         login_button.click()
 
-        # 等待页面跳转，确认登录成功
         WebDriverWait(driver, 10).until(EC.url_contains("home"))
 
-        # 打开保存目标页面
         driver.get("http://127.0.0.1:5000/savingGoal")
 
-        # 等待并点击“Add a new goal”按钮
+        # Press the add new goal button
         add_goal_button = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.ID, "add-goal-btn"))
         )
         add_goal_button.click()
 
-        # 等待目标表单显示
+
         goal_form = WebDriverWait(driver, 10).until(
             EC.visibility_of_element_located((By.ID, "goal-form"))
         )
 
-        # 输入保存目标数据
+        # entering and save the saving-goal data
         name_field = driver.find_element(By.ID, "name")
         start_date_field = driver.find_element(By.ID, "start-date")
         end_date_field = driver.find_element(By.ID, "end-date")
         amount_field = driver.find_element(By.ID, "amount")
         progress_field = driver.find_element(By.ID, "progress")
 
-        # 填写保存目标数据
+
         name_field.send_keys("Vacation")
         driver.execute_script("arguments[0].setAttribute('value', '2024-12-01');", start_date_field)
         driver.execute_script("arguments[0].setAttribute('value', '2025-12-01');", end_date_field)
         amount_field.send_keys("5000")
         progress_field.send_keys("finished")
 
-        # 提交保存目标表单
+        # Submitting saving goal
         submit_button = driver.find_element(By.XPATH, "//button[@type='submit']")
         submit_button.click()
 
-        # 确保页面已加载并且表格中的目标数据已经显示
+        # making sure the new saving goal is saved and shown
         goal_rows = WebDriverWait(driver, 10).until(
             EC.presence_of_all_elements_located((By.XPATH, "//table[@class='records-table']/tbody/tr"))
         )
-        print("保存目标添加成功！")
+        print("Saving goal added successfully")
 
-        # 记录测试结果到 TestRail：假设测试用例 ID 为 2
-        add_test_result(6, 1, "Goal added successfully")  # 测试通过，提交到 TestRail
+        # Update the test result to testrail with testcase ID 6
+        add_test_result(6, 1, "Goal added successfully")
 
     except Exception as e:
         print(f"Test failed due to: {str(e)}")
-        # 记录测试结果到 TestRail：测试失败
-        add_test_result(6, 5, f"Goal addition failed: {str(e)}")  # 测试失败，提交到 TestRail
+        add_test_result(6, 5, f"Goal addition failed: {str(e)}")
     finally:
-        # 关闭浏览器
         driver.quit()
 
 def test_new_records():
     try:
-        # 初始化 WebDriver（例如使用 Chrome 浏览器）
         driver = webdriver.Chrome()
 
-        # 1. 打开 Flask 登录页面
-        driver.get("http://127.0.0.1:5000")  # 根据你的 Flask 应用地址更新
+        driver.get("http://127.0.0.1:5000")
 
-        # 登录步骤
+        # login
         username_field = driver.find_element(By.ID, "username")
         password_field = driver.find_element(By.ID, "password")
-        username_field.send_keys("test_user1")  # 假设用户名为 "test_user1"
-        password_field.send_keys("password1")  # 假设密码为 "password1"
+        username_field.send_keys("test_user1")
+        password_field.send_keys("password1")
         login_button = driver.find_element(By.CLASS_NAME, "btn")
         login_button.click()
 
-        # 等待页面跳转，确认登录成功
+
         WebDriverWait(driver, 10).until(EC.url_contains("home"))
 
-        # 2. 打开 newRecords 页面
+        # Opening the newRecord page
         driver.get("http://127.0.0.1:5000/newRecords")
 
-        # 3. 填写表单数据
+        # making sure the input form is shown correctly
         amount_field = driver.find_element(By.ID, "amount")
         category_level_1_field = driver.find_element(By.ID, "category-level-1")
         category_level_2_field = driver.find_element(By.ID, "category-level-2")
@@ -326,51 +313,45 @@ def test_new_records():
         assert date_field.is_displayed(), "date field is not displayed"
         assert note_field.is_displayed(), "note field is not displayed"
 
-        # 填写表单数据
+        # input in the form
         amount_field.send_keys("100.50")
         category_level_1_field.send_keys("Necessities")
         WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "category-level-2")))
 
-        # 手动选择子类别（假设在选择了 "Necessities" 后子类别选择框变得可用）
+        # choosing sue sub-category
         category_level_2_field.send_keys("Housing")
         driver.execute_script("arguments[0].setAttribute('value', '2024-12-01');", date_field)
         note_field.send_keys("This is a test record.")
 
-        # 提交表单
+
         submit_button = driver.find_element(By.XPATH, "//button[@type='submit']")
         submit_button.click()
 
-        # 4. 确认记录已成功添加
-        time.sleep(2)  # 等待页面刷新
-        # 4. 等待弹出 Alert 并处理
-        WebDriverWait(driver, 10).until(EC.alert_is_present())  # 等待弹窗出现
-        alert = driver.switch_to.alert  # 切换到弹窗
+        # Ensure the data is submitted successfully
+        time.sleep(2)
+        WebDriverWait(driver, 10).until(EC.alert_is_present())
+        alert = driver.switch_to.alert
         alert_text = alert.text
         assert alert_text == "New record added successfully", f"Expected alert text not found. Got: {alert_text}"
-        alert.accept()  # 关闭弹窗
+        alert.accept()
 
-        # 记录测试结果到 TestRail
-        add_test_result(8, 1, "Record added successfully")  # 测试通过，提交到 TestRail
+        # Update the test result to testrail with testcase ID 8
+        add_test_result(8, 1, "Record added successfully")
 
     except Exception as e:
-
-        # 记录测试结果到 TestRail：测试失败
-        add_test_result(8, 5, f"New record test failed: {str(e)}")  # 测试失败，提交到 TestRail
+        add_test_result(8, 5, f"New record test failed: {str(e)}")
 
     finally:
-        # 关闭浏览器
         driver.quit()
 
 
 def test_settings_page():
     try:
-        # 设置 WebDriver (以 Chrome 为例)
         driver = webdriver.Chrome()
 
-        # 1. 登录流程
-        driver.get("http://127.0.0.1:5000")  # 假设首页为登录页
+        driver.get("http://127.0.0.1:5000")
 
-        # 输入用户名和密码并登录
+        # login
         username_field = driver.find_element(By.ID, "username")
         password_field = driver.find_element(By.ID, "password")
         username_field.send_keys("test_user1")
@@ -378,56 +359,51 @@ def test_settings_page():
         login_button = driver.find_element(By.CLASS_NAME, "btn")
         login_button.click()
 
-        # 等待页面跳转并确认已登录
         WebDriverWait(driver, 10).until(EC.url_contains("home"))
-        print("登录成功！")
 
-        # 2. 访问设置页面
+        # Setting page
         driver.get("http://127.0.0.1:5000/setting")
 
-        # 确认页面加载完成，检查是否进入设置页
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "menu")))
 
-        # 3. 进入 Account Security 部分
+        # Account Security part
         account_security_button = driver.find_element(By.XPATH, "//div[text()='2: Account Security']")
         account_security_button.click()
 
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "account-section")))
 
-        # 4. 测试修改用户名
+        # Test changing username
         change_username_button = driver.find_element(By.XPATH, "//div[text()='1: Change Username']")
         change_username_button.click()
 
-        # 假设有一个文本框用于输入新用户名
-        new_username_field = driver.find_element(By.ID, "new_username")  # 假设前端有个ID为 new_username 的输入框
+        new_username_field = driver.find_element(By.ID, "new_username")
         new_username_field.clear()
         new_username_field.send_keys("new_username123")
-        submit_button = driver.find_element(By.ID, "submit_username")  # 假设有一个提交按钮
+        submit_button = driver.find_element(By.ID, "submit_username")
         submit_button.click()
 
-        # 等待提交结果
+        # Check if username is updated
         WebDriverWait(driver, 10).until(EC.alert_is_present())
         alert = driver.switch_to.alert
-        assert alert.text == "Username updated successfully."  # 验证用户名更新成功
-        alert.accept()  # 关闭弹窗
+        assert alert.text == "Username updated successfully."
+        alert.accept()
 
-        # 5. 测试修改邮箱
+        # Test changing email
         change_email_button = driver.find_element(By.XPATH, "//div[text()='2: Change Email']")
         change_email_button.click()
 
-        new_email_field = driver.find_element(By.ID, "new_email")  # 假设前端有一个ID为 new_email 的输入框
+        new_email_field = driver.find_element(By.ID, "new_email")
         new_email_field.clear()
         new_email_field.send_keys("new_email@example.com")
-        submit_email_button = driver.find_element(By.ID, "submit_email")  # 提交按钮
+        submit_email_button = driver.find_element(By.ID, "submit_email")
         submit_email_button.click()
 
-        # 等待提交结果
         WebDriverWait(driver, 10).until(EC.alert_is_present())
         alert = driver.switch_to.alert
-        assert alert.text == "Email updated successfully."  # 验证邮箱更新成功
-        alert.accept()  # 关闭弹窗
+        assert alert.text == "Email updated successfully."
+        alert.accept()
 
-        # 6. 测试修改密码
+        # Test changing password
         change_password_button = driver.find_element(By.XPATH, "//div[text()='4: Change Password']")
         change_password_button.click()
 
@@ -441,38 +417,28 @@ def test_settings_page():
         submit_password_button = driver.find_element(By.ID, "submit_password")
         submit_password_button.click()
 
-        # 等待提交结果
+        # Check if password is updated successfully
         WebDriverWait(driver, 10).until(EC.alert_is_present())
         alert = driver.switch_to.alert
-        assert alert.text == "Password updated successfully."  # 验证密码更新成功
-        alert.accept()  # 关闭弹窗
+        assert alert.text == "Password updated successfully."
+        alert.accept()
 
-        # 7. 测试修改昵称
+        # Test changing nickname
         change_nickname_button = driver.find_element(By.XPATH, "//div[text()='3: Change Nickname']")
         change_nickname_button.click()
 
-        new_nickname_field = driver.find_element(By.ID, "new_nickname")  # 假设前端有一个ID为 new_nickname 的输入框
+        new_nickname_field = driver.find_element(By.ID, "new_nickname")
         new_nickname_field.clear()
         new_nickname_field.send_keys("new_nickname123")
-        submit_nickname_button = driver.find_element(By.ID, "submit_nickname")  # 提交按钮
+        submit_nickname_button = driver.find_element(By.ID, "submit_nickname")
         submit_nickname_button.click()
 
-        # 等待提交结果
+
         WebDriverWait(driver, 10).until(EC.alert_is_present())
         alert = driver.switch_to.alert
-        assert alert.text == "Nickname updated successfully."  # 验证昵称更新成功
-        alert.accept()  # 关闭弹窗
+        assert alert.text == "Nickname updated successfully."
+        alert.accept()
 
-        # 8. 测试未登录访问设置页时会被重定向
-        driver.quit()  # 退出当前会话
-
-        # 重新启动浏览器并访问设置页面，模拟未登录状态
-        driver = webdriver.Chrome()
-        driver.get("http://127.0.0.1:5000/setting")
-
-        # 等待页面跳转并确认重定向到登录页面
-        WebDriverWait(driver, 10).until(EC.url_contains("login"))
-        print("未登录时成功重定向到登录页")
 
     except Exception as e:
         print(f"Test failed due to: {str(e)}")
@@ -484,69 +450,71 @@ def test_settings_page():
 
 def test_user_profile_update():
     try:
-        # 设置WebDriver（以Chrome为例）
-        driver = webdriver.Chrome()  # 设置你自己下载的chromedriver路径
+        driver = webdriver.Chrome()
 
-        # 1. 登录到网站
-        driver.get("http://127.0.0.1:5000")  # 假设登录页面是主页
+        # login
+        driver.get("http://127.0.0.1:5000")
         username_field = driver.find_element(By.ID, "username")
         password_field = driver.find_element(By.ID, "password")
 
-        # 输入测试用户名和密码
+
         username_field.send_keys("test_user1")
         password_field.send_keys("password1")
 
-        # 提交登录表单
         login_button = driver.find_element(By.CLASS_NAME, "btn")
         login_button.click()
 
-        # 等待页面跳转到主页，确保登录成功
         WebDriverWait(driver, 10).until(EC.url_contains("home"))
         print("登录成功")
 
-        # 2. 访问用户资料页面
+        # userProfile page
         driver.get("http://127.0.0.1:5000/userProfile")
 
-        # 等待用户资料页面加载
+
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CLASS_NAME, "profile-container")))
 
-        # 3. 验证表单数据是否正确加载（检查用户名，性别等字段）
+        # Test if the data is shown correctly
         username_value = driver.find_element(By.ID, "username").get_attribute("value")
-        assert username_value == "test_user1", f"用户名显示错误，期望 'test_user1'，但实际为 {username_value}"
+        assert username_value == "test_user1", f"wrong username, expecting 'test_user1', showing {username_value}"
 
         gender_value = driver.find_element(By.ID, "gender").get_attribute("value")
-        assert gender_value == "alien", f"性别显示错误，期望 'Alien'，但实际为 {gender_value}"
+        assert gender_value == "alien", f"wrong gender, expecting 'Alien', showing {gender_value}"
 
         nickname_value = driver.find_element(By.ID, "nickname").get_attribute("value")
-        assert nickname_value == "tester1", f"昵称显示错误，期望 'Tester'，但实际为 {nickname_value}"
+        assert nickname_value == "tester1", f"wrong nickname, expecting 'Tester', showing {nickname_value}"
 
-        # 4. 修改用户资料（例如，修改昵称和性别）
+        # changing user nickname
         new_nickname = "NewNickname"
-        driver.find_element(By.ID, "nickname").clear()  # 清除原有昵称
-        driver.find_element(By.ID, "nickname").send_keys(new_nickname)  # 输入新的昵称
+        driver.find_element(By.ID, "nickname").clear()
+        driver.find_element(By.ID, "nickname").send_keys(new_nickname)
 
-        # 修改性别
+        # Changeing the gender
         gender_dropdown = driver.find_element(By.ID, "gender")
-        gender_dropdown.click()  # 打开下拉菜单
-        gender_dropdown.find_element(By.XPATH, "//option[@value='male']").click()  # 选择男
+        gender_dropdown.click()
+        gender_dropdown.find_element(By.XPATH, "//option[@value='male']").click()
 
-        # 5. 提交修改后的表单
+        # Submitting the new nickname and gender
         save_button = driver.find_element(By.CLASS_NAME, "save-btn")
         save_button.click()
 
-        # 7. 重新加载页面，确认昵称更新成功
+        # Reloading the page
         driver.get("http://127.0.0.1:5000/userProfile")
 
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CLASS_NAME, "profile-container")))
+
         updated_nickname_value = driver.find_element(By.ID, "nickname").get_attribute("value")
-        assert updated_nickname_value == new_nickname, f"昵称更新失败，期望 '{new_nickname}'，但实际为 {updated_nickname_value}"
+        assert updated_nickname_value == new_nickname, f"nickname update failed, expecting '{new_nickname}', showing {updated_nickname_value}"
 
-        print("用户资料更新成功")
+        updated_gender_value = driver.find_element(By.ID, "gender").get_attribute("value")
+        assert updated_nickname_value == new_nickname, f"gender update failed, expecting '{new_nickname}', showing {updated_nickname_value}"
 
+        print("username profile successful")
+
+        # Uploading the result to testrail with testcase ID 9
         add_test_result(9, 1, "User profile updated successfully")
 
     except Exception as e:
-        print(f"测试失败，原因: {str(e)}")
+        print(f"test fail dute to {str(e)}")
         add_test_result(9, 5, f"User profile updated due to: {str(e)}")
 
     finally:
@@ -565,4 +533,4 @@ def test_user_profile_update():
 #test_settings_page()
 #test_user_profile_update()
 #test_login_page()
-test_register_page()
+#test_register_page()
