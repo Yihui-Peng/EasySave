@@ -1,40 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Predictions</title>
-</head>
-<body>
-    <div class="container">
-        <h1>Predicted Spending for Next Month</h1>
-        <p>Below are the forecasts for your spending categories for the next month:</p>
-        
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>Predicted Amount (€)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for category, amount in predictions.items() %}
-                <tr>
-                    <td>{{ category }}</td>
-                    <td>{{ "%.2f"|format(amount) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+{% extends "base.html" %}
 
+{% block title %}Predictions{% endblock %}
 
-    <h2>Insights</h2>
-        <p>Based on your spending predictions and past data, here are some suggestions:</p>
-        <ul>
-            {% for insight in insights %}
-            <li>{{ insight }}</li>
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/predict.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Predicted Spending for Next Month</h1>
+    <p>Below are the forecasts for your spending categories for the next month:</p>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Predicted Amount (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category, amount in predictions.items() %}
+            <tr>
+                <td>{{ category }}</td>
+                <td>{{ "%.2f"|format(amount) }}</td>
+            </tr>
             {% endfor %}
-        </ul>
-    </div>
-</body>
-</html>
+        </tbody>
+    </table>
+
+    <h2 class="mt-5">Insights</h2>
+    <p>Based on your spending predictions and past data, here are some suggestions:</p>
+    <ul class="list-group">
+        {% for insight in insights %}
+        <li class="list-group-item">{{ insight }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

@@ -372,11 +372,7 @@ def predict():
     insights = generate_insights(allocations, predictions)
 
     # Render the predictions on the HTML page
-    return render_template('predict.html', predictions=predictions, insights = insights)
-
-
-
-
+    return render_template('predict.html', predictions=predictions, insights = insights, user = user, active_page='predict')
 
 def get_monthly_spending_data(records):
     if not records:
