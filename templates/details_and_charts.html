@@ -68,7 +68,6 @@
             const opt = document.createElement("option");
             opt.value = option.value;
             opt.textContent = option.display;
-            // 保持二级分类的选择
             if (option.value === "{{ selected_category_level_2 }}") {
                 opt.selected = true;
             }
@@ -76,14 +75,13 @@
         });
     }
 
-    // 页面加载时调用函数以更新二级分类并设置选中项
+
     window.onload = function() {
         updateSubcategories();
     };
 </script>
 
 <div class="container">
-    <!-- Start of the form -->
     <form method="POST">
         <div class="category-selection">
             <label for="category_level_1">Category-Level-1:</label>
@@ -97,13 +95,23 @@
     
             <label for="category_level_2">Subcategory-Level-2:</label>
             <select id="category_level_2" name="category_level_2">
-                <!-- 选项由 JavaScript 动态生成 -->
             </select>
         </div>
     
-        <button type="submit">Filter</button>
+        <button type="submit" style="
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px 20px;
+            color: white;
+            background-color: rgba(75, 192, 192, 0.6);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;">
+            Filter
+        </button>
     </form>
-    <!-- End of the form -->
+
 
     <div class="block block-1 spending-summary">
         <h3>Spending Records</h3>
@@ -135,7 +143,6 @@
         }
     </script>
 
-    <!-- 引入 Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="text/javascript">
         
