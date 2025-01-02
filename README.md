@@ -25,6 +25,8 @@ git clone https://git.liacs.nl/group_6_sd/my-awesome-project.git
 cd my-awesome-project
 ```
 
+2. 
+
 ## Usage 
 
 (Insert here)
@@ -33,7 +35,7 @@ cd my-awesome-project
 This project is part of a university assignment and is not licensed for public use or distribution.
 
 ## Authors and Acknowledgment
-This project was developed by: 
+This project was jointly developed by: 
 
 - Hao Chen - 3990788
 
@@ -46,6 +48,9 @@ This project was developed by:
 - Zhemin Xie - 3808440
 
 - Jiajia Xu - 3845567
+
+The project was undertaken as part of the course *4032SWDEV: Software Development* at Leiden University, 
+within the second-year curriculum of the Bachelor of Science in Data Science and Artificial Intelligence program.
 
 
 ## Roadmap

@@ -5,14 +5,11 @@ from database import db, User
 import time
 
 default_picture_filename = "default_picture.png"
-
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
 
 def allowed_file(filename):
     """Check if a file has an allowed extension."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 def get_user(user_id):
     """Retrieve the user from the database."""
@@ -31,22 +28,6 @@ def update_nickname(user, new_nickname):
     user.nickname = new_nickname
     db.session.commit()
     return True
-
-
-def update_username(user, new_username):
-    """Update the user's username after checking uniqueness."""
-    if new_username == user.username:
-        # No change needed
-        return True, "Username remains unchanged."
-
-    # Check if the new username already exists
-    existing_user = User.query.filter_by(username=new_username).first()
-    if existing_user:
-        return False, "Username already taken. Please choose a different one."
-
-    user.username = new_username
-    db.session.commit()
-    return True, "Username updated successfully."
 
 
 def update_profile_picture(user, file):
