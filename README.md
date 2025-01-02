@@ -25,11 +25,23 @@ git clone https://git.liacs.nl/group_6_sd/my-awesome-project.git
 cd my-awesome-project
 ```
 
-2. 
+2. Install dependencies:
+3. Run the application:
+Start the local server:
+```
+python app.py
+```
+
+
+4. Access the app:
+Open your browser and navigate to:
+http://127.0.0.1:5000/
 
 ## Usage 
 
-(Insert here)
+1. Create a Profile:
+
+2. 
 
 ## License 
 This project is part of a university assignment and is not licensed for public use or distribution.
@@ -52,11 +64,14 @@ This project was jointly developed by:
 The project was undertaken as part of the course *4032SWDEV: Software Development* at Leiden University, 
 within the second-year curriculum of the Bachelor of Science in Data Science and Artificial Intelligence program.
 
+Special thanks to our course instructors and TAs for their guidance.
 
 ## Roadmap
 Future improvements to this project could include:
 - Greater compatibility across different devices
-- etc.
+- Support for multiple currencies
+- Advance analytics
+- Community features
 
 ## Support
-For help, you can reach us by email.
+For help, you can reach us by email at:
