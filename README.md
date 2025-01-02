@@ -49,7 +49,18 @@ http://127.0.0.1:5000/
 
 1. Create a Profile:
 
-2. 
+Register for a new account. Choose a unique username, input your email address, and create a password.
+
+2. Fill in the Financial Survey:
+
+Press the "Financial Survey" button at the top of the page, and fill in the form according to your situation.
+
+3. Use the app and record new spendings:
+
+Based on your income and past spending, you will see your automatically generated daily budget on the home page. 
+Enter new spendings by pressing the "Add New Records" button at the top of the page. You will see that the graphic
+on the home page automatically updates based on your input.
+
 
 ## License 
 This project is part of a university assignment and is not licensed for public use or distribution.
