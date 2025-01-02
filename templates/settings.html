@@ -1,171 +1,102 @@
 {% extends "base.html" %}
 
-{% block title %}Settings{% endblock %}
-
+{% block title %}Home{% endblock %}
 {% block styles %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .section { margin: 20px 0; }
-        .option { cursor: pointer; margin: 5px 0; }
-        .hidden { display: none; }
-        .back { cursor: pointer; color: blue; text-decoration: underline; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/setting.css') }}">
 {% endblock %}
 
 {% block content %}
-    <h1>Settings Menu</h1>
-    <div id="menu" class="section">
-        <div class="option" onclick="selectLanguage()">1: Select Language</div>
-        <div class="option" onclick="accountSecurity()">2: Account Security</div>
-        <div class="option" onclick="colorSetting()">3: Color Setting</div>
-        <div class="option" onclick="signOut()">4: Sign Out</div>
-        <div class="option" onclick="companyInfo()">6: Company Info</div>
-        <div class="option" onclick="exitSystem()">0: Exit</div>
-    </div>
+  
 
-    <!-- Select Language Section -->
-    <div id="language-section" class="section hidden">
-        <h2>Select Language</h2>
-        <div class="option" onclick="displayMessage('Language selected: English')">1: English</div>
-        <div class="option" onclick="displayMessage('Language selected: Dutch')">2: Dutch</div>
-        <div class="option" onclick="displayMessage('Language selected: Chinese')">3: Chinese</div>
-        <div class="back" onclick="goBack()">Back to Menu</div>
-    </div>
+    <div class="settings-container">
+        <div class="profile-pic">
+            <img src="{{ url_for('static', filename='profile_pictures/' ~ (user.profile_picture | default('default_picture.png'))) }}?t={{ time.time() }}"
+        alt="Profile Picture" id="profile_picture_display">
+    
+        </div>
+        <!-- Language Selection -->
+        <div>
+            <div class="section-title">
+                <span>Language</span>
+            </div>
+            <div>
+                <label><input type="radio" name="language" value="English"> English</label>
+                <label><input type="radio" name="language" value="Chinese" checked> Chinese</label>
+                <label><input type="radio" name="language" value="Netherlands"> Netherlands</label>
+            </div>
+        </div>
 
-    <!-- Account Security Section -->
-    <div id="account-section" class="section hidden">
-        <h2>Account Security</h2>
-        <div class="option" onclick="updateUsername()">1: Change Username</div>
-        <div class="option" onclick="updateEmail()">2: Change Email</div>
-        <div class="option" onclick="bindPhone()">3: Bind Phone Number</div>
-        <div class="option" onclick="changePassword()">4: Change Password</div>
-        <div class="back" onclick="goBack()">Back to Menu</div>
-    </div>
+        <!-- Color Theme -->
+        <div>
+            <div class="section-title">
+                <span>Color</span>
+            </div>
+            <div>
+                <label><input type="radio" name="color" value="Bright" checked> Bright (daytime)</label>
+                <label><input type="radio" name="color" value="Dark"> Dark (night)</label>
+            </div>
+        </div>
 
-    <!-- Color Setting Section -->
-    <div id="color-section" class="section hidden">
-        <h2>Color Setting</h2>
-        <div class="option" onclick="displayMessage('Background set to Black')">1: Black</div>
-        <div class="option" onclick="displayMessage('Background set to White')">2: White</div>
-        <div class="back" onclick="goBack()">Back to Menu</div>
+        <!-- Delete Account -->
+        <div>
+            <button class=" btn-custom">Delete Account</button>
+            <p class="note">Caution! This option deletes all configuration files and account information associated with your account.</p>
+            
+        </div>
+        <div id="delete-confirmation-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <form action="/setting" method="POST">
+        
+                    <span class="close-modal-btn" id="close-modal-btn">&times;</span>
+        
+                    <h2>Are you sure you wanna leave us?</h2>
+                    <p style="color: #C0392B; text-align: center;">
+                        All data related to your account will be deleted and cannot be retrieved.
+                    </p>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="cancel-delete-btn">No, I still need to think.</button>
+                        <button type="submit" class="btn-danger">Yes, I am sure</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-
-    <!-- Company Info Section -->
-    <div id="company-section" class="section hidden">
-        <h2>Company Info</h2>
-        <p>Company: Example Corp</p>
-        <p>Address: 1234 Innovation Drive</p>
-        <p>Email: contact@example.com</p>
-        <div class="back" onclick="goBack()">Back to Menu</div>
-    </div>
-
     <script>
-        function hideAllSections() {
-            document.getElementById("menu").classList.add("hidden");
-            document.getElementById("language-section").classList.add("hidden");
-            document.getElementById("account-section").classList.add("hidden");
-            document.getElementById("color-section").classList.add("hidden");
-            document.getElementById("company-section").classList.add("hidden");
-        }
-
-        function goBack() {
-            hideAllSections();
-            document.getElementById("menu").classList.remove("hidden");
-        }
-
-        function selectLanguage() {
-            hideAllSections();
-            document.getElementById("language-section").classList.remove("hidden");
-        }
-
-        function accountSecurity() {
-            hideAllSections();
-            document.getElementById("account-section").classList.remove("hidden");
-        }
-
-        function colorSetting() {
-            hideAllSections();
-            document.getElementById("color-section").classList.remove("hidden");
-        }
-
-        function signOut() {
-            const confirmation = confirm("Are you sure you want to sign out?");
-            if (confirmation) {
-                window.location.href = "/login"; // Redirect to login page
-            }
-        }
-
-        function companyInfo() {
-            hideAllSections();
-            document.getElementById("company-section").classList.remove("hidden");
-        }
-
-        function exitSystem() {
-            alert("Exiting settings system.");
-            window.close(); // Note: Only works in certain browsers
-        }
-
-        function updateUsername() {
-            const newUsername = prompt("Enter your new username:");
-            if (newUsername) {
-                fetch('/setting', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'change_username', new_username: newUsername })
-                })
-                .then(response => response.json())
-                .then(data => alert(data.message))
-                .catch(error => console.error('Error:', error));
-            }
-        }
-
-        function updateEmail() {
-            const newEmail = prompt("Enter your new email:");
-            if (newEmail) {
-                fetch('/setting', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'change_email', new_email: newEmail })
-                })
-                .then(response => response.json())
-                .then(data => alert(data.message))
-                .catch(error => console.error('Error:', error));
-            }
-        }
-
-        function bindPhone() {
-            const newPhone = prompt("Enter your phone number:");
-            if (newPhone) {
-                fetch('/setting', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'bind_phone', new_phone: newPhone })
-                })
-                .then(response => response.json())
-                .then(data => alert(data.message))
-                .catch(error => console.error('Error:', error));
-            }
-        }
-
-        function changePassword() {
-            const currentPassword = prompt("Enter your current password:");
-            const newPassword = prompt("Enter your new password:");
-            if (currentPassword && newPassword) {
-                fetch('/setting', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'change_password', current_password: currentPassword, new_password: newPassword })
-                })
-                .then(response => response.json())
-                .then(data => alert(data.message))
-                .catch(error => console.error('Error:', error));
-            }
-        }
-
-        function displayMessage(message) {
-            alert(message);
-            goBack();
-        }
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteAccountButton = document.querySelector('.btn-custom'); // Delete Account 按钮
+            const modal = document.getElementById('delete-confirmation-modal'); // 弹窗
+            const closeModalButton = document.getElementById('close-modal-btn'); // 关闭按钮
+            const cancelDeleteButton = document.getElementById('cancel-delete-btn'); // 取消按钮
+            const confirmDeleteButton = document.getElementById('confirm-delete-btn'); // 确认按钮
+        
+            // 点击 Delete Account 按钮，显示弹窗
+            deleteAccountButton.addEventListener('click', function () {
+                modal.style.display = 'flex';
+            });
+        
+            // 点击关闭按钮，隐藏弹窗
+            closeModalButton.addEventListener('click', function () {
+                modal.style.display = 'none';
+            });
+        
+            // 点击取消按钮，隐藏弹窗
+            cancelDeleteButton.addEventListener('click', function () {
+                modal.style.display = 'none';
+            });
+        
+            // 点击确认按钮，执行删除逻辑
+            confirmDeleteButton.addEventListener('click', function () {
+                // 在这里执行删除逻辑，例如发起删除请求
+                alert('Account deleted successfully.');
+                modal.style.display = 'none';
+            });
+        
+            // 点击弹窗外部关闭弹窗
+            window.addEventListener('click', function (event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
     </script>
 {% endblock %}

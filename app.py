@@ -16,15 +16,14 @@ from statsmodels.tools.sm_exceptions import ConvergenceWarning
 import warnings
 import pandas as pd
 import numpy as np
-
+import json
 
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/profile_pictures')
 
-
-# #database connection
+#database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
@@ -47,7 +46,7 @@ with app.app_context():
             print("Database already initialized, no need to import CSV.")
 
 
-# 11111 question: we should make the formatbetween newRecords and get_data the same, and make sure user_id been used in the same way
+# 11111 question: we should make the format between newRecords and get_data the same, and make sure user_id been used in the same way
 @app.route('/data')
 def get_data():
     with app.app_context():
@@ -107,15 +106,12 @@ def home():
 
     #Fetch the latest spending record
     spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.date.desc()).limit(3).all()
-    
-
     # 查询今天的所有记录
     today = datetime.now().date()
     today_records = Record.query.filter(
         Record.user_id == user.user_id,
         func.date(Record.date) == today
     ).all()
-
 
     # Fetch the latest saving goal
     savingGoal = Saving_Goal.query.filter_by(user_id=user.user_id).order_by(Saving_Goal.end_date.desc()).first()
@@ -137,22 +133,16 @@ def home():
     print(f"[DEBUG] Average Spending: {avg_spending}")
 
     # Determine savings goal
-
-
     if savingGoal:
         savings_goal = savingGoal.amount
     else:
         savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
-    # print(f"[DEBUG] Savings Goal: {savings_goal}")
 
     # Allocate budget
     allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
-    # print(f"[DEBUG] Allocations: {allocations}")
-    # print(f"[DEBUG] Sum of Allocations: {sum(allocations.values())}")
 
     # Generate insights
     insights = generate_insights(allocations, category_averages)
-    # print(f"[DEBUG] Insights: {insights}")
 
     # Calculate daily budget (sum of allocations excluding 'Savings')
     daily_budget = sum(amount for category, amount in allocations.items() if category != 'Savings')
@@ -359,34 +349,27 @@ def predict():
 
 
 
-def generate_normal_distribution_chart(amounts):
+
+def get_distribution_data(amounts):
+    if not amounts:
+        return {'labels': [], 'values': []}
 
     amounts = np.array(amounts)
 
-    # 直方图和正态分布曲线
-    plt.figure(figsize=(10, 6))
-    count, bins, ignored = plt.hist(amounts, bins=15, density=True, alpha=0.6, color='b')
+    counts, bin_edges = np.histogram(amounts, bins=10)
+    labels = []
+    for i in range(len(bin_edges) - 1):
+        labels.append(f"{bin_edges[i]:.1f}-{bin_edges[i + 1]:.1f}")
+    values = counts.tolist()
 
-    # 计算正态分布曲线
-    mu, sigma = np.mean(amounts), np.std(amounts)
-    y = ((1 / (np.sqrt(2 * np.pi) * sigma)) *
-         np.exp(-0.5 * (1 / sigma * (bins - mu))**2))
-
-    plt.plot(bins, y, '--', color='r')
-    plt.xlabel('Spending Amount')
-    plt.ylabel('Density')
-    plt.title('Spending Distribution Across All Users')
-    plt.savefig('static/spending_distribution.png')
-    plt.close()
+    return {'labels': labels, 'values': values}
 
 
 
-def generate_monthly_spending_chart(records):
+def get_monthly_spending_data(records):
     if not records:
-        # 如果记录列表为空，直接返回
-        return
-    
-    #  DataFrame
+        return {'labels': [], 'values': []}
+
     data = []
     for record in records:
         data.append({
@@ -396,33 +379,31 @@ def generate_monthly_spending_chart(records):
     df = pd.DataFrame(data)
 
     if df.empty:
-        return
+        return {'labels': [], 'values': []}
 
     df['month'] = pd.to_datetime(df['date']).dt.month
-    monthly_data = df.groupby('month')['amount'].sum()
+    monthly_data = df.groupby('month')['amount'].sum().reset_index()
 
-    plt.figure(figsize=(10, 6))
-    monthly_data.plot(kind='bar', color='green')
-    plt.xlabel('Month')
-    plt.ylabel('Total Spending')
-    plt.title('Monthly Spending for Selected Category')
-    plt.savefig('static/monthly_spending.png')
-    plt.close()
+    labels = monthly_data['month'].astype(str).tolist()
+    values = monthly_data['amount'].tolist()
 
-
+    return {'labels': labels, 'values': values}
 
 
 @app.route('/details_and_charts', methods=['GET', 'POST'])
 def details_and_charts():
-    user_id = session.get('user_id')
-    user = User.query.filter_by(user_id = user_id).first()
     if 'user_id' not in session:
         return redirect(url_for('login'))
+    user_id = session.get('user_id')
+    user = User.query.filter_by(user_id=user_id).first()
 
-    
-    # 默认选择
+    # 初始化变量
     selected_category_level_1 = 'All Spending'
     selected_category_level_2 = 'All'
+    user_records = []
+    detail_amounts = []
+    distribution_data = {'labels': [], 'values': []}
+    monthly_data = {'labels': [], 'values': []}
 
     category_mapping = {
         'Disposable_income': {
@@ -450,16 +431,13 @@ def details_and_charts():
     }
 
     if request.method == 'POST':
-        # 获取用户选择的分类
+        # 获取用户选择
         selected_category_level_1 = request.form.get('category_level_1', 'All Spending')
         selected_category_level_2 = request.form.get('category_level_2', 'All')
-
-        ### 板块一和三的数据从 Record 模型中获取 ###
 
         # 获取当前用户的所有消费记录
         user_records_query = Record.query.filter_by(user_id=user_id)
 
-        # 如果选择了特定的分类，则进行过滤
         if selected_category_level_2 != 'All':
             # 拼接分类名称（Category Level 1: Category Level 2）
             selected_category = f"{selected_category_level_1}:{selected_category_level_2}"
@@ -479,42 +457,64 @@ def details_and_charts():
                 if amount and amount > 0:
                     detail_amounts.append(amount)
             else:
-                # 如果选择了 "All"，累加所有分类的金额
+                # 如果选择了 "All"，累加一级分类下所有分类的金额
                 total_amount = sum([
                     getattr(detail, field, 0.0)
-                    for field in category_mapping.get(selected_category_level_1, {}).values()
+                    for field in category_mapping.get(selected_category_level_1, {}).keys()
                 ])
                 if total_amount > 0:
                     detail_amounts.append(total_amount)
 
-        # 生成正态分布图
-        if detail_amounts:
-            generate_normal_distribution_chart(detail_amounts)
-        else:
-            # 如果没有数据，可以显示占位图或提示
-            pass
+        # 获取正态分布数据
+        distribution_data = get_distribution_data(detail_amounts)
 
-        # 生成用户的月度消费柱状图（板块三）
-        if user_records:
-            generate_monthly_spending_chart(user_records)
-        else:
-            # 如果没有数据，可以显示占位图或提示
-            pass
+        # 获取月度消费数据
+        monthly_data = get_monthly_spending_data(user_records)
 
     else:
-        user_records = []
-        detail_amounts = []
+        # 对于 GET 请求，可以保留初始化的空列表，或者根据需要提供初始数据
+        pass  # detail_amounts 已在函数开头初始化为空列表
+
+    # 序列化数据
+    distribution_data_json = json.dumps(distribution_data)
+    monthly_data_json = json.dumps(monthly_data)
 
     return render_template(
         'details_and_charts.html',
-        user = user,
+        user=user,
         records=user_records,
         selected_category_level_1=selected_category_level_1,
         selected_category_level_2=selected_category_level_2,
-        category_mapping=category_mapping
+        category_mapping=category_mapping,
+        distribution_data_json=distribution_data_json,
+        monthly_data_json=monthly_data_json
     )
 
+@app.route('/setting', methods=['POST'])
+def delete_account():
+    # 从表单中获取 user_id
+    user_id = session.get('user_id')
 
+    # 检查是否提供了 user_id
+    if not user_id:
+        flash("User ID is missing.", "danger")
+        return redirect(url_for('settings'))
+
+    try:
+        # 查询用户并删除
+        user = User.query.get(user_id)
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            flash("Account deleted successfully.", "success")
+            return redirect(url_for('logout'))  # 重定向到登出页面
+        else:
+            flash("User not found.", "danger")
+            return redirect(url_for('settings'))
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred: {str(e)}", "danger")
+        return redirect(url_for('login'))
 
 
 #Adding saving goals
@@ -861,8 +861,13 @@ def budget_allocation():
 def logout():
     session['user_id'] = None
     return redirect(url_for('login'))
-    
 
+
+#Needed for profile picture
+@app.context_processor
+def inject_time():
+    import time
+    return dict(time=time)
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)

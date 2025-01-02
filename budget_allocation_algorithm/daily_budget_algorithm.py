@@ -1,108 +1,117 @@
-#This algorithm calculates the daily budget the user should spend.
-#The number calculated is printed on the home page.
-
-from database import Detail, User
+from database import Detail, User, Saving_Goal
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 
 def fetch_user_financial_data(user_id, db_session: Session):
     """
-    Fetch historical spending data and user financial information.
+    Fetch user's financial data, including income, expenses, and saving goals.
     """
-    # Fetch Detail records for the user
-    db_records = db_session.query(
-        Detail.date,
-        Detail.living_expense,
-        Detail.tuition,
-        Detail.housing,
-        Detail.food,
-        Detail.transportation,
-        Detail.study_materials,
-        Detail.entertainment,
-        Detail.personal_care,
-        Detail.technology,
-        Detail.apparel,
-        Detail.travel,
-        Detail.others
-    ).filter(Detail.user_id == user_id).order_by(Detail.date.desc()).all()
+    # Fetch the latest Detail record for the user
+    latest_detail = db_session.query(Detail).filter(Detail.user_id == user_id).order_by(Detail.date.desc()).first()
 
-    if not db_records:
+    if not latest_detail:
         return None
 
-    # Fetch user's saving goal and time frame from User table
-    user = db_session.query(User).filter(User.user_id == user_id).first()
-    if not user:
-        return None
+    # Fetch user's active saving goals (excluding finished ones)
+    saving_goals = db_session.query(Saving_Goal).filter(
+        Saving_Goal.user_id == user_id,
+        Saving_Goal.progress != 'finished'
+    ).all()
+
+    # Calculate total income (income + allowance + living_expense)
+    total_income = sum([
+        latest_detail.income or 0,
+        latest_detail.allowance or 0,
+        latest_detail.living_expense or 0
+    ])
+
+    # Calculate total fixed expenses (e.g., tuition, housing)
+    fixed_expenses = sum([
+        latest_detail.tuition or 0,
+        latest_detail.housing or 0
+    ])
+
+    # Calculate total variable expenses (other categories)
+    variable_expenses = sum([
+        latest_detail.food or 0,
+        latest_detail.transportation or 0,
+        latest_detail.study_materials or 0,
+        latest_detail.entertainment or 0,
+        latest_detail.personal_care or 0,
+        latest_detail.technology or 0,
+        latest_detail.apparel or 0,
+        latest_detail.travel or 0,
+        latest_detail.others or 0
+    ])
 
     return {
-        'records': db_records,
-        'saving_goal': user.saving_goal,
-        'time_frame_days': user.time_frame_days
+        'total_income': total_income,
+        'fixed_expenses': fixed_expenses,
+        'variable_expenses': variable_expenses,
+        'saving_goals': saving_goals
     }
 
-def calculate_average_daily_spending(records):
+def calculate_daily_savings(saving_goals):
     """
-    Calculate the average daily spending based on historical records.
+    Calculate the total daily savings required to meet all saving goals by their end dates.
+    Prioritize saving goals to maximize the chances to reach all goals.
     """
-    total_spent = 0.0
-    total_days = 0
+    today = datetime.now().date()
+    daily_savings = 0.0
 
-    for record in records:
-        daily_total = (
-            (record.living_expense or 0) +
-            (record.tuition or 0) +
-            (record.housing or 0) +
-            (record.food or 0) +
-            (record.transportation or 0) +
-            (record.study_materials or 0) +
-            (record.entertainment or 0) +
-            (record.personal_care or 0) +
-            (record.technology or 0) +
-            (record.apparel or 0) +
-            (record.travel or 0) +
-            (record.others or 0)
-        )
-        total_spent += daily_total
-        total_days += 1
+    # Prioritize goals by earliest end date
+    prioritized_goals = sorted(saving_goals, key=lambda x: x.end_date)
 
-    if total_days == 0:
-        return 0.0
+    for goal in prioritized_goals:
+        remaining_amount = (goal.amount or 0) - (goal.progress_amount or 0)
+        days_left = (goal.end_date.date() - today).days
 
-    average_daily_spending = total_spent / total_days
-    return average_daily_spending
+        if days_left <= 0 or remaining_amount <= 0:
+            continue  # Skip goals that are already completed or past their end date
 
-def allocate_daily_budget(user_financial_data):
+        daily_saving_for_goal = remaining_amount / days_left
+        daily_savings += daily_saving_for_goal
+
+    return daily_savings
+
+def calculate_daily_budget(user_financial_data):
     """
-    Allocate a daily budget to help the user reach their savings goal.
+    Calculate the daily budget based on income, expenses, and saving goals.
     """
-    saving_goal = user_financial_data['saving_goal']
-    time_frame_days = user_financial_data['time_frame_days']
-    records = user_financial_data['records']
+    total_income = user_financial_data['total_income']
+    fixed_expenses = user_financial_data['fixed_expenses']
+    variable_expenses = user_financial_data['variable_expenses']
+    saving_goals = user_financial_data['saving_goals']
 
-    average_daily_spending = calculate_average_daily_spending(records)
+    # Get the number of days left in the current month
+    today = datetime.now().date()
+    current_year = today.year
+    current_month = today.month
+    days_in_month = (datetime(current_year, current_month % 12 + 1, 1) - timedelta(days=1)).day
+    days_left_in_month = days_in_month - today.day + 1
 
-    # Calculate required daily savings
-    required_daily_savings = saving_goal / time_frame_days
+    # Calculate the available income after fixed expenses
+    available_income = total_income - fixed_expenses
 
-    # Determine allocatable daily budget
-    allocatable_daily_budget = average_daily_spending - required_daily_savings
+    if not saving_goals:
+        # No saving goals; distribute available income over the remaining days
+        daily_budget = available_income / days_left_in_month
+        return max(daily_budget, 0.0)
 
-    # Ensure the budget is not negative
-    if allocatable_daily_budget < 0:
-        allocatable_daily_budget = 0.0  # Or handle as needed
+    # Calculate required daily savings to meet saving goals
+    daily_savings = calculate_daily_savings(saving_goals)
 
-    return {
-        'average_daily_spending': round(average_daily_spending, 2),
-        'required_daily_savings': round(required_daily_savings, 2),
-        'allocatable_daily_budget': round(allocatable_daily_budget, 2)
-    }
+    # Calculate the daily budget
+    total_variable_budget = available_income - (daily_savings * days_left_in_month)
+    daily_budget = total_variable_budget / days_left_in_month
+
+    return max(daily_budget, 0.0)
 
 def generate_daily_budget(user_id, db_session: Session):
-    """
-    Main function to generate daily budget for a user to reach their savings goal.
-    """
     user_financial_data = fetch_user_financial_data(user_id, db_session)
     if not user_financial_data:
         raise ValueError("Insufficient financial data for user.")
 
-    budget_allocation = allocate_daily_budget(user_financial_data)
-    return budget_allocation
+    daily_budget = calculate_daily_budget(user_financial_data)
+    return round(daily_budget, 2)
+

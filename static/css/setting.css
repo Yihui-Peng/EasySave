@@ -1,0 +1,144 @@
+body {
+    background-color: #f8f4ef;
+    font-family: 'Arial', sans-serif;
+}
+.settings-container {
+    max-width: 600px;
+    margin: 50px auto;
+    background-color: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.profile-pic img {
+    border-radius: 50%;
+    border: 3px solid #97A5C0;
+    width: 30%;
+    height: 30%;
+    object-fit: cover;
+}
+
+.btn-custom {
+    background-color: #7B93BF;
+    width: 70%;
+    border: none;
+    color: white;
+    text-align: center; 
+    padding: 5px 0; 
+    margin: 10px 0;
+    font-weight: bold; 
+    border-radius: 40px; 
+    cursor: pointer;
+}
+.btn-custom:hover {
+    background-color: #5C7096;
+}
+
+.input-group {
+    margin: 15px 0;
+}
+.note {
+    color: #b71c1c;
+    font-size: 0.9rem;
+}
+
+.section-title {
+    background-color: #82AB93; 
+    color: white; 
+    text-align: center; 
+    padding: 5px 0; 
+    margin: 10px 0;
+    font-weight: bold; 
+    border-radius: 40px; 
+}
+
+/* 弹窗背景 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* 弹窗内容 */
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* 关闭按钮 */
+.close-modal-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 1.5em;
+    color: #C0392B;
+    cursor: pointer;
+}
+
+/* 按钮样式 */
+.modal-actions .btn-secondary {
+    background-color: #A9C5A0;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-right: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.modal-actions .btn-danger {
+    background-color: #C0392B;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.modal-actions button:hover {
+    opacity: 0.9;
+}
+
+.close-modal-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px; /* 调整位置到右上角 */
+    width: 25px; /* 按钮宽度 */
+    height: 25px; /* 按钮高度 */
+    background-color: #C0392B; /* 红色背景 */
+    color: white; /* 白色字体 */
+    border: none; /* 去掉边框 */
+    border-radius: 50%; /* 圆形按钮 */
+    text-align: center;
+    line-height: 25px; /* 文字垂直居中 */
+    cursor: pointer; /* 鼠标悬浮为手型 */
+    font-size: 1em; /* 字体大小 */
+}
+
+.close-modal-btn:hover {
+    background-color: #A93226; /* 鼠标悬浮时稍微变暗 */
+}
+
+.modal-content h2 {
+    font-size: 1.2em; /* 改小标题字体大小 */
+    margin-bottom: 10px; /* 添加间距 */
+}
+
+.modal-content p {
+    font-size: 0.9em; /* 改小正文字体大小 */
+    color: #C0392B; /* 保持红色 */
+    text-align: center;
+}
