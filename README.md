@@ -26,7 +26,15 @@ cd my-awesome-project
 ```
 
 2. Install dependencies:
+
+```
+python -m venv venv
+source venv/bin/activate  # For Windows, use `venv\Scripts\activate`
+pip install -r requirements.txt
+```
+
 3. Run the application:
+
 Start the local server:
 ```
 python app.py
