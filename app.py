@@ -745,7 +745,15 @@ def survey():
                         amount = request.form.get(f'{month_name}_{category}', 0.0)
                         if amount == '':
                             amount = 0.0
-                        detail_data[category.lower()] = float(amount)
+
+                        #BUG FIXING
+                        column_name = category.lower().replace('livingexpense', 'living_expense') \
+                             .replace('studymaterial', 'study_materials') \
+                             .replace('personalcare', 'personal_care')
+                        detail_data[column_name] = float(amount)
+
+
+                        #detail_data[category.lower()] = float(amount)
                         print(f"[DEBUG] Retrieved amount for {month_name}_{category}: {amount}")  # 调试输出
 
                     # 创建新的 Detail 实例并保存
