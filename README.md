@@ -72,7 +72,7 @@ This project was jointly developed by:
 The project was undertaken as part of the course *4032SWDEV: Software Development* at Leiden University, 
 within the second-year curriculum of the Bachelor of Science in Data Science and Artificial Intelligence program.
 
-Special thanks to our course instructors and TAs for their guidance.
+Special thanks to our course instructor Dr. A. Saxena and our TA Aart for their guidance.
 
 ## Roadmap
 Future improvements to this project could include:
