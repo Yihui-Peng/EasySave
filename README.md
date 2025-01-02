@@ -63,7 +63,7 @@ on the home page automatically updates based on your input.
 
 
 ## License 
-This project is part of a university assignment and is not licensed for public use or distribution.
+This project is part of a university assignment and is intended for academic use only. It is not licensed for public use or distribution.
 
 ## Authors and Acknowledgment
 This project was jointly developed by: 
