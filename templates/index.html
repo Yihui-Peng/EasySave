@@ -96,12 +96,12 @@
                     <circle class="circle-bg" cx="18" cy="18" r="{{ns.radius * (savingGoals|length)}}" />
                 {% for goal in savingGoals %}
                 {% set progress_amount = goal.progress_amount if goal.progress_amount is not none else 0.0 %}
-    {% set total_amount = goal.amount if goal.amount is not none else 0.0 %}
-    {% set percentage = (progress_amount / total_amount * 100) if total_amount != 0 else 0 %}
-    {% set percentage = percentage | round %}
-    {% set circumference = 2 * 3.14159 * ns.radius %}
-    {% set filled_length = (percentage / 100) * circumference %}
-    {% set stroke_dasharray = "{} {}".format(filled_length, circumference) %}
+                {% set total_amount = goal.amount if goal.amount is not none else 0.0 %}
+                {% set percentage = (progress_amount / total_amount * 100) if total_amount != 0 else 0 %}
+                {% set percentage = percentage | round %}
+                {% set circumference = 2 * 3.14159 * ns.radius %}
+                {% set filled_length = (percentage / 100) * circumference %}
+                {% set stroke_dasharray = "{} {}".format(filled_length, circumference) %}
                     <circle class="circle goal-{{loop.index}}" 
                         cx="18" cy="18" r="{{ ns.radius }}" 
                         stroke-dasharray="{{ stroke_dasharray }}">
