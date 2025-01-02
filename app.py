@@ -347,8 +347,34 @@ def predict():
     # Calculate average prediction for the next month
     predictions = {category: values.mean() for category, values in forecast_results.items()}
 
+    # Fetch the logged-in user's details
+    if 'user_id' not in session:
+        flash("Please log in to view your predictions.", "error")
+        return redirect(url_for('login'))
+
+    user_id = session.get('user_id')
+    user = User.query.filter_by(user_id=user_id).first()
+
+    if not user:
+        flash("User not found.", "error")
+        return redirect(url_for('login'))
+
+    # Handle None values for income and aggregate saving goals
+    avg_disposable_income = user.average_income or 0.0
+
+    # Summing the progress amounts of all saving goals
+    total_savings_goal = sum(goal.amount for goal in user.saving_goals if goal.amount) or avg_disposable_income * 0.2
+
+    # Generate budget allocations based on predictions
+    allocations = allocate_budget(avg_disposable_income, total_savings_goal, predictions)
+
+    # Generate insights from budget allocations
+    insights = generate_insights(allocations, predictions)
+
     # Render the predictions on the HTML page
-    return render_template('predict.html', predictions=predictions)
+    return render_template('predict.html', predictions=predictions, insights = insights)
+
+
 
 
 

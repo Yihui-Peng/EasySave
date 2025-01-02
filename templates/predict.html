@@ -26,6 +26,15 @@
                 {% endfor %}
             </tbody>
         </table>
+
+
+    <h2>Insights</h2>
+        <p>Based on your spending predictions and past data, here are some suggestions:</p>
+        <ul>
+            {% for insight in insights %}
+            <li>{{ insight }}</li>
+            {% endfor %}
+        </ul>
     </div>
 </body>
 </html>
