@@ -1,27 +1,30 @@
 {% extends "base.html" %}
-
 {% block title %}Settings{% endblock %}
 
 {% block styles %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .section { margin: 20px 0; }
-        .option { cursor: pointer; margin: 5px 0; }
-        .hidden { display: none; }
-        .back { cursor: pointer; color: blue; text-decoration: underline; }
-    </style>
+<style>
+    .option {
+        cursor: pointer;
+        margin: 5px 0;
+    }
+    .hidden {
+        display: none;
+    }
+    .back {
+        cursor: pointer;
+        color: blue;
+        text-decoration: underline;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
+<div class="scrollable-container">
     <h1>Settings Menu</h1>
     <div id="menu" class="section">
-        
         <div class="option" onclick="accountSecurity()">Account Security</div>
-        
         <div class="option" onclick="signOut()">Sign Out</div>
         <div class="option" onclick="companyInfo()">Company Info</div>
-        
     </div>
 
     <!-- Select Language Section -->
@@ -36,7 +39,6 @@
     <!-- Account Security Section -->
     <div id="account-section" class="section hidden">
         <h2>Account Security</h2>
-        
         <div class="option" onclick="changePassword()">1: Change Password</div>
         <div class="back" onclick="goBack()">Back to Menu</div>
     </div>
@@ -52,77 +54,62 @@
     <!-- Company Info Section -->
     <div id="company-section" class="section hidden">
         <h2>Company Info</h2>
-        <p>Company: Example Corp</p>
-        <p>Address: 1234 Innovation Drive</p>
+        <p>Company: EasySave</p>
+        <p>Address: Einsteinweg, Leiden, Netherlands</p>
         <p>Email: contact@example.com</p>
         <div class="back" onclick="goBack()">Back to Menu</div>
     </div>
+</div>
 
-    <script>
-        function hideAllSections() {
-            document.getElementById("menu").classList.add("hidden");
-            document.getElementById("language-section").classList.add("hidden");
-            document.getElementById("account-section").classList.add("hidden");
-            document.getElementById("color-section").classList.add("hidden");
-            document.getElementById("company-section").classList.add("hidden");
+<script>
+    function hideAllSections() {
+        document.getElementById("menu").classList.add("hidden");
+        document.getElementById("language-section").classList.add("hidden");
+        document.getElementById("account-section").classList.add("hidden");
+        document.getElementById("color-section").classList.add("hidden");
+        document.getElementById("company-section").classList.add("hidden");
+    }
+
+    function goBack() {
+        hideAllSections();
+        document.getElementById("menu").classList.remove("hidden");
+    }
+
+    function accountSecurity() {
+        hideAllSections();
+        document.getElementById("account-section").classList.remove("hidden");
+    }
+
+    function signOut() {
+        const confirmation = confirm("Are you sure you want to sign out?");
+        if (confirmation) {
+            window.location.href = "/login";
         }
+    }
 
-        function goBack() {
-            hideAllSections();
-            document.getElementById("menu").classList.remove("hidden");
+    function companyInfo() {
+        hideAllSections();
+        document.getElementById("company-section").classList.remove("hidden");
+    }
+
+    function changePassword() {
+        const currentPassword = prompt("Enter your current password:");
+        const newPassword = prompt("Enter your new password:");
+        if (currentPassword && newPassword) {
+            fetch('/setting', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'change_password', current_password: currentPassword, new_password: newPassword })
+            })
+            .then(response => response.json())
+            .then(data => alert(data.message))
+            .catch(error => console.error('Error:', error));
         }
+    }
 
-        function selectLanguage() {
-            hideAllSections();
-            document.getElementById("language-section").classList.remove("hidden");
-        }
-
-        function accountSecurity() {
-            hideAllSections();
-            document.getElementById("account-section").classList.remove("hidden");
-        }
-
-        function colorSetting() {
-            hideAllSections();
-            document.getElementById("color-section").classList.remove("hidden");
-        }
-
-        function signOut() {
-            const confirmation = confirm("Are you sure you want to sign out?");
-            if (confirmation) {
-                window.location.href = "/login"; // Redirect to login page
-            }
-        }
-
-        function companyInfo() {
-            hideAllSections();
-            document.getElementById("company-section").classList.remove("hidden");
-        }
-
-        function exitSystem() {
-            alert("Exiting settings system.");
-            window.close(); // Note: Only works in certain browsers
-        }
-
-
-        function changePassword() {
-            const currentPassword = prompt("Enter your current password:");
-            const newPassword = prompt("Enter your new password:");
-            if (currentPassword && newPassword) {
-                fetch('/setting', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'change_password', current_password: currentPassword, new_password: newPassword })
-                })
-                .then(response => response.json())
-                .then(data => alert(data.message))
-                .catch(error => console.error('Error:', error));
-            }
-        }
-
-        function displayMessage(message) {
-            alert(message);
-            goBack();
-        }
-    </script>
+    function displayMessage(message) {
+        alert(message);
+        goBack();
+    }
+</script>
 {% endblock %}
