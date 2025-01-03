@@ -1,32 +1,33 @@
 import os
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify, abort
+from database import db, Detail, User, Saving_Goal, Record
+from datetime import timedelta, datetime
 import re
 import time
-import warnings
-from datetime import timedelta, datetime
-from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
-from database import db, Detail, User, Saving_Goal, Record
-import pandas as pd
-import numpy as np
-import json
-from sqlalchemy import func
+from sqlalchemy import func, inspect
 from import_database import initialize_database
 from user_profile import get_user, handle_user_profile_update
 from flask_migrate import Migrate
+import matplotlib.pyplot as plt
 from budget_allocation_algorithm.budget_allocation_algorithm import fetch_combined_financial_data, allocate_budget, generate_insights
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tools.sm_exceptions import ConvergenceWarning
-from budget_allocation_algorithm.daily_budget_algorithm import generate_daily_budget
+import warnings
+import pandas as pd
+import numpy as np
+import json
 
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/profile_pictures')
 
-#Database connection
+#database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+
 migrate = Migrate(app, db)
 
 with app.app_context():
@@ -44,6 +45,8 @@ with app.app_context():
         else:
             print("Database already initialized, no need to import CSV.")
 
+
+# 11111 question: we should make the format between newRecords and get_data the same, and make sure user_id been used in the same way
 @app.route('/data')
 def get_data():
     with app.app_context():
@@ -108,15 +111,20 @@ def home():
         Record.user_id == user.user_id,
         func.date(Record.date) == today
     ).all()
+    if not user:
+        flash('User not found.', 'error')
+        return redirect(url_for('login'))
 
     # Fetch the latest saving goal
     savingGoal = Saving_Goal.query.filter_by(user_id=user.user_id).order_by(Saving_Goal.end_date.desc()).first()
+
+
     savingGoals = Saving_Goal.query.filter_by(user_id = user.user_id).limit(3).all()
     achievedGoals = Saving_Goal.query.filter(
         Saving_Goal.user_id == user.user_id,
         Saving_Goal.progress == "finished"
         ).order_by(Saving_Goal.end_date.desc()).limit(3).all()
-
+    print(achievedGoals)
     # Fetch combined financial datas
     category_averages = fetch_combined_financial_data(user_id, db.session)
     print(f"[DEBUG] Category Averages: {category_averages}")
@@ -131,18 +139,26 @@ def home():
     if savingGoal:
         savings_goal = savingGoal.amount
     else:
-        savings_goal = avg_disposable_income * 0.20  # Default 20% if no goal set
+        savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
 
-    # Calculate daily budget from algorithm
-    daily_budget = generate_daily_budget(user_id, db.session)
-    print(f"[DEBUG] Daily Budget (from daily_budget_algorithm): {daily_budget}")
+    # Allocate budget
+    allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
+
+    # Generate insights
+    insights = generate_insights(allocations, category_averages)
+
+    # Calculate daily budget (sum of allocations excluding 'Savings')
+    daily_budget = sum(amount for category, amount in allocations.items() if category != 'Savings')
+    print(f"[DEBUG] Daily Budget: {daily_budget}")
 
     return render_template(
         'index.html',
         active_page='home',
         user=user,
-        spending=spending,
+        prev_spending=spending,
         savingGoals=savingGoals,
+        allocations=allocations,
+        insights=insights,
         daily_budget=round(daily_budget, 2),
         today_records = today_records, 
         achievedGoals = achievedGoals
@@ -198,6 +214,9 @@ def register():
     return render_template('login.html')
 
 
+
+
+# newRecords part
 @app.route('/newRecords', methods=['GET', 'POST'])
 def newRecords():
     if 'user_id' not in session:
@@ -270,9 +289,9 @@ def generate_and_forecast_spending_data(start_date, end_date, forecast_days=30):
         'Living_expense': np.random.randint(500, 1200, len(months)),
         'Allowance': np.random.randint(100, 300, len(months)),
         'Income': np.random.randint(800, 1500, len(months)),
-        'Tuition': np.random.randint(2000, 4000, len(months)),
+        'Tuition': np.random.randint(3000, 5000, len(months)),
         'Housing': np.random.randint(400, 900, len(months)),
-        'Food': np.random.randint(300, 800, len(months)),
+        'Food': np.random.randint(100, 400, len(months)),
         'Transportation': np.random.randint(50, 200, len(months)),
         'Study_material': np.random.randint(50, 300, len(months)),
         'Entertainment': np.random.randint(20, 150, len(months)),
@@ -337,8 +356,17 @@ def predict():
     # Calculate average prediction for the next month
     predictions = {category: values.mean() for category, values in forecast_results.items()}
 
+    # Fetch the logged-in user's details
+    if 'user_id' not in session:
+        flash("Please log in to view your predictions.", "error")
+        return redirect(url_for('login'))
+
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id=user_id).first()
+
+    if not user:
+        flash("User not found.", "error")
+        return redirect(url_for('login'))
 
     # Handle None values for income and aggregate saving goals
     avg_disposable_income = user.average_income or 0.0
@@ -353,22 +381,8 @@ def predict():
     insights = generate_insights(allocations, predictions)
 
     # Render the predictions on the HTML page
-    return render_template('predict.html', predictions=predictions, insights=insights, user=user, active_page='predict')
+    return render_template('predict.html', predictions=predictions, insights = insights, user = user, active_page='predict')
 
-
-def get_distribution_data(amounts):
-    if not amounts:
-        return {'labels': [], 'values': []}
-
-    amounts = np.array(amounts)
-
-    counts, bin_edges = np.histogram(amounts, bins=10)
-    labels = []
-    for i in range(len(bin_edges) - 1):
-        labels.append(f"{bin_edges[i]:.1f}-{bin_edges[i + 1]:.1f}")
-    values = counts.tolist()
-
-    return {'labels': labels, 'values': values}
 
 
 def get_monthly_spending_data(records):
@@ -395,6 +409,7 @@ def get_monthly_spending_data(records):
     return {'labels': labels, 'values': values}
 
 
+
 @app.route('/details_and_charts', methods=['GET', 'POST'])
 def details_and_charts():
     if 'user_id' not in session:
@@ -403,12 +418,10 @@ def details_and_charts():
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id=user_id).first()
 
-    # 初始化变量
     selected_category_level_1 = 'All Spending'
     selected_category_level_2 = 'All'
     user_records = []
     detail_amounts = []
-    distribution_data = {'labels': [], 'values': []}
     monthly_data = {'labels': [], 'values': []}
 
     category_mapping = {
@@ -420,7 +433,6 @@ def details_and_charts():
         'Necessities': {
             'tuition': 'Tuition',
             'housing': 'Housing',
-            'Housing': 'Housing',
             'food': 'Food',
             'transportation': 'Transportation'
         },
@@ -443,11 +455,11 @@ def details_and_charts():
         for subcategories in category_mapping.values()
         for subcategory in subcategories.keys()
     ]
+
     if request.method == 'POST':
         selected_category_level_1 = request.form.get('category_level_1', 'All Spending')
         selected_category_level_2 = request.form.get('category_level_2', 'All')
 
-        # 验证分类
         if selected_category_level_1 != 'All Spending' and selected_category_level_1 not in valid_categories:
             return render_template('details_and_charts.html', user=user, error="Invalid main category"), 400
         if selected_category_level_2 != 'All' and selected_category_level_2 not in valid_subcategories:
@@ -455,32 +467,39 @@ def details_and_charts():
 
         user_records_query = Record.query.filter_by(user_id=user_id)
 
-        if (selected_category_level_2 != 'All' and
-            selected_category_level_2 not in valid_subcategories):
-            return render_template('details_and_charts.html', ...), 400
+        if selected_category_level_1 != 'All Spending':
+            if selected_category_level_2 != 'All':
+                desired_category_str = f"{selected_category_level_1}:{selected_category_level_2}"
+                user_records_query = user_records_query.filter(Record.category == desired_category_str)
+            else:
+                sub_fields = category_mapping.get(selected_category_level_1, {}).keys()
+                cat_list = [f"{selected_category_level_1}:{sub}" for sub in sub_fields]
+                user_records_query = user_records_query.filter(Record.category.in_(cat_list))
+        else:
+            pass
 
         user_records = user_records_query.order_by(Record.date.desc()).all()
 
         all_details = Detail.query.all()
-
         detail_amounts = []
-        for detail in all_details:
+        if selected_category_level_1 != 'All Spending':
             if selected_category_level_2 != 'All':
-                amount = getattr(detail, selected_category_level_2, 0.0)
-                if amount and amount > 0:
-                    detail_amounts.append(amount)
+                for detail in all_details:
+                    amount = getattr(detail, selected_category_level_2, 0.0)
+                    if amount and amount > 0:
+                        detail_amounts.append(amount)
             else:
-                total_amount = sum([
-                    getattr(detail, field, 0.0)
-                    for field in category_mapping.get(selected_category_level_1, {}).keys()
-                ])
-                if total_amount > 0:
-                    detail_amounts.append(total_amount)
+                for detail in all_details:
+                    total_amount = sum([
+                        getattr(detail, field, 0.0)
+                        for field in category_mapping.get(selected_category_level_1, {}).keys()
+                    ])
+                    if total_amount > 0:
+                        detail_amounts.append(total_amount)
+        else:
+            pass
 
         monthly_data = get_monthly_spending_data(user_records)
-
-    else:
-        pass
 
     monthly_data_json = json.dumps(monthly_data)
 
@@ -491,35 +510,9 @@ def details_and_charts():
         selected_category_level_1=selected_category_level_1,
         selected_category_level_2=selected_category_level_2,
         category_mapping=category_mapping,
-        distribution_data_json=json.dumps(distribution_data),
         monthly_data_json=monthly_data_json
     )
 
-@app.route('/setting', methods=['POST'])
-def delete_account():
-    # 从表单中获取 user_id
-    user_id = session.get('user_id')
-
-    # 检查是否提供了 user_id
-    if not user_id:
-        flash("User ID is missing.", "danger")
-        return redirect(url_for('settings'))
-
-    try:
-        # 查询用户并删除
-        user = User.query.get(user_id)
-        if user:
-            db.session.delete(user)
-            db.session.commit()
-            flash("Account deleted successfully.", "success")
-            return redirect(url_for('logout'))  # 重定向到登出页面
-        else:
-            flash("User not found.", "danger")
-            return redirect(url_for('settings'))
-    except Exception as e:
-        db.session.rollback()
-        flash(f"An error occurred: {str(e)}", "danger")
-        return redirect(url_for('login'))
 
 
 #Adding saving goals
@@ -584,7 +577,7 @@ def delete_selected_goals():
         flash("No goals selected for deletion.", "warning")
         return redirect(url_for('show_saving_goal_page'))
 
-    # 将goal_ids转换为整数类型
+
     goal_ids = [int(goal_id) for goal_id in goal_ids if goal_id]
 
     if goal_ids:
@@ -772,13 +765,16 @@ def survey():
                         amount = request.form.get(f'{month_name}_{category}', 0.0)
                         if amount == '':
                             amount = 0.0
-                        # BUG FIXING
+
+                        #BUG FIXING
                         column_name = category.lower().replace('livingexpense', 'living_expense') \
-                            .replace('studymaterial', 'study_materials') \
-                            .replace('personalcare', 'personal_care')
+                             .replace('studymaterial', 'study_materials') \
+                             .replace('personalcare', 'personal_care')
                         detail_data[column_name] = float(amount)
 
-                    print(f"[DEBUG] Retrieved amount for {month_name}_{category}: {amount}")  # 调试输出
+
+                        #detail_data[category.lower()] = float(amount)
+                        print(f"[DEBUG] Retrieved amount for {month_name}_{category}: {amount}")  # 调试输出
 
                     # 创建新的 Detail 实例并保存
                     new_detail = Detail(**detail_data)
