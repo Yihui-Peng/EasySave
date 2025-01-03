@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Financial Survey</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/survey.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 </head>
 <body>
-    <button id="openSurvey">Financial Survey</button>
-
-    <div id="surveyDialog" title="Financial Survey" style="display: none;">
+    <div id="surveyDialog" title="Financial Survey">
         <form id="financialSurveyForm" action="/survey" method="post">
             <!-- Question 1 (Merged) -->
             <p>1. What is your average monthly disposable income for the last three months (including living expenses, allowances, and income from part-time jobs and internships)?</p>
@@ -33,6 +32,19 @@
             <p>4. Please enter your financial records for the past three months (starting from the previous month)</p>
             <div id="financialRecords">
                 <table id="monthlyRecordsTable">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <!-- 月份标题将由 JavaScript 动态生成 -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 示例行，完整行将在 JavaScript 中动态生成 -->
+                        <tr>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- <table id="monthlyRecordsTable">
                     <thead>
                         <tr>
                             <th>Category</th>
@@ -127,19 +139,67 @@
                             <td><input type="number" name="August_Others" style="width: 60%;" min="0" required></td>
                         </tr>
                     </tbody>
-                 </table>
-                <label><input type="checkbox" id="skipFinancialRecords" name="skipFinancialRecords" value="yes"> Skip</label>
+                 </table> -->
+               
 
             </div>
-
-            
+            <label><input type="checkbox" id="skipFinancialRecords" name="skipFinancialRecords" value="yes"> Skip</label>
+            <div></div>
             <input type="submit" value="Submit">
             <!-- <button type="submit">Submit</button> -->
         </form>
     </div>
 
     <script>
+          document.addEventListener("DOMContentLoaded", function () {
+        const tableHeadRow = document.querySelector("#monthlyRecordsTable thead tr");
+        const tableBody = document.querySelector("#monthlyRecordsTable tbody");
+        const currentDate = new Date();
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+        // 动态生成过去三个月的标题
+        const months = [];
+        for (let i = 1; i <= 3; i++) {
+            const monthIndex = (currentDate.getMonth() - i + 12) % 12; // 计算月份
+            months.push(monthNames[monthIndex]);
+        }
+
+        // 添加月份标题到表头
+        months.forEach(month => {
+            const th = document.createElement("th");
+            th.textContent = month;
+            tableHeadRow.appendChild(th);
+        });
+
+        // 动态生成表格内容
+        const categories = [
+            "Income", "Allowance", "Living Expense", "Tuition", "Housing",
+            "Food", "Transportation", "Study Material", "Entertainment",
+            "Personal Care", "Technology", "Apparel", "Travel", "Others"
+        ];
+
+        categories.forEach(category => {
+            const row = document.createElement("tr");
+            const categoryCell = document.createElement("td");
+            categoryCell.textContent = category;
+            row.appendChild(categoryCell);
+
+            // 为每个类别生成对应月份的输入框
+            months.forEach(month => {
+                const cell = document.createElement("td");
+                const input = document.createElement("input");
+                input.type = "number";
+                input.name = `${month}_${category.replace(" ", "")}`;
+                input.style.width = "80%";
+                input.min = "0";
+                input.required = true;
+                cell.appendChild(input);
+                row.appendChild(cell);
+            });
+
+            tableBody.appendChild(row);
+        });
+    });
         
         $(function () {
             const currentMonth = new Date().getMonth() + 1;

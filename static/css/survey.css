@@ -1,0 +1,161 @@
+/* 设置页面整体样式 */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f4ef;
+    color: #5c4a41;
+    margin: 0;
+    padding: 0;
+}
+
+/* Survey 容器样式 */
+#surveyDialog {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px 30px;
+}
+
+/* 标题样式 */
+#surveyDialog h1 {
+    font-size: 24px;
+    color: #8e6e53;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#surveyDialog p {
+    font-size: 16px;
+    margin: 15px 0;
+}
+
+/* 输入框样式 */
+#surveyDialog input[type="number"] {
+    width: 200px;
+    padding: 8px;
+    margin-left: 10px;
+    border: 1px solid #cfcfcf;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+
+#monthlyRecordsTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    text-align: center;
+}
+
+#monthlyRecordsTable thead th {
+    background-color: #e8d8c3;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+}
+
+#monthlyRecordsTable tbody td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+#monthlyRecordsTable input {
+    width: 80%;
+    padding: 5px;
+    border: 1px solid #cfcfcf;
+    border-radius: 5px;
+}
+
+input[type="submit"], button {
+    background-color: #b07a5c;
+    color: white;
+    font-size: 16px;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+input[type="submit"]:hover {
+    background-color: #965d48;
+}
+
+/* 单选按钮和复选框样式 */
+#surveyDialog input[type="radio"], 
+#surveyDialog input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+/* 提示文本样式 */
+#surveyDialog small {
+    display: block;
+    margin-top: 5px;
+    color: #a6857b;
+    font-size: 12px;
+}
+
+/* 隐藏的部分样式 */
+#savingsGoalAmount {
+    margin-top: 10px;
+}
+
+#financialRecords {
+    margin-top: 20px;
+}
+
+/* 复选框跳过样式 */
+#skipFinancialRecords {
+    margin-top: 20px;
+}
+
+/* 调整视图适应不同屏幕 */
+@media screen and (max-width: 768px) {
+    #surveyDialog {
+        padding: 15px;
+    }
+
+    #surveyDialog input[type="number"] {
+        width: 100%;
+    }
+
+    #monthlyRecordsTable {
+        font-size: 12px;
+    }
+}
+
+#financialRecords {
+    max-height: 300px; /* 设置固定高度 */
+    overflow-y: auto; /* 垂直方向滚动 */
+    margin-top: 20px;
+    border: 1px solid #ddd; /* 添加边框 */
+    padding: 10px; /* 内边距 */
+    background-color: #f9f9f9; /* 背景颜色 */
+}
+
+/* 表格样式 */
+#monthlyRecordsTable {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+#monthlyRecordsTable thead th {
+    background-color: #e8d8c3;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    position: sticky; /* 表头固定 */
+    top: 0; /* 表头固定位置 */
+    z-index: 2; /* 表头显示在最上层 */
+}
+
+#monthlyRecordsTable tbody td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+#monthlyRecordsTable input {
+    width: 80%;
+    padding: 5px;
+    border: 1px solid #cfcfcf;
+    border-radius: 5px;
+}

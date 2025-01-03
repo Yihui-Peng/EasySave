@@ -206,9 +206,6 @@ def register():
     return render_template('login.html')
 
 
-
-
-
 # newRecords part
 @app.route('/newRecords', methods=['GET', 'POST'])
 def newRecords():
@@ -343,8 +340,11 @@ def predict():
     # Calculate average prediction for the next month
     predictions = {category: values.mean() for category, values in forecast_results.items()}
 
+    user_id = session.get('user_id')
+    user = User.query.filter_by(user_id=user_id).first()
+
     # Render the predictions on the HTML page
-    return render_template('predict.html', predictions=predictions)
+    return render_template('predict.html', predictions=predictions, user = user)
 
 
 

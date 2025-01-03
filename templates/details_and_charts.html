@@ -3,6 +3,23 @@
 {% block title %}Details and Charts{% endblock %}
 {% block styles %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+
+    <style>
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .block-3 {
+            width: 400px; 
+            margin-top: 20px;
+        }
+
+        #monthlyChart {
+            border: 1px solid #ccc;
+        }
+    </style>
 {% endblock %}
 {% block content %}
 <script>
@@ -51,7 +68,6 @@
             const opt = document.createElement("option");
             opt.value = option.value;
             opt.textContent = option.display;
-            // 保持二级分类的选择
             if (option.value === "{{ selected_category_level_2 }}") {
                 opt.selected = true;
             }
@@ -59,14 +75,13 @@
         });
     }
 
-    // 页面加载时调用函数以更新二级分类并设置选中项
+
     window.onload = function() {
         updateSubcategories();
     };
 </script>
 
 <div class="container">
-    <!-- Start of the form -->
     <form method="POST">
         <div class="category-selection">
             <label for="category_level_1">Category-Level-1:</label>
@@ -80,17 +95,27 @@
     
             <label for="category_level_2">Subcategory-Level-2:</label>
             <select id="category_level_2" name="category_level_2">
-                <!-- 选项由 JavaScript 动态生成 -->
             </select>
         </div>
     
-        <button type="submit">Filter</button>
+        <button type="submit" style="
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px 20px;
+            color: white;
+            background-color: rgba(75, 192, 192, 0.6);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;">
+            Filter
+        </button>
     </form>
-    <!-- End of the form -->
+
 
     <div class="block block-1 spending-summary">
         <h3>Spending Records</h3>
-        <div class="spending-records" id="spending-records" style="overflow-y: auto; max-height: 400px;">
+        <div class="spending-records" id="spending-records" style="overflow-y: auto; max-height: 250px;">
             {% if records %}
                 {% for record in records %}
                     <div class="record">
@@ -106,14 +131,10 @@
         </div>
     </div>
 
-    <div class="block block-2">
-        <h3>Spending Distribution Chart</h3>
-        <canvas id="distributionChart" width="400" height="300"></canvas>
-    </div>
 
     <div class="block block-3">
         <h3>Monthly Spending Chart</h3>
-        <canvas id="monthlyChart" width="400" height="300"></canvas>
+        <canvas id="monthlyChart" width="300" height="250"></canvas>
     </div>
 
     <script>
@@ -122,32 +143,10 @@
         }
     </script>
 
-    <!-- 引入 Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="text/javascript">
         
-        const distributionData = JSON.parse('{{ distribution_data_json | safe }}');
         const monthlyData = JSON.parse('{{ monthly_data_json | safe }}');
-
-        // Spending Distribution Chart
-        const ctx1 = document.getElementById('distributionChart').getContext('2d');
-        const distributionChart = new Chart(ctx1, {
-            type: 'bar',
-            data: {
-                labels: distributionData.labels,
-                datasets: [{
-                    label: 'Number of Users',
-                    data: distributionData.values,
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                }]
-            },
-            options: {
-                scales: {
-                    x: { title: { display: true, text: 'Spending Amount Range' } },
-                    y: { title: { display: true, text: 'Number of Users' } }
-                }
-            }
-        });
 
         // Monthly Spending Chart
         const ctx2 = document.getElementById('monthlyChart').getContext('2d');

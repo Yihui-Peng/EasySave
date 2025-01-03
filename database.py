@@ -54,15 +54,14 @@ class Detail(db.Model):
     
 class Saving_Goal(db.Model):
     __tablename__ = 'saving_goal'
-
     saving_goal_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
     name = db.Column(db.String(200))
-    amount = db.Column(db.Float)
+    amount = db.Column(db.Float, nullable=False, default=0.0)
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
     progress = db.Column(db.String(100))
-    progress_amount = db.Column(db.Float)
+    progress_amount = db.Column(db.Float, nullable=False, default=0.0)
 
     def __repr__(self):
         return f"Saving Goal: {self.saving_goal_id}"
