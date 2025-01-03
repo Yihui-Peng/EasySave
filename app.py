@@ -402,12 +402,10 @@ def details_and_charts():
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id=user_id).first()
 
-    # 初始化变量
     selected_category_level_1 = 'All Spending'
     selected_category_level_2 = 'All'
     user_records = []
     detail_amounts = []
-    distribution_data = {'labels': [], 'values': []}
     monthly_data = {'labels': [], 'values': []}
 
     category_mapping = {
@@ -419,7 +417,6 @@ def details_and_charts():
         'Necessities': {
             'tuition': 'Tuition',
             'housing': 'Housing',
-            'Housing': 'Housing',
             'food': 'Food',
             'transportation': 'Transportation'
         },
@@ -442,11 +439,11 @@ def details_and_charts():
         for subcategories in category_mapping.values()
         for subcategory in subcategories.keys()
     ]
+
     if request.method == 'POST':
         selected_category_level_1 = request.form.get('category_level_1', 'All Spending')
         selected_category_level_2 = request.form.get('category_level_2', 'All')
 
-        # 验证分类
         if selected_category_level_1 != 'All Spending' and selected_category_level_1 not in valid_categories:
             return render_template('details_and_charts.html', user=user, error="Invalid main category"), 400
         if selected_category_level_2 != 'All' and selected_category_level_2 not in valid_subcategories:
@@ -454,32 +451,39 @@ def details_and_charts():
 
         user_records_query = Record.query.filter_by(user_id=user_id)
 
-        if (selected_category_level_2 != 'All' and
-                selected_category_level_2 not in valid_subcategories):
-            return render_template('details_and_charts.html', ...), 400
+        if selected_category_level_1 != 'All Spending':
+            if selected_category_level_2 != 'All':
+                desired_category_str = f"{selected_category_level_1}:{selected_category_level_2}"
+                user_records_query = user_records_query.filter(Record.category == desired_category_str)
+            else:
+                sub_fields = category_mapping.get(selected_category_level_1, {}).keys()
+                cat_list = [f"{selected_category_level_1}:{sub}" for sub in sub_fields]
+                user_records_query = user_records_query.filter(Record.category.in_(cat_list))
+        else:
+            pass
 
         user_records = user_records_query.order_by(Record.date.desc()).all()
 
         all_details = Detail.query.all()
-
         detail_amounts = []
-        for detail in all_details:
+        if selected_category_level_1 != 'All Spending':
             if selected_category_level_2 != 'All':
-                amount = getattr(detail, selected_category_level_2, 0.0)
-                if amount and amount > 0:
-                    detail_amounts.append(amount)
+                for detail in all_details:
+                    amount = getattr(detail, selected_category_level_2, 0.0)
+                    if amount and amount > 0:
+                        detail_amounts.append(amount)
             else:
-                total_amount = sum([
-                    getattr(detail, field, 0.0)
-                    for field in category_mapping.get(selected_category_level_1, {}).keys()
-                ])
-                if total_amount > 0:
-                    detail_amounts.append(total_amount)
+                for detail in all_details:
+                    total_amount = sum([
+                        getattr(detail, field, 0.0)
+                        for field in category_mapping.get(selected_category_level_1, {}).keys()
+                    ])
+                    if total_amount > 0:
+                        detail_amounts.append(total_amount)
+        else:
+            pass
 
         monthly_data = get_monthly_spending_data(user_records)
-
-    else:
-        pass
 
     monthly_data_json = json.dumps(monthly_data)
 
@@ -490,9 +494,10 @@ def details_and_charts():
         selected_category_level_1=selected_category_level_1,
         selected_category_level_2=selected_category_level_2,
         category_mapping=category_mapping,
-        distribution_data_json=json.dumps(distribution_data),
         monthly_data_json=monthly_data_json
     )
+
+
 
 
 @app.route('/setting', methods=['POST'])
