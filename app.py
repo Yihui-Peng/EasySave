@@ -355,21 +355,6 @@ def predict():
     return render_template('predict.html', predictions=predictions, insights=insights, user=user, active_page='predict')
 
 
-def get_distribution_data(amounts):
-    if not amounts:
-        return {'labels': [], 'values': []}
-
-    amounts = np.array(amounts)
-
-    counts, bin_edges = np.histogram(amounts, bins=10)
-    labels = []
-    for i in range(len(bin_edges) - 1):
-        labels.append(f"{bin_edges[i]:.1f}-{bin_edges[i + 1]:.1f}")
-    values = counts.tolist()
-
-    return {'labels': labels, 'values': values}
-
-
 def get_monthly_spending_data(records):
     if not records:
         return {'labels': [], 'values': []}
