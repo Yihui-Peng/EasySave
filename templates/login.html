@@ -27,6 +27,11 @@
         <div id="login-form" class="form active">
             <form action="/login" method="post" class="login-form">
                 <h1>Login</h1>
+
+                {% if error %}
+                    <p style="color: red;">{{ error }}</p>
+                {% endif %}
+
                 <div class="form-group">
                     <label for="username">Username:</label>
                     <input type="text" id="username" name="username" placeholder="Enter your username" required>

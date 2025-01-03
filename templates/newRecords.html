@@ -16,6 +16,13 @@
     {% endif %}
 {% endwith %}
 
+{% if error %}
+<div style="color:red;">
+    {{ error }}
+</div>
+{% endif %}
+
+
     <div class="new-records">
         <h2>Create New Records</h2>
 
