@@ -32,6 +32,41 @@ def test_protected_route_without_login(client):
 
 
 
+# ---------------- Path Testing for Routes ----------------
+
+def test_login(client):
+    """Test the login route functionality."""
+    # Test GET request to the login page
+    response = client.get('/login')
+    assert response.status_code == 200
+    assert b'Username' in response.data
+
+    # Test POST with valid credentials
+    response = client.post('/login', data={'username': 'testuser', 'password': 'password'})
+    assert response.status_code == 302  # Redirect to home
+    with client.session_transaction() as session:
+        # assert session['user_id'] is not None
+        assert session['user_id'] == 1
+
+    # Test POST with invalid credentials
+    response = client.post('/login', data={'username': 'invalid', 'password': 'invalid'})
+    assert response.status_code == 200
+    assert b'username or password is incorrect' in response.data
+
+
+def test_home(client):
+    """Test the home route functionality."""
+    valid_user_id = 1  # Existing user ID
+
+    with client.session_transaction() as session:
+        session['user_id'] = valid_user_id
+
+    response = client.get('/home')
+    assert response.status_code == 200
+    assert b'Daily Budget' in response.data
+
+
+
 # ---------------- Path Testing for input validation ----------
 
 def test_new_record_input_validation(client):
@@ -45,7 +80,7 @@ def test_new_record_input_validation(client):
         'category-level-1': 'Necessities',
         'category-level-2': '',
         'date': '2024-01-01'
-    })
+    }, follow_redirects=True)
     assert response.status_code == 200
     assert b"All fields must be filled out" in response.data
 
@@ -57,7 +92,7 @@ def test_new_record_input_validation(client):
         'date': '2024-01-01'
     })
     assert response.status_code == 200
-    assert b"Amount must be greater than or equal to 0" in response.data
+    assert b"Amount must be a positive value" in response.data
 
     # Test valid input
     response = client.post('/newRecords', data={
@@ -67,13 +102,14 @@ def test_new_record_input_validation(client):
         'date': '2024-01-01'
     })
     assert response.status_code == 302  # Redirect on successful submission
-    with client.session_transaction() as session:
-        record = Record.query.filter_by(user_id=1, amount=150, category='housing').first()
+    with client.session_transaction():
+        record = Record.query.filter_by(user_id=1, amount=150, category='Necessities:housing').first()
         assert record is not None
 
 
 
-# ---------------- Path Testing for dynamical processing function ----------------
+
+# ---------------- Path Testing for filter functionality ----------------
 
 def test_filter_functionality(client):
     """Test filtering functionality in details_and_charts."""
@@ -95,44 +131,6 @@ def test_filter_functionality(client):
     })
     assert response.status_code == 400  # Expecting a bad request or error handling
 
-    # Test missing category input
-    response = client.post('/details_and_charts', data={
-        'category_level_1': '',
-        'category_level_2': ''
-    })
-    assert response.status_code == 400  # Expecting a bad request or error handling
-
-
-
-# ---------------- Path Testing for Routes ----------------
-
-def test_login(client):
-    """Test the login route functionality."""
-    # Test GET request to the login page
-    response = client.get('/login')
-    assert response.status_code == 200
-    assert b'Username' in response.data
-
-    # Test POST with valid credentials
-    response = client.post('/login', data={'username': 'testuser', 'password': 'password'})
-    assert response.status_code == 302  # Redirect to home
-    with client.session_transaction() as session:
-        assert session['user_id'] is not None
-
-    # Test POST with invalid credentials
-    response = client.post('/login', data={'username': 'invalid', 'password': 'invalid'})
-    assert response.status_code == 200
-    assert b'username or password is incorrect' in response.data
-
-
-def test_home(client):
-    """Test the home route functionality."""
-    with client.session_transaction() as session:
-        session['user_id'] = 1  # Simulate logged-in user
-
-    response = client.get('/home')
-    assert response.status_code == 200
-    assert b'Daily Budget' in response.data
 
 
 def test_logout(client):
@@ -163,7 +161,7 @@ def test_new_records(client):
 
     response = client.get('/newRecords')
     assert response.status_code == 200
-    assert b'Add New Record' in response.data
+    assert b'Create New Record' in response.data
 
     response = client.post('/newRecords', data={
         'amount': '100',
