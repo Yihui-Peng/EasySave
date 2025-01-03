@@ -1,0 +1,12 @@
+Flask==3.1.0
+Flask_Migrate==4.0.7
+flask_sqlalchemy==3.1.1
+numpy==2.2.1
+pandas==2.2.3
+pytest==8.3.3
+Requests==2.32.3
+scipy==1.15.0
+selenium==4.27.1
+SQLAlchemy==2.0.36
+statsmodels==0.14.4
+Werkzeug==3.1.3
