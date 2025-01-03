@@ -1,4 +1,0 @@
-Bug Fiexed by Path Test:
-1. Fixed the prompt text of the /login route when login fails. The test code expects the words "username or password is incorrect" to be included in the returned page.
-2. Make sure the words "Daily Budget" appear on the home page to pass the path test, I changed the title from "Today's Budget" to "Daily Budget"
-3. Displays the error text passed by the back-end in newRecords.html. In the /newRecords route, ensure that status code 200 is returned with an error message when form validation fails, rather than direct redirection.
