@@ -23,7 +23,7 @@
             <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block sidebar">
     <div class="position-sticky">
         <div class="text-center py-4">
-            <h4><a href="/home" class="text-decoration-none text-dark">Easy Save</a></h4>
+            <h4><a href="/home" class="text-decoration-none text-dark">EasySave</a></h4>
             <img src="{{ url_for('static', filename='profile_pictures/' ~ (user.profile_picture | default('default_picture.png'))) }}?t={{ config['SEND_FILE_MAX_AGE_DEFAULT'] }}"
                  alt="Profile Picture" class="rounded-circle mb-3" width="100">
         </div>
