@@ -1,35 +1,32 @@
 import os
-from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify, abort
-from database import db, Detail, User, Saving_Goal, Record
-from datetime import timedelta, datetime
 import re
 import time
-from sqlalchemy import func, inspect
+import warnings
+from datetime import timedelta, datetime
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
+from database import db, Detail, User, Saving_Goal, Record
+import pandas as pd
+import numpy as np
+import json
+from sqlalchemy import func
 from import_database import initialize_database
 from user_profile import get_user, handle_user_profile_update
 from flask_migrate import Migrate
-import matplotlib.pyplot as plt
 from budget_allocation_algorithm.budget_allocation_algorithm import fetch_combined_financial_data, allocate_budget, generate_insights
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tools.sm_exceptions import ConvergenceWarning
-import warnings
-import pandas as pd
-import numpy as np
-import json
 from budget_allocation_algorithm.daily_budget_algorithm import generate_daily_budget
-
 
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/profile_pictures')
 
-#database connection
+#Database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
-
 migrate = Migrate(app, db)
 
 with app.app_context():
@@ -47,8 +44,6 @@ with app.app_context():
         else:
             print("Database already initialized, no need to import CSV.")
 
-
-# 11111 question: we should make the format between newRecords and get_data the same, and make sure user_id been used in the same way
 @app.route('/data')
 def get_data():
     with app.app_context():
