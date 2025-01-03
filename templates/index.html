@@ -17,7 +17,9 @@
                 {% set ns.total_amount = ns.total_amount + record.amount %}        
             {% endif %}
         {% endfor %}
-        <h1>Today's Budget</h1>
+
+        <h2 style="color: #333;">Daily Budget</h2>
+
         <h2 class="buget-text">
             <span id="spent" style="color: #58A778;">{{ ns.total_amount }}</span> 
             / 
