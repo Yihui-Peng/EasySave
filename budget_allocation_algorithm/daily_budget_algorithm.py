@@ -107,11 +107,29 @@ def calculate_daily_budget(user_financial_data):
 
     return max(daily_budget, 0.0)
 
-def generate_daily_budget(user_id, db_session: Session):
-    user_financial_data = fetch_user_financial_data(user_id, db_session)
-    if not user_financial_data:
-        raise ValueError("Insufficient financial data for user.")
 
-    daily_budget = calculate_daily_budget(user_financial_data)
+def generate_daily_budget(user_id, db_session: Session):
+    """
+    Generates the daily budget for a user.
+    If no financial data is available, defaults to average_income / 31.
+    """
+    user_financial_data = fetch_user_financial_data(user_id, db_session)
+
+    if not user_financial_data:
+        # Fetch the user to get average_income
+        user = db_session.query(User).filter_by(user_id=user_id).first()
+        if user and user.average_income:
+            daily_budget = user.average_income / 31
+            print(f"[DEBUG] No Detail records found. Using fallback daily_budget: {daily_budget}")
+        else:
+            # Handle cases where average_income is not set
+            daily_budget = 0.0
+            print("[DEBUG] No Detail records found and average_income is missing. Setting daily_budget to 0.0")
+    else:
+        # Calculate daily_budget using the existing financial data
+        daily_budget = calculate_daily_budget(user_financial_data)
+        print(f"[DEBUG] Calculated daily_budget from financial data: {daily_budget}")
+
     return round(daily_budget, 2)
+
 
