@@ -17,6 +17,8 @@ import warnings
 import pandas as pd
 import numpy as np
 import json
+from budget_allocation_algorithm.daily_budget_algorithm import generate_daily_budget
+
 
 
 app = Flask(__name__)
@@ -137,15 +139,9 @@ def home():
     else:
         savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
 
-    # Allocate budget
-    allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
-
-    # Generate insights
-    insights = generate_insights(allocations, category_averages)
-
     # Calculate daily budget (sum of allocations excluding 'Savings')
-    daily_budget = sum(amount for category, amount in allocations.items() if category != 'Savings')
-    print(f"[DEBUG] Daily Budget: {daily_budget}")
+    daily_budget = generate_daily_budget(user_id, db.session)
+    print(f"[DEBUG] Daily Budget (from daily_budget_algorithm): {daily_budget}")
 
     return render_template(
         'index.html',
@@ -153,8 +149,6 @@ def home():
         user=user,
         spending=spending,
         savingGoals=savingGoals,
-        allocations=allocations,
-        insights=insights,
         daily_budget=round(daily_budget, 2),
         today_records = today_records, 
         achievedGoals = achievedGoals
@@ -779,8 +773,13 @@ def survey():
                         amount = request.form.get(f'{month_name}_{category}', 0.0)
                         if amount == '':
                             amount = 0.0
-                        detail_data[category.lower()] = float(amount)
-                        print(f"[DEBUG] Retrieved amount for {month_name}_{category}: {amount}")  # 调试输出
+                        # BUG FIXING
+                        column_name = category.lower().replace('livingexpense', 'living_expense') \
+                            .replace('studymaterial', 'study_materials') \
+                            .replace('personalcare', 'personal_care')
+                        detail_data[column_name] = float(amount)
+
+                    print(f"[DEBUG] Retrieved amount for {month_name}_{category}: {amount}")  # 调试输出
 
                     # 创建新的 Detail 实例并保存
                     new_detail = Detail(**detail_data)
