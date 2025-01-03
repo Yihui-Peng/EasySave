@@ -111,13 +111,12 @@ def home():
 
     # Fetch the latest saving goal
     savingGoal = Saving_Goal.query.filter_by(user_id=user.user_id).order_by(Saving_Goal.end_date.desc()).first()
-
-
     savingGoals = Saving_Goal.query.filter_by(user_id = user.user_id).limit(3).all()
     achievedGoals = Saving_Goal.query.filter(
         Saving_Goal.user_id == user.user_id,
         Saving_Goal.progress == "finished"
         ).order_by(Saving_Goal.end_date.desc()).limit(3).all()
+
     # Fetch combined financial datas
     category_averages = fetch_combined_financial_data(user_id, db.session)
     print(f"[DEBUG] Category Averages: {category_averages}")
@@ -132,9 +131,9 @@ def home():
     if savingGoal:
         savings_goal = savingGoal.amount
     else:
-        savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
+        savings_goal = avg_disposable_income * 0.20  # Default 20% if no goal set
 
-    # Calculate daily budget (sum of allocations excluding 'Savings')
+    # Calculate daily budget from algorithm
     daily_budget = generate_daily_budget(user_id, db.session)
     print(f"[DEBUG] Daily Budget (from daily_budget_algorithm): {daily_budget}")
 
@@ -199,8 +198,6 @@ def register():
     return render_template('login.html')
 
 
-
-# newRecords part
 @app.route('/newRecords', methods=['GET', 'POST'])
 def newRecords():
     if 'user_id' not in session:
@@ -343,12 +340,20 @@ def predict():
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id=user_id).first()
 
+    # Handle None values for income and aggregate saving goals
+    avg_disposable_income = user.average_income or 0.0
+
+    # Summing the progress amounts of all saving goals
+    total_savings_goal = sum(goal.amount for goal in user.saving_goals if goal.amount) or avg_disposable_income * 0.2
+
+    # Generate budget allocations based on predictions
+    allocations = allocate_budget(avg_disposable_income, total_savings_goal, predictions)
+
+    # Generate insights from budget allocations
+    insights = generate_insights(allocations, predictions)
 
     # Render the predictions on the HTML page
-    return render_template('predict.html', predictions=predictions, user = user)
-
-
-
+    return render_template('predict.html', predictions=predictions, insights=insights, user=user, active_page='predict')
 
 
 def get_distribution_data(amounts):
@@ -364,9 +369,6 @@ def get_distribution_data(amounts):
     values = counts.tolist()
 
     return {'labels': labels, 'values': values}
-
-
-
 
 
 def get_monthly_spending_data(records):
@@ -518,6 +520,7 @@ def delete_account():
         db.session.rollback()
         flash(f"An error occurred: {str(e)}", "danger")
         return redirect(url_for('login'))
+
 
 #Adding saving goals
 @app.route('/savingGoal', methods=['GET', 'POST'])

@@ -172,8 +172,7 @@ def generate_insights(allocations, category_averages):
     print(f"[DEBUG] Total Allocated in Insights: {total_allocated}")
 
     if total_allocated == 0:
-        insights.append("No budget allocations available to generate insights.")
-        return insights
+        return []
 
     # Example Insight 1: High spending categories
     high_spending_threshold = 0.15  # 15%
