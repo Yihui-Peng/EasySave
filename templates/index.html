@@ -68,7 +68,7 @@
 
                 {% for record in today_records %}
                     {% if record.category not in ["allowance", "income", "living_expenses"] %}
-                        {% set percentage = (((record.amount / budget) * 100) | round) %}
+                        {% set percentage = 0 if budget == 0 else (((record.amount / budget) * 100) | round) %}
                         {% set filled_length = (percentage / 100) * circumference %}
                         {% set stroke_dasharray = "{} {}".format(filled_length, circumference) %}
                         {% if  ns.prev_filled_length == 0 %}
