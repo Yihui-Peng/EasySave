@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify， abort
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify, abort
 from database import db, Detail, User, Saving_Goal, Record
 from datetime import timedelta, datetime
 import re
@@ -106,7 +106,6 @@ def home():
 
     #Fetch the latest spending record
     spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.date.desc()).limit(3).all()
-    # 查询今天的所有记录
     today = datetime.now().date()
     today_records = Record.query.filter(
         Record.user_id == user.user_id,
@@ -164,19 +163,24 @@ def home():
         today_records = today_records, 
         achievedGoals = achievedGoals
     )
+
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
+        
         if user and user.password == password:
             session['user_id'] = user.user_id
             return redirect(url_for('home'))
         else:
-            flash('username or password is incorrect ', 'error')
-            return redirect(url_for('login'))
+            return render_template('login.html', error="username or password is incorrect"), 200
     return render_template('login.html')
+
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -212,14 +216,15 @@ def register():
 
 
 
-
 # newRecords part
 @app.route('/newRecords', methods=['GET', 'POST'])
 def newRecords():
     if 'user_id' not in session:
-        return render_template('login.html')
+        return render_template('login.html', error="Please log in to access this page"), 200
+
     user_id = session.get('user_id')
-    user = User.query.filter_by(user_id = user_id).first()
+    user = User.query.filter_by(user_id=user_id).first()
+
     if request.method == 'POST':
         amount = request.form.get('amount')
         category_level_1 = request.form.get('category-level-1')
@@ -227,36 +232,38 @@ def newRecords():
         date = request.form.get('date')
         note = request.form.get('note')
 
-
         if not amount or not category_level_1 or not category_level_2 or not date:
-            flash('Please fill out all required fields', 'error')
-            return redirect(url_for('newRecords'))
+            return render_template('newRecords.html', user=user, error="All fields are required"), 200
 
-        # Make category level 1 and 2 to one categorie,  eg. Necessities: Housing
-        category=f"{category_level_1}:{category_level_2}"
+        try:
+            amount_value = float(amount)
+            if amount_value <= 0:
+                return render_template('newRecords.html', user=user, error="Amount must be a positive value"), 200
+        except ValueError:
+            return render_template('newRecords.html', user=user, error="Amount must be a valid number"), 200
 
         try:
             date_obj = datetime.strptime(date, '%Y-%m-%d')
         except ValueError:
-            flash('Invalid date format', 'error')
-            return redirect(url_for('newRecords'))
+            return render_template('newRecords.html', user=user, error="Invalid date format. Use YYYY-MM-DD"), 200
+
+        category = f"{category_level_1}:{category_level_2}"
 
         new_record = Record(
-            amount=round(float(amount),2),
+            amount=round(amount_value, 2),
             category=category,
             date=date_obj,
             note=note,
             user_id=user_id
-            )
+        )
 
         db.session.add(new_record)
         db.session.commit()
 
-        # flash('New record added successfully', 'success')
-        # return redirect(url_for('newRecords'))
         return redirect(url_for('newRecords', added=True))
 
     return render_template('newRecords.html', active_page='newRecords', user=user)
+
 
 
 def generate_and_forecast_spending_data(start_date, end_date, forecast_days=30):
@@ -339,6 +346,8 @@ def generate_and_forecast_spending_data(start_date, end_date, forecast_days=30):
 
     return forecast_results
 
+
+
 @app.route('/predict', methods=['GET'])
 def predict():
     # Call the function to generate predictions
@@ -374,6 +383,8 @@ def predict():
     # Render the predictions on the HTML page
     return render_template('predict.html', predictions=predictions, insights = insights, user = user, active_page='predict')
 
+
+
 def get_monthly_spending_data(records):
     if not records:
         return {'labels': [], 'values': []}
@@ -398,11 +409,11 @@ def get_monthly_spending_data(records):
     return {'labels': labels, 'values': values}
 
 
-
 @app.route('/details_and_charts', methods=['GET', 'POST'])
 def details_and_charts():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id=user_id).first()
 
@@ -421,6 +432,7 @@ def details_and_charts():
         'Necessities': {
             'tuition': 'Tuition',
             'housing': 'Housing',
+            'Housing': 'Housing',
             'food': 'Food',
             'transportation': 'Transportation'
         },
@@ -437,26 +449,32 @@ def details_and_charts():
         }
     }
 
+    valid_categories = list(category_mapping.keys())
+    valid_subcategories = [
+        subcategory
+        for subcategories in category_mapping.values()
+        for subcategory in subcategories.keys()
+    ]
     if request.method == 'POST':
-
         selected_category_level_1 = request.form.get('category_level_1', 'All Spending')
         selected_category_level_2 = request.form.get('category_level_2', 'All')
 
+        # 验证分类
+        if selected_category_level_1 != 'All Spending' and selected_category_level_1 not in valid_categories:
+            return render_template('details_and_charts.html', user=user, error="Invalid main category"), 400
+        if selected_category_level_2 != 'All' and selected_category_level_2 not in valid_subcategories:
+            return render_template('details_and_charts.html', user=user, error="Invalid subcategory"), 400
 
         user_records_query = Record.query.filter_by(user_id=user_id)
 
-        if selected_category_level_2 != 'All':
-            # 拼接分类名称（Category Level 1: Category Level 2）
-            selected_category = f"{selected_category_level_1}:{selected_category_level_2}"
-            user_records_query = user_records_query.filter(Record.category == selected_category)
+        if (selected_category_level_2 != 'All' and
+            selected_category_level_2 not in valid_subcategories):
+            return render_template('details_and_charts.html', ...), 400
 
-        # 获取用户的消费记录，按照日期降序排序
         user_records = user_records_query.order_by(Record.date.desc()).all()
 
-        # 获取所有用户的 Detail 数据
         all_details = Detail.query.all()
 
-        # 从 Detail 中提取数据用于正态分布图
         detail_amounts = []
         for detail in all_details:
             if selected_category_level_2 != 'All':
@@ -464,7 +482,6 @@ def details_and_charts():
                 if amount and amount > 0:
                     detail_amounts.append(amount)
             else:
-                # 如果选择了 "All"，累加一级分类下所有分类的金额
                 total_amount = sum([
                     getattr(detail, field, 0.0)
                     for field in category_mapping.get(selected_category_level_1, {}).keys()
@@ -472,15 +489,11 @@ def details_and_charts():
                 if total_amount > 0:
                     detail_amounts.append(total_amount)
 
-
-        # 获取月度消费数据
         monthly_data = get_monthly_spending_data(user_records)
 
     else:
-        # 对于 GET 请求，可以保留初始化的空列表，或者根据需要提供初始数据
-        pass  # detail_amounts 已在函数开头初始化为空列表
+        pass
 
-    # 序列化数据
     monthly_data_json = json.dumps(monthly_data)
 
     return render_template(
@@ -492,7 +505,6 @@ def details_and_charts():
         category_mapping=category_mapping,
         monthly_data_json=monthly_data_json
     )
-
 
 
 #Adding saving goals
@@ -843,10 +855,13 @@ def budget_allocation():
     # For GET request, render a simple form or page
     return render_template('budget.html')
 
+
+
 @app.route('/logout')
 def logout():
-    session['user_id'] = None
+    session.clear()
     return redirect(url_for('login'))
+
 
 
 #Needed for profile picture
