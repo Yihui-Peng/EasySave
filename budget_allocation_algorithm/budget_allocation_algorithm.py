@@ -9,7 +9,6 @@ def fetch_combined_financial_data(user_id, db_session: Session):
     """
     Fetch and combine financial data for a specific user from the database.
     """
-    # Fetch Detail records for the user
     db_records = db_session.query(
         Detail.income,
         Detail.allowance,
@@ -79,10 +78,7 @@ def fetch_combined_financial_data(user_id, db_session: Session):
     return category_averages
 
 def allocate_budget(avg_disposable_income, savings_goal, category_averages):
-    """
-    Allocate the budget based on disposable income, savings goal, and average category spending.
-    Implements the 50/30/20 rule as a base and adjusts based on user data.
-    """
+    #Allocate the budget based on disposable income, savings goal, and average category spending.
     import logging
     logger = logging.getLogger(__name__)
 
@@ -174,7 +170,7 @@ def generate_insights(allocations, category_averages):
     if total_allocated == 0:
         return []
 
-    # Example Insight 1: High spending categories
+    # Insight 1: High spending categories
     high_spending_threshold = 0.15  # 15%
     for category, allocated in allocations.items():
         if category == 'Savings':
@@ -183,11 +179,11 @@ def generate_insights(allocations, category_averages):
         if proportion > high_spending_threshold:
             insights.append(f"Consider reviewing your spending on {category}, as it consumes a significant portion of your budget.")
 
-    # Example Insight 2: Low savings
+    # Insight 2: Low savings
     if allocations.get('Savings', 0) < (sum(allocations.values()) * 0.20):
         insights.append("Your savings allocation is below the recommended 20%. Try to increase your savings to build a stronger financial foundation.")
 
-    # Example Insight 3: Balanced Budget
+    # Insight 3: Balanced Budget
     if not insights:
         insights.append("Great job! Your budget allocations follow recommended financial guidelines.")
 
