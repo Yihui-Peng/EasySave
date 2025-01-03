@@ -11,7 +11,7 @@
     <!-- Today's Budget -->
     <div>
         {% set budget = daily_budget if daily_budget != 0 else 95 %}
-        {% set ns = namespace(total_amount=0) %}  <!-- 使用 namespace 来声明 total_amount -->
+        {% set ns = namespace(total_amount=0) %}
         {% for record in today_records %}
             {% if record.category not in ["allowance", "income", "living_expenses"] %}  
                 {% set ns.total_amount = ns.total_amount + record.amount %}        

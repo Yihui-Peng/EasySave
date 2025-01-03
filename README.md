@@ -5,15 +5,23 @@
 
 EasySave is a web-based app that aims to educate and assist students in creating personalized savings plans by analyzing their past spending behavior and providing actionable insights. The software will give personalized recommendations on saving, compare users' spending to peers, and offer a daily spending limit in order to allow users to reach their savings goals.
 
+## Features
+- **Personalized Savings Plans**: Tailored recommendations based on your income and spending habits.
+- **Daily Spending Limit**: Automatically calculated to help you stay within your savings goals.
+- **Real-Time Updates**: Graphics and data automatically update as you log new spending.
+- **Peer Comparison**: Compare your spending habits with others in the same demographic.
+
 
 ## Table of Contents
 
 1. Installation
 2. Usage
-3. License
-4. Authors and Acknowledgment
-5. Roadmap
-6. Support
+3. Screenshots
+4. Demo
+5. License
+6. Authors and Acknowledgment
+7. Roadmap
+8. Support
 
 ## Installation
 To run this app locally:
@@ -40,26 +48,26 @@ Start the local server:
 python app.py
 ```
 
-
 4. Access the app:
 Open your browser and navigate to:
 http://127.0.0.1:5000/
 
+
+
 ## Usage 
 
-1. Create a Profile:
+### Usage: Getting Started
 
-Register for a new account. Choose a unique username, input your email address, and create a password.
+#### 1. Create a Profile  
+Register for a new account by choosing a unique username, inputting your email address, and creating a password.  
+#### 2. Initial Setup  
+After registration, complete the **Financial Survey** by providing your income details and spending habits. This information helps the system understand your financial situation.  
+#### 3. Building Your Savings Insights  
+To generate meaningful insights and personalized daily budgets, the system requires at least a few months of spending data. Initially, log your expenses by pressing the **"Add New Records"** button at the top of the page. Over time, as more spending data is recorded, the app will automatically generate personalized savings plans and daily budgets, which will appear on the home page.  
+#### 4. Track and Adjust  
+Monitor your financial progress on the home page, where graphics and data update in real time based on your input. Continue logging expenses to refine your personalized recommendations and stay on track with your savings goals.  
 
-2. Fill in the Financial Survey:
-
-Press the "Financial Survey" button at the top of the page, and fill in the form according to your situation.
-
-3. Use the app and record new spendings:
-
-Based on your income and past spending, you will see your automatically generated daily budget on the home page. 
-Enter new spendings by pressing the "Add New Records" button at the top of the page. You will see that the graphic
-on the home page automatically updates based on your input.
+### Usage: Home page
 
 
 ## License 

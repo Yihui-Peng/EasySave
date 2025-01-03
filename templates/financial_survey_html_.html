@@ -10,6 +10,7 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 </head>
 <body>
+    <img src="{{ url_for('static', filename='logo.png')}}" alt="Logo" id="topLeftImage">
     <div id="surveyDialog" title="Financial Survey">
         <form id="financialSurveyForm" action="/survey" method="post">
             <!-- Question 1 (Merged) -->
@@ -35,112 +36,13 @@
                     <thead>
                         <tr>
                             <th>Category</th>
-                            <!-- 月份标题将由 JavaScript 动态生成 -->
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- 示例行，完整行将在 JavaScript 中动态生成 -->
                         <tr>
                         </tr>
                     </tbody>
                 </table>
-                <!-- <table id="monthlyRecordsTable">
-                    <thead>
-                        <tr>
-                            <th>Category</th>
-                            <th>October</th>
-                            <th>September</th>
-                            <th>August</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Income</td>
-                            <td><input type="number" name="October_Income" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_Income" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_Income" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Allowance</td>
-                            <td><input type="number" name="October_Allowance" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_Allowance" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_Allowance" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Living Expense</td>
-                            <td><input type="number" name="October_LivingExpense" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_LivingExpense" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_LivingExpense" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Tuition</td>
-                            <td><input type="number" name="October_Tuition" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_Tuition" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_Tuition" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Housing</td>
-                            <td><input type="number" name="October_Housing" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_Housing" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_Housing" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Food</td>
-                            <td><input type="number" name="October_Food" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_Food" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_Food" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Transportation</td>
-                            <td><input type="number" name="October_Transportation" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_Transportation" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_Transportation" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Study Material</td>
-                            <td><input type="number" name="October_StudyMaterial" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_StudyMaterial" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_StudyMaterial" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Entertainment</td>
-                            <td><input type="number" name="October_Entertainment" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_Entertainment" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_Entertainment" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Personal Care</td>
-                            <td><input type="number" name="October_PersonalCare" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_PersonalCare" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_PersonalCare" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Technology</td>
-                            <td><input type="number" name="October_Technology" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_Technology" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_Technology" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Apparel</td>
-                            <td><input type="number" name="October_Apparel" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_Apparel" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_Apparel" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Travel</td>
-                            <td><input type="number" name="October_Travel" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_Travel" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_Travel" style="width: 60%;" min="0" required></td>
-                        </tr>
-                        <tr>
-                            <td>Others</td>
-                            <td><input type="number" name="October_Others" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="September_Others" style="width: 60%;" min="0" required></td>
-                            <td><input type="number" name="August_Others" style="width: 60%;" min="0" required></td>
-                        </tr>
-                    </tbody>
-                 </table> -->
-               
 
             </div>
             <label><input type="checkbox" id="skipFinancialRecords" name="skipFinancialRecords" value="yes"> Skip</label>

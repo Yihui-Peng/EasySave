@@ -65,8 +65,8 @@ body {
     width: 100px;
     height: 100px;
     object-fit: cover;
-    border: 2px solid var(--primary-color);
 }
+
 
 /* Main Content Styles */
 main {

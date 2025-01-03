@@ -499,7 +499,7 @@ def details_and_charts():
         selected_category_level_1=selected_category_level_1,
         selected_category_level_2=selected_category_level_2,
         category_mapping=category_mapping,
-        distribution_data_json=distribution_data_json,
+        # distribution_data_json=distribution_data_json,
         monthly_data_json=monthly_data_json
     )
 
@@ -779,8 +779,13 @@ def survey():
                         amount = request.form.get(f'{month_name}_{category}', 0.0)
                         if amount == '':
                             amount = 0.0
-                        detail_data[category.lower()] = float(amount)
-                        print(f"[DEBUG] Retrieved amount for {month_name}_{category}: {amount}")  # 调试输出
+                        # BUG FIXING
+                        column_name = category.lower().replace('livingexpense', 'living_expense') \
+                            .replace('studymaterial', 'study_materials') \
+                            .replace('personalcare', 'personal_care')
+                        detail_data[column_name] = float(amount)
+
+                    print(f"[DEBUG] Retrieved amount for {month_name}_{category}: {amount}")  # 调试输出
 
                     # 创建新的 Detail 实例并保存
                     new_detail = Detail(**detail_data)
