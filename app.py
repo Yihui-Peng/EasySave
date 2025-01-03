@@ -348,6 +348,7 @@ def predict():
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id=user_id).first()
 
+
     # Render the predictions on the HTML page
     return render_template('predict.html', predictions=predictions, user = user)
 
@@ -493,7 +494,7 @@ def details_and_charts():
         selected_category_level_1=selected_category_level_1,
         selected_category_level_2=selected_category_level_2,
         category_mapping=category_mapping,
-        distribution_data_json=distribution_data_json,
+        distribution_data_json=json.dumps(distribution_data),
         monthly_data_json=monthly_data_json
     )
 
