@@ -26,7 +26,6 @@
                 </a>
     <div class="position-sticky">
         <div class="text-center py-4">
-            
             <img src="{{ url_for('static', filename='profile_pictures/' ~ (user.profile_picture | default('default_picture.png'))) }}?t={{ config['SEND_FILE_MAX_AGE_DEFAULT'] }}"
                  alt="Profile Picture" class="rounded-circle mb-3" width="100">
         </div>

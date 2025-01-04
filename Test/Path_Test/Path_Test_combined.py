@@ -119,7 +119,7 @@ def test_filter_functionality(client):
     # Test valid category selection
     response = client.post('/details_and_charts', data={
         'category_level_1': 'Necessities',
-        'category_level_2': 'Housing'
+        'category_level_2': 'housing'
     })
     assert response.status_code == 200
     assert b"Housing" in response.data  # Check if response contains "Housing"

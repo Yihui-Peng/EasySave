@@ -37,10 +37,14 @@
 
     <h2 class="mt-5">Insights</h2>
     <p>Based on your spending predictions and past data, here are some suggestions:</p>
-    <ul class="list-group">
-        {% for insight in insights %}
-        <li class="list-group-item">{{ insight }}</li>
-        {% endfor %}
-    </ul>
+    {% if insights %}
+        <ul class="list-group">
+            {% for insight in insights %}
+            <li class="list-group-item">{{ insight }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">No insights are currently available. Keep tracking your spending for more personalized suggestions in the future.</p>
+    {% endif %}
 </div>
 {% endblock %}

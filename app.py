@@ -1,44 +1,43 @@
 import os
-from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify, abort
-from database import db, Detail, User, Saving_Goal, Record
-from datetime import timedelta, datetime
 import re
 import time
-from sqlalchemy import func, inspect
-from import_database import initialize_database
-from user_profile import get_user, handle_user_profile_update
-from flask_migrate import Migrate
-import matplotlib.pyplot as plt
-from budget_allocation_algorithm.budget_allocation_algorithm import fetch_combined_financial_data, allocate_budget, generate_insights
-from statsmodels.tsa.arima.model import ARIMA
-from statsmodels.tsa.stattools import adfuller
-from statsmodels.tools.sm_exceptions import ConvergenceWarning
 import warnings
+from datetime import timedelta, datetime
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
+from database import db, Detail, User, Saving_Goal, Record
 import pandas as pd
 import numpy as np
 import json
-
+from sqlalchemy import func
+from import_database import initialize_database
+from user_profile import get_user, handle_user_profile_update
+from flask_migrate import Migrate
+from budget_allocation_algorithm.budget_allocation_algorithm import fetch_combined_financial_data, allocate_budget, \
+    generate_insights
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.tools.sm_exceptions import ConvergenceWarning
+from budget_allocation_algorithm.daily_budget_algorithm import generate_daily_budget
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/profile_pictures')
 
-#database connection
+# Database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
-
 migrate = Migrate(app, db)
 
 with app.app_context():
-    # Check db file exists or not 
+    # Check db file exists or not
     if not os.path.exists(os.path.join('instance', 'data.db')):
         # create the db file and import database
         db.create_all()
         initialize_database()
         print("Database and data initialized.")
     else:
-        #Check the table exists or not 
+        # Check the table exists or not
         if not Detail.query.first():
             initialize_database()
             print("Data imported into existing database.")
@@ -46,7 +45,6 @@ with app.app_context():
             print("Database already initialized, no need to import CSV.")
 
 
-# 11111 question: we should make the format between newRecords and get_data the same, and make sure user_id been used in the same way
 @app.route('/data')
 def get_data():
     with app.app_context():
@@ -92,9 +90,11 @@ def get_data():
 
     return '<br>'.join(result)
 
+
 @app.route('/')
 def loginPage():
     return render_template('login.html')
+
 
 @app.route('/home')
 def home():
@@ -104,8 +104,8 @@ def home():
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id=user_id).first()
 
-    #Fetch the latest spending record
-    spending = Record.query.filter_by(user_id = user.user_id).order_by(Record.date.desc()).limit(3).all()
+    # Fetch the latest spending record
+    spending = Record.query.filter_by(user_id=user.user_id).order_by(Record.date.desc()).limit(3).all()
     today = datetime.now().date()
     today_records = Record.query.filter(
         Record.user_id == user.user_id,
@@ -114,13 +114,12 @@ def home():
 
     # Fetch the latest saving goal
     savingGoal = Saving_Goal.query.filter_by(user_id=user.user_id).order_by(Saving_Goal.end_date.desc()).first()
-
-
-    savingGoals = Saving_Goal.query.filter_by(user_id = user.user_id).limit(3).all()
+    savingGoals = Saving_Goal.query.filter_by(user_id=user.user_id).limit(3).all()
     achievedGoals = Saving_Goal.query.filter(
         Saving_Goal.user_id == user.user_id,
         Saving_Goal.progress == "finished"
-        ).order_by(Saving_Goal.end_date.desc()).limit(3).all()
+    ).order_by(Saving_Goal.end_date.desc()).limit(3).all()
+
     # Fetch combined financial datas
     category_averages = fetch_combined_financial_data(user_id, db.session)
     print(f"[DEBUG] Category Averages: {category_averages}")
@@ -135,17 +134,11 @@ def home():
     if savingGoal:
         savings_goal = savingGoal.amount
     else:
-        savings_goal = avg_disposable_income * 0.20  # Default to 20% if no goal set
+        savings_goal = avg_disposable_income * 0.20  # Default 20% if no goal set
 
-    # Allocate budget
-    allocations = allocate_budget(avg_disposable_income, savings_goal, category_averages)
-
-    # Generate insights
-    insights = generate_insights(allocations, category_averages)
-
-    # Calculate daily budget (sum of allocations excluding 'Savings')
-    daily_budget = sum(amount for category, amount in allocations.items() if category != 'Savings')
-    print(f"[DEBUG] Daily Budget: {daily_budget}")
+    # Calculate daily budget from algorithm
+    daily_budget = generate_daily_budget(user_id, db.session)
+    print(f"[DEBUG] Daily Budget (from daily_budget_algorithm): {daily_budget}")
 
     return render_template(
         'index.html',
@@ -153,13 +146,10 @@ def home():
         user=user,
         spending=spending,
         savingGoals=savingGoals,
-        allocations=allocations,
-        insights=insights,
         daily_budget=round(daily_budget, 2),
-        today_records = today_records, 
-        achievedGoals = achievedGoals
+        today_records=today_records,
+        achievedGoals=achievedGoals
     )
-
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -168,14 +158,13 @@ def login():
         username = request.form['username']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
-        
+
         if user and user.password == password:
             session['user_id'] = user.user_id
             return redirect(url_for('home'))
         else:
             return render_template('login.html', error="username or password is incorrect"), 200
     return render_template('login.html')
-
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -192,12 +181,12 @@ def register():
         if not re.match(r"[^@]+@[^@]+\.[^@]+", emailaddress):
             flash('Invalid email address.')
             return render_template('login.html', show_register=True)
-        
+
         existing_user = User.query.filter((User.username == username) | (User.emailaddress == emailaddress)).first()
         if existing_user:
             flash('Username or email already exists', 'error')
             return render_template('login.html', show_register=True)
-        
+
         new_user = User(username=username, emailaddress=emailaddress, password=password)
         db.session.add(new_user)
         db.session.commit()
@@ -210,8 +199,6 @@ def register():
     return render_template('login.html')
 
 
-
-# newRecords part
 @app.route('/newRecords', methods=['GET', 'POST'])
 def newRecords():
     if 'user_id' not in session:
@@ -260,7 +247,6 @@ def newRecords():
     return render_template('newRecords.html', active_page='newRecords', user=user)
 
 
-
 def generate_and_forecast_spending_data(start_date, end_date, forecast_days=30):
     """
     Generate mock spending data and perform ARIMA forecasting for each category.
@@ -284,9 +270,9 @@ def generate_and_forecast_spending_data(start_date, end_date, forecast_days=30):
         'Living_expense': np.random.randint(500, 1200, len(months)),
         'Allowance': np.random.randint(100, 300, len(months)),
         'Income': np.random.randint(800, 1500, len(months)),
-        'Tuition': np.random.randint(3000, 5000, len(months)),
+        'Tuition': np.random.randint(2000, 4000, len(months)),
         'Housing': np.random.randint(400, 900, len(months)),
-        'Food': np.random.randint(100, 400, len(months)),
+        'Food': np.random.randint(300, 800, len(months)),
         'Transportation': np.random.randint(50, 200, len(months)),
         'Study_material': np.random.randint(50, 300, len(months)),
         'Entertainment': np.random.randint(20, 150, len(months)),
@@ -342,7 +328,6 @@ def generate_and_forecast_spending_data(start_date, end_date, forecast_days=30):
     return forecast_results
 
 
-
 @app.route('/predict', methods=['GET'])
 def predict():
     # Call the function to generate predictions
@@ -354,29 +339,20 @@ def predict():
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id=user_id).first()
 
+    # Handle None values for income and aggregate saving goals
+    avg_disposable_income = user.average_income or 0.0
+
+    # Summing the progress amounts of all saving goals
+    total_savings_goal = sum(goal.amount for goal in user.saving_goals if goal.amount) or avg_disposable_income * 0.2
+
+    # Generate budget allocations based on predictions
+    allocations = allocate_budget(avg_disposable_income, total_savings_goal, predictions)
+
+    # Generate insights from budget allocations
+    insights = generate_insights(allocations, predictions)
+
     # Render the predictions on the HTML page
-    return render_template('predict.html', predictions=predictions, user = user)
-
-
-
-
-
-def get_distribution_data(amounts):
-    if not amounts:
-        return {'labels': [], 'values': []}
-
-    amounts = np.array(amounts)
-
-    counts, bin_edges = np.histogram(amounts, bins=10)
-    labels = []
-    for i in range(len(bin_edges) - 1):
-        labels.append(f"{bin_edges[i]:.1f}-{bin_edges[i + 1]:.1f}")
-    values = counts.tolist()
-
-    return {'labels': labels, 'values': values}
-
-
-
+    return render_template('predict.html', predictions=predictions, insights=insights, user=user, active_page='predict')
 
 
 def get_monthly_spending_data(records):
@@ -411,12 +387,10 @@ def details_and_charts():
     user_id = session.get('user_id')
     user = User.query.filter_by(user_id=user_id).first()
 
-    # 初始化变量
     selected_category_level_1 = 'All Spending'
     selected_category_level_2 = 'All'
     user_records = []
     detail_amounts = []
-    distribution_data = {'labels': [], 'values': []}
     monthly_data = {'labels': [], 'values': []}
 
     category_mapping = {
@@ -428,7 +402,6 @@ def details_and_charts():
         'Necessities': {
             'tuition': 'Tuition',
             'housing': 'Housing',
-            'Housing': 'Housing',
             'food': 'Food',
             'transportation': 'Transportation'
         },
@@ -451,11 +424,11 @@ def details_and_charts():
         for subcategories in category_mapping.values()
         for subcategory in subcategories.keys()
     ]
+
     if request.method == 'POST':
         selected_category_level_1 = request.form.get('category_level_1', 'All Spending')
         selected_category_level_2 = request.form.get('category_level_2', 'All')
 
-        # 验证分类
         if selected_category_level_1 != 'All Spending' and selected_category_level_1 not in valid_categories:
             return render_template('details_and_charts.html', user=user, error="Invalid main category"), 400
         if selected_category_level_2 != 'All' and selected_category_level_2 not in valid_subcategories:
@@ -463,32 +436,39 @@ def details_and_charts():
 
         user_records_query = Record.query.filter_by(user_id=user_id)
 
-        if (selected_category_level_2 != 'All' and
-            selected_category_level_2 not in valid_subcategories):
-            return render_template('details_and_charts.html', ...), 400
+        if selected_category_level_1 != 'All Spending':
+            if selected_category_level_2 != 'All':
+                desired_category_str = f"{selected_category_level_1}:{selected_category_level_2}"
+                user_records_query = user_records_query.filter(Record.category == desired_category_str)
+            else:
+                sub_fields = category_mapping.get(selected_category_level_1, {}).keys()
+                cat_list = [f"{selected_category_level_1}:{sub}" for sub in sub_fields]
+                user_records_query = user_records_query.filter(Record.category.in_(cat_list))
+        else:
+            pass
 
         user_records = user_records_query.order_by(Record.date.desc()).all()
 
         all_details = Detail.query.all()
-
         detail_amounts = []
-        for detail in all_details:
+        if selected_category_level_1 != 'All Spending':
             if selected_category_level_2 != 'All':
-                amount = getattr(detail, selected_category_level_2, 0.0)
-                if amount and amount > 0:
-                    detail_amounts.append(amount)
+                for detail in all_details:
+                    amount = getattr(detail, selected_category_level_2, 0.0)
+                    if amount and amount > 0:
+                        detail_amounts.append(amount)
             else:
-                total_amount = sum([
-                    getattr(detail, field, 0.0)
-                    for field in category_mapping.get(selected_category_level_1, {}).keys()
-                ])
-                if total_amount > 0:
-                    detail_amounts.append(total_amount)
+                for detail in all_details:
+                    total_amount = sum([
+                        getattr(detail, field, 0.0)
+                        for field in category_mapping.get(selected_category_level_1, {}).keys()
+                    ])
+                    if total_amount > 0:
+                        detail_amounts.append(total_amount)
+        else:
+            pass
 
         monthly_data = get_monthly_spending_data(user_records)
-
-    else:
-        pass
 
     monthly_data_json = json.dumps(monthly_data)
 
@@ -499,9 +479,11 @@ def details_and_charts():
         selected_category_level_1=selected_category_level_1,
         selected_category_level_2=selected_category_level_2,
         category_mapping=category_mapping,
-        # distribution_data_json=distribution_data_json,
         monthly_data_json=monthly_data_json
     )
+
+
+
 
 @app.route('/setting', methods=['POST'])
 def delete_account():
@@ -529,7 +511,8 @@ def delete_account():
         flash(f"An error occurred: {str(e)}", "danger")
         return redirect(url_for('login'))
 
-#Adding saving goals
+
+# Adding saving goals
 @app.route('/savingGoal', methods=['GET', 'POST'])
 def show_saving_goal_page():
     if 'user_id' not in session:
@@ -572,12 +555,13 @@ def show_saving_goal_page():
 
     # If it's a GET request, fetch all the goals for the logged-in user
     user_id = session.get('user_id')
-    user = User.query.filter_by(user_id = user_id).first()
+    user = User.query.filter_by(user_id=user_id).first()
     goals = Saving_Goal.query.filter_by(user_id=user_id).all()  # Only fetch goals for the logged-in user
     onGoingGoals = Saving_Goal.query.filter(
         Saving_Goal.user_id == user_id,
         Saving_Goal.progress == 'ongoing').order_by(Saving_Goal.end_date.desc()).limit(4).all()
-    return render_template('savingGoal.html', active_page='savingGoal', user = user, goals=goals, onGoingGoals = onGoingGoals)
+    return render_template('savingGoal.html', active_page='savingGoal', user=user, goals=goals,
+                           onGoingGoals=onGoingGoals)
 
 
 @app.route('/delete_selected_goals', methods=['POST'])
@@ -602,7 +586,6 @@ def delete_selected_goals():
         flash("No valid goals to delete.", "warning")
 
     return redirect(url_for('show_saving_goal_page'))
-
 
 
 @app.route('/setting')
@@ -654,7 +637,7 @@ def setting():
             if not new_email or not re.match(r"[^@]+@[^@]+\.[^@]+", new_email):
                 return jsonify(success=False, message="Invalid email address."), 400
 
-            user.emailaddress = new_email 
+            user.emailaddress = new_email
             db.session.commit()
             return jsonify(success=True, message="Email updated successfully.")
 
@@ -669,6 +652,7 @@ def setting():
             return jsonify(success=True, message="Nickname updated successfully.")
 
     return render_template('settings.html', active_page='setting', user=user)
+
 
 @app.route('/survey', methods=['GET', 'POST'])
 def survey():
@@ -723,7 +707,8 @@ def survey():
                     start_date = current_date
                     end_date = current_date + timedelta(days=30)
 
-                    print(f"[DEBUG] Attempting to save saving goal for user_id {user_id} with amount {saving_goal_amount}")
+                    print(
+                        f"[DEBUG] Attempting to save saving goal for user_id {user_id} with amount {saving_goal_amount}")
 
                     new_saving_goal = Saving_Goal(
                         user_id=user_id,
@@ -807,6 +792,7 @@ def survey():
 
     return render_template('financial_survey_html_.html')
 
+
 @app.route('/userProfile', methods=['GET', 'POST'])
 def userProfile():
     user_id = session.get('user_id')
@@ -815,13 +801,14 @@ def userProfile():
         return render_template('login.html')
     if request.method == 'POST':
         return handle_user_profile_update(request, user_id)
-    
+
     return render_template('userProfile.html', active_page='userProfile', user=user, time=time)
 
 
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
 
 @app.route('/budget', methods=['GET', 'POST'])
 def budget_allocation():
@@ -845,7 +832,8 @@ def budget_allocation():
             avg_spending = user.average_spending or 0.0
 
             # Fetch or set savings goal
-            saving_goal_record = Saving_Goal.query.filter_by(user_id=user_id).order_by(Saving_Goal.end_date.desc()).first()
+            saving_goal_record = Saving_Goal.query.filter_by(user_id=user_id).order_by(
+                Saving_Goal.end_date.desc()).first()
             if saving_goal_record:
                 savings_goal = saving_goal_record.amount
             else:
@@ -875,19 +863,18 @@ def budget_allocation():
     return render_template('budget.html')
 
 
-
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
 
 
-
-#Needed for profile picture
+# Needed for profile picture
 @app.context_processor
 def inject_time():
     import time
     return dict(time=time)
+
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)
