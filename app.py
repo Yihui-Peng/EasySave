@@ -114,7 +114,7 @@ def home():
 
     # Fetch the latest saving goal
     savingGoal = Saving_Goal.query.filter_by(user_id=user.user_id).order_by(Saving_Goal.end_date.desc()).first()
-    savingGoals = Saving_Goal.query.filter_by(user_id=user.user_id).limit(3).all()
+    savingGoals = Saving_Goal.query.filter_by(user_id=user.user_id).order_by(Saving_Goal.end_date.desc()).limit(3).all()
     achievedGoals = Saving_Goal.query.filter(
         Saving_Goal.user_id == user.user_id,
         Saving_Goal.progress == "finished"
