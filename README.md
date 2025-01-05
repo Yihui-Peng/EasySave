@@ -109,7 +109,7 @@ You MUST once again delete the data.db file in order to be able to run the app.p
 
 ### Coverage_test.py
 
-In order to run the Coverage_test.py file correctly, you must first launch the app in the browser, and then run the test.
+- In order to run the Coverage_test.py file correctly, you must first launch the app in the browser, and then run the test.
 
 ## License 
 This project is part of a university assignment and is intended for academic use only. It is not licensed for public use or distribution.
