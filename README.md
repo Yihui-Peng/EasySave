@@ -99,9 +99,11 @@ Update personal account information, such as:
 
 ### Path_test_combined.py
 
-Before running Path_test_combined.py:
+- Before running Path_test_combined.py:
+
 You MUST delete the data.db file in the instance folder. Then using cmd to run the test code. Using code 'venv\Scripts\activate' to activate the venv. Then using code ‘set PYTHONPATH=.' ’pytest Test/Path_Test_combined.py' to run the test code.
-Once the test is done: 
+
+- Once the test is done: 
 You MUST once again delete the data.db file in order to be able to run the app.py file again.
 
 ### Coverage_test.py
