@@ -237,4 +237,4 @@ def test_remove_data_from_database(client):
 
 # set PYTHONPATH=.
 
-# pytest Test/Path_Test/Path_Test_combined.py
+# pytest Test/Path_Test_combined.py
