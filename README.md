@@ -10,18 +10,19 @@ EasySave is a web-based app that aims to educate and assist students in creating
 - **Daily Spending Limit**: Automatically calculated to help you stay within your savings goals.
 - **Real-Time Updates**: Graphics and data automatically update as you log new spending.
 - **Peer Comparison**: Compare your spending habits with others in the same demographic.
+- **Goal Tracking**: Set and monitor savings goals with interactive progress indicators.
+- **Spending Predictions**: Forecast next month’s spending based on historical data.
 
 
 ## Table of Contents
 
 1. Installation
 2. Usage
-3. Screenshots
-4. Demo
-5. License
-6. Authors and Acknowledgment
-7. Roadmap
-8. Support
+3. Demo
+4. License
+5. Authors and Acknowledgment
+6. Roadmap
+7. Support
 
 ## Installation
 To run this app locally:
@@ -53,22 +54,45 @@ Open your browser and navigate to:
 http://127.0.0.1:5000/
 
 
+## Usage
 
-## Usage 
+### Home Page  
+An overview of spending and savings progress, featuring:  
+- A progress circle that fills as users log spending.  
+- A daily spending limit calculated from historical data to help users stay within their budget.  
+- Interactive progress visualization for reaching savings goals.  
 
-### Usage: Getting Started
+### Saving Goal Page  
+Manage saving goals with visual trackers, including:  
+- Viewing current saving goals with their progress.  
+- Adding new goals by setting:  
+  - Goal name.  
+  - Start and end dates.  
+  - Desired saving amount.  
+  - Goal status (e.g., "In Progress" or "Finished").  
 
-#### 1. Create a Profile  
-Register for a new account by choosing a unique username, inputting your email address, and creating a password.  
-#### 2. Initial Setup  
-After registration, complete the **Financial Survey** by providing your income details and spending habits. This information helps the system understand your financial situation.  
-#### 3. Building Your Savings Insights  
-To generate meaningful insights and personalized daily budgets, the system requires at least a few months of spending data. Initially, log your expenses by pressing the **"Add New Records"** button at the top of the page. Over time, as more spending data is recorded, the app will automatically generate personalized savings plans and daily budgets, which will appear on the home page.  
-#### 4. Track and Adjust  
-Monitor your financial progress on the home page, where graphics and data update in real time based on your input. Continue logging expenses to refine your personalized recommendations and stay on track with your savings goals.  
+### Detailed Data Page  
+Analyze spending trends and habits with graphical visualizations:  
+- View spending records in an interactive graph.  
+- Analyze monthly spending in categorized graphs.  
+- Use filters to focus on specific spending categories.  
 
-### Usage: Home page
 
+### Predictions Page  
+Explore future spending predictions:  
+- View predicted spending for the next month based on historical data.  
+- Gain insights into saving and spending patterns for better financial planning.  
+
+### User Profile  
+Update personal account information, such as:  
+- Name, gender, nickname, and age.  
+- Email address and profile picture.  
+- Any updates are directly reflected in the app's database.  
+
+
+## Demo
+
+[Click here to watch the demo video.](https://leidenuniv1-my.sharepoint.com/:v:/g/personal/s3990788_vuw_leidenuniv_nl/EWQqtigp00xGjRqCbi2F1q8B63BJgNNwN9CLoWdJs7FKsg?e=0y7rta)
 
 ## License 
 This project is part of a university assignment and is intended for academic use only. It is not licensed for public use or distribution.
