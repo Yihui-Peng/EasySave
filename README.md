@@ -96,7 +96,13 @@ Update personal account information, such as:
 
 ## Testing
 
+### Path_test_combined.py
+
 Before running Path_test_combined.py, you must delete the data.db file in the instance folder. Once the test is done, you must once again delete the data.db file in order to be able to run the app.py file again.
+
+### Coverage_test.py
+
+In order to run the Coverage_test.py file correctly, you must first launch the app in the browser, and then run the test.
 
 ## License 
 This project is part of a university assignment and is intended for academic use only. It is not licensed for public use or distribution.
