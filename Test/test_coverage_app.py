@@ -1,6 +1,14 @@
 import unittest
-from app import app
+import sys
+import os
 from unittest.mock import patch
+from flask import session
+
+# 将项目根目录添加到 Python 模块搜索路径
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from app import app, db, User  # 确保引用正确
+
 class AppTestCase(unittest.TestCase):
     def test_example(self):
         pass
