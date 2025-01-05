@@ -19,7 +19,7 @@ EasySave is a web-based app that aims to educate and assist students in creating
 1. Installation
 2. Usage
 3. Demo
-4. Testomg
+4. Testing
 5. License
 6. Authors and Acknowledgment
 7. Roadmap
